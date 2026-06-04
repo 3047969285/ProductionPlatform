@@ -1,13 +1,13 @@
-package com.example.productionplatform;
+package com.example.platform;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class ProductionPlatformApplication {
+public class PlatformApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(ProductionPlatformApplication.class, args);
+        SpringApplication.run(PlatformApplication.class, args);
     }
 
 }
