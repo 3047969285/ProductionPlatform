@@ -1,0 +1,15 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: devflow-server
+  datasource:
+    url: jdbc:mysql://localhost:3306/devflow?useSSL=false&serverTimezone=Asia/Shanghai&characterEncoding=UTF-8
+    username: root
+    password: root
+
+mybatis:
+  type-aliases-package: com.devflow.entity
+  configuration:
+    map-underscore-to-camel-case: true

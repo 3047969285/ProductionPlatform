@@ -1,0 +1,95 @@
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@400;500&display=swap');
+
+:root {
+  --bg: #060608;
+  --glass: rgba(255, 255, 255, 0.04);
+  --border: rgba(255, 255, 255, 0.08);
+  --cyan: #00e5ff;
+  --purple: #a855f7;
+  --pink: #f43f8f;
+  --lime: #84cc16;
+  --text: #fff;
+  --muted: rgba(255, 255, 255, 0.45);
+  --font-display: 'Syne', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
+  --nav-h: 64px;
+  --radius: 16px;
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+#app { min-height: 100vh; }
+
+::selection { background: rgba(0, 229, 255, 0.25); }
+
+.page-enter-active, .page-leave-active {
+  transition: opacity 0.35s var(--ease), transform 0.35s var(--ease);
+}
+.page-enter-from { opacity: 0; transform: translateY(12px); }
+.page-leave-to { opacity: 0; transform: translateY(-8px); }
+
+/* Element Plus 暗色精简覆盖 */
+.el-button--primary {
+  --el-button-bg-color: rgba(0, 229, 255, 0.1);
+  --el-button-border-color: rgba(0, 229, 255, 0.35);
+  --el-button-text-color: var(--cyan);
+  --el-button-hover-bg-color: rgba(0, 229, 255, 0.18);
+  --el-button-hover-border-color: var(--cyan);
+  border-radius: 999px !important;
+}
+.el-button--danger {
+  --el-button-bg-color: rgba(244, 63, 143, 0.08);
+  --el-button-border-color: rgba(244, 63, 143, 0.35);
+  --el-button-text-color: var(--pink);
+  border-radius: 999px !important;
+}
+.el-button:not(.el-button--primary):not(.el-button--danger) {
+  --el-button-bg-color: transparent;
+  --el-button-border-color: var(--border);
+  --el-button-text-color: var(--muted);
+  border-radius: 999px !important;
+}
+.el-input__wrapper {
+  background: var(--glass) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: none !important;
+  border-radius: 999px !important;
+}
+.el-input__inner { color: var(--text) !important; }
+.el-table {
+  --el-table-bg-color: transparent;
+  --el-table-tr-bg-color: transparent;
+  --el-table-header-bg-color: rgba(255,255,255,0.03);
+  --el-table-row-hover-bg-color: rgba(0,229,255,0.04);
+  --el-table-border-color: var(--border);
+  --el-table-text-color: var(--muted);
+  --el-table-header-text-color: rgba(255,255,255,0.3);
+}
+.el-dialog {
+  --el-dialog-bg-color: rgba(12, 12, 18, 0.95);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(24px);
+}
+.el-dialog__title {
+  font-family: var(--font-display);
+  font-weight: 700;
+}
+.el-form-item__label { color: var(--muted) !important; font-size: 12px; }
+.el-select__wrapper { background: var(--glass) !important; border-radius: 999px !important; }
+.el-loading-mask { background: rgba(6,6,8,0.7) !important; }
+
+.badge { font-size: 11px; padding: 3px 10px; border-radius: 999px; display: inline-block; }
+.badge.muted { background: rgba(255,255,255,0.06); color: var(--muted); }
+.badge.cyan { background: rgba(0,229,255,0.12); color: var(--cyan); }
+.badge.lime { background: rgba(132,204,22,0.12); color: var(--lime); }
+.badge.pink { background: rgba(244,63,143,0.12); color: var(--pink); }
+.badge.purple { background: rgba(168,85,247,0.12); color: var(--purple); }

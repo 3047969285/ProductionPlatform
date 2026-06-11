@@ -3,9 +3,13 @@ server:
 
 spring:
   application:
-    name: ProductionPlatform
+    name: DevFlow
   datasource:
-    url: jdbc:mysql://localhost:3306/production_platform?useSSL=false&serverTimezone=Asia/Shanghai&characterEncoding=utf8mb4
+    url: jdbc:mysql://localhost:3306/productionplatform?useSSL=false&serverTimezone=Asia/Shanghai&characterEncoding=UTF-8
     username: root
     password: root
-    driver-class-name: com.mysql.cj.jdbc.Driver
+
+mybatis:
+  type-aliases-package: com.example.productionplatform.admin.model
+  configuration:
+    map-underscore-to-camel-case: true

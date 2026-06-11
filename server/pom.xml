@@ -4,20 +4,28 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>com.example</groupId>
-        <artifactId>production-platform-parent</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
+        <groupId>com.devflow</groupId>
+        <artifactId>devflow</artifactId>
+        <version>1.0.0</version>
     </parent>
 
-    <artifactId>platform</artifactId>
-    <name>platform</name>
-    <description>启动入口</description>
+    <artifactId>server</artifactId>
+    <name>devflow-server</name>
 
     <dependencies>
         <dependency>
-            <groupId>com.example</groupId>
-            <artifactId>admin</artifactId>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.mybatis.spring.boot</groupId>
+            <artifactId>mybatis-spring-boot-starter</artifactId>
+            <version>3.0.3</version>
+        </dependency>
+        <dependency>
+            <groupId>com.mysql</groupId>
+            <artifactId>mysql-connector-j</artifactId>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
