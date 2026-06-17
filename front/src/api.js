@@ -1,7 +1,9 @@
 import axios from 'axios'
 import { clearAuth, getToken } from './auth'
 
-const http = axios.create({ baseURL: '/api' })
+const apiBase = import.meta.env.VITE_API_BASE_URL || '/api'
+
+const http = axios.create({ baseURL: apiBase })
 
 http.interceptors.request.use((config) => {
   const token = getToken()

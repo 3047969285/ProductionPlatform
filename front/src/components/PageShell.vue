@@ -20,7 +20,7 @@ defineProps({
 
 <style scoped>
 .page {
-  max-width: 1100px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 36px clamp(20px, 5vw, 48px) 80px;
 }
@@ -32,8 +32,8 @@ defineProps({
   margin-bottom: 24px;
   flex-wrap: wrap;
 }
-.tag { font-size: 10px; letter-spacing: 0.3em; color: var(--cyan); margin-bottom: 8px; }
-h1 { font-family: var(--font-display); font-size: clamp(1.75rem, 4vw, 2.25rem); font-weight: 800; }
+.tag { font-size: 12px; letter-spacing: 0.3em; color: var(--cyan); margin-bottom: 8px; }
+h1 { font-family: var(--font-display); font-size: clamp(2rem, 4vw, 2.5rem); font-weight: 800; }
 .panel {
   background: var(--glass);
   border: 1px solid var(--border);

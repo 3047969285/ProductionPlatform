@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.devflow.mapper.DocFolderMapper">
+
+    <select id="findByProject" resultType="DocFolder">
+        SELECT id, project_id AS projectId, module_type AS moduleType, parent_id AS parentId,
+               name, sort_order AS sortOrder, created_at AS createdAt
+        FROM doc_folder
+        WHERE project_id = #{projectId} AND module_type = #{moduleType}
+        ORDER BY sort_order, id
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO doc_folder (project_id, module_type, parent_id, name, sort_order, created_at)
+        VALUES (#{projectId}, #{moduleType}, #{parentId}, #{name}, #{sortOrder}, #{createdAt})
+    </insert>
+
+    <update id="update">
+        UPDATE doc_folder
+        SET name = #{name}, parent_id = #{parentId}, sort_order = #{sortOrder}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM doc_folder WHERE id = #{id}
+    </delete>
+
+</mapper>

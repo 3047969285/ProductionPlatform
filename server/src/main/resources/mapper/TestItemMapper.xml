@@ -1,0 +1,48 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.devflow.mapper.TestItemMapper">
+
+    <sql id="joinSelect">
+        SELECT t.id, t.project_id AS projectId, p.name AS projectName,
+               t.title, t.description, t.progress, t.owner, t.proposer, t.status,
+               t.created_at AS createdAt, t.updated_at AS updatedAt
+        FROM test_item t
+        LEFT JOIN project p ON t.project_id = p.id
+    </sql>
+
+    <select id="findAll" resultType="com.devflow.model.vo.TestItemVo">
+        <include refid="joinSelect"/>
+        ORDER BY t.created_at DESC
+    </select>
+
+    <select id="findByProject" resultType="com.devflow.model.vo.TestItemVo">
+        <include refid="joinSelect"/>
+        WHERE t.project_id = #{projectId}
+        ORDER BY t.created_at DESC
+    </select>
+
+    <select id="count" resultType="int">
+        SELECT COUNT(*) FROM test_item
+    </select>
+
+    <select id="countByStatus" resultType="int">
+        SELECT COUNT(*) FROM test_item WHERE status = #{status}
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO test_item (project_id, title, description, progress, owner, proposer, status, created_at, updated_at)
+        VALUES (#{projectId}, #{title}, #{description}, #{progress}, #{owner}, #{proposer}, #{status}, #{createdAt}, #{updatedAt})
+    </insert>
+
+    <update id="update">
+        UPDATE test_item
+        SET title = #{title}, description = #{description}, progress = #{progress},
+            owner = #{owner}, proposer = #{proposer}, status = #{status}, updated_at = #{updatedAt}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM test_item WHERE id = #{id}
+    </delete>
+
+</mapper>

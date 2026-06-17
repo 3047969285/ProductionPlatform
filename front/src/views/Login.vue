@@ -4,7 +4,7 @@
     <form class="card" @submit.prevent="submit">
       <p class="tag">DEV DELIVERY</p>
       <h1>DevFlow 研发交付</h1>
-      <p class="hint">软件公司研发管控 · 默认 admin / admin123</p>
+      <p class="hint">软件公司研发管控 · 默认 admin / admin123 · 从项目进入管理</p>
       <el-input v-model="form.username" placeholder="用户名" size="large" />
       <el-input v-model="form.password" type="password" placeholder="密码" size="large" show-password />
       <button type="submit" class="btn" :disabled="loading">{{ loading ? '登录中…' : '登 录' }}</button>
@@ -62,20 +62,20 @@ async function submit() {
   flex-direction: column;
   gap: 16px;
 }
-.tag { font-size: 10px; letter-spacing: 0.3em; color: var(--cyan); text-align: center; }
+.tag { font-size: 12px; letter-spacing: 0.3em; color: var(--cyan); text-align: center; }
 h1 {
   font-family: var(--font-display);
-  font-size: 1.75rem;
+  font-size: 2rem;
   font-weight: 800;
   text-align: center;
   margin-bottom: 4px;
 }
-.hint { font-size: 12px; color: var(--muted); text-align: center; margin-bottom: 8px; }
+.hint { font-size: 14px; color: var(--muted); text-align: center; margin-bottom: 8px; }
 .btn {
   margin-top: 8px;
   padding: 14px;
   font-weight: 600;
-  font-size: 15px;
+  font-size: 16px;
   color: var(--bg);
   background: linear-gradient(135deg, var(--cyan), var(--purple));
   border: none;

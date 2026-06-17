@@ -1,0 +1,48 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.devflow.mapper.OpsIssueMapper">
+
+    <sql id="joinSelect">
+        SELECT o.id, o.project_id AS projectId, p.name AS projectName,
+               o.title, o.content, o.severity, o.status, o.owner, o.reporter,
+               o.created_at AS createdAt, o.updated_at AS updatedAt
+        FROM ops_issue o
+        LEFT JOIN project p ON o.project_id = p.id
+    </sql>
+
+    <select id="findAll" resultType="com.devflow.model.vo.OpsIssueVo">
+        <include refid="joinSelect"/>
+        ORDER BY o.created_at DESC
+    </select>
+
+    <select id="findByProject" resultType="com.devflow.model.vo.OpsIssueVo">
+        <include refid="joinSelect"/>
+        WHERE o.project_id = #{projectId}
+        ORDER BY o.created_at DESC
+    </select>
+
+    <select id="count" resultType="int">
+        SELECT COUNT(*) FROM ops_issue
+    </select>
+
+    <select id="countByStatus" resultType="int">
+        SELECT COUNT(*) FROM ops_issue WHERE status = #{status}
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO ops_issue (project_id, title, content, severity, status, owner, reporter, created_at, updated_at)
+        VALUES (#{projectId}, #{title}, #{content}, #{severity}, #{status}, #{owner}, #{reporter}, #{createdAt}, #{updatedAt})
+    </insert>
+
+    <update id="update">
+        UPDATE ops_issue
+        SET title = #{title}, content = #{content}, severity = #{severity},
+            status = #{status}, owner = #{owner}, reporter = #{reporter}, updated_at = #{updatedAt}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM ops_issue WHERE id = #{id}
+    </delete>
+
+</mapper>

@@ -1,0 +1,38 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: devflow-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-devflow123}
+      MYSQL_DATABASE: devflow
+      TZ: Asia/Shanghai
+    ports:
+      - "${MYSQL_PORT:-3306}:3306"
+    volumes:
+      - devflow_mysql:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-p${MYSQL_ROOT_PASSWORD:-devflow123}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+
+  app:
+    build: .
+    container_name: devflow-app
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-8080}:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DATABASE_URL: jdbc:mysql://mysql:3306/devflow?useSSL=false&serverTimezone=Asia/Shanghai&characterEncoding=UTF-8&allowPublicKeyRetrieval=true
+      DATABASE_USERNAME: root
+      DATABASE_PASSWORD: ${MYSQL_ROOT_PASSWORD:-devflow123}
+      SQL_INIT_MODE: always
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+volumes:
+  devflow_mysql:

@@ -1,0 +1,10 @@
+.git
+.cursor
+.cursorignore
+**/node_modules
+**/target
+**/.idea
+**/*.iml
+front/dist
+server/src/main/resources/static/*
+!server/src/main/resources/static/.gitkeep

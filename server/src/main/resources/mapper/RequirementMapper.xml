@@ -1,0 +1,67 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.devflow.mapper.RequirementMapper">
+
+    <sql id="joinSelect">
+        SELECT r.id, r.req_no AS reqNo, r.title, r.content,
+               r.project_id AS projectId, r.folder_id AS folderId,
+               p.name AS projectName, f.name AS folderName,
+               r.priority, r.status, r.proposer, r.owner,
+               r.created_at AS createdAt, r.updated_at AS updatedAt
+        FROM requirement r
+        LEFT JOIN project p ON r.project_id = p.id
+        LEFT JOIN doc_folder f ON r.folder_id = f.id
+    </sql>
+
+    <select id="findAll" resultType="com.devflow.model.vo.RequirementVo">
+        <include refid="joinSelect"/>
+        ORDER BY r.created_at DESC
+    </select>
+
+    <select id="findByProject" resultType="com.devflow.model.vo.RequirementVo">
+        <include refid="joinSelect"/>
+        WHERE r.project_id = #{projectId}
+        ORDER BY r.created_at DESC
+    </select>
+
+    <select id="findByFolder" resultType="com.devflow.model.vo.RequirementVo">
+        <include refid="joinSelect"/>
+        WHERE r.project_id = #{projectId} AND r.folder_id = #{folderId}
+        ORDER BY r.created_at DESC
+    </select>
+
+    <select id="findRecent" resultType="com.devflow.model.vo.RequirementVo">
+        <include refid="joinSelect"/>
+        ORDER BY r.created_at DESC
+        LIMIT #{n}
+    </select>
+
+    <select id="count" resultType="int">
+        SELECT COUNT(*) FROM requirement
+    </select>
+
+    <select id="countByStatus" resultType="int">
+        SELECT COUNT(*) FROM requirement WHERE status = #{status}
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO requirement (req_no, title, content, project_id, folder_id, priority, status, proposer, owner, created_at, updated_at)
+        VALUES (#{reqNo}, #{title}, #{content}, #{projectId}, #{folderId}, #{priority}, #{status}, #{proposer}, #{owner}, #{createdAt}, #{updatedAt})
+    </insert>
+
+    <update id="update">
+        UPDATE requirement
+        SET title = #{title}, content = #{content}, project_id = #{projectId}, folder_id = #{folderId},
+            priority = #{priority}, status = #{status}, proposer = #{proposer}, owner = #{owner}, updated_at = #{updatedAt}
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateStatus">
+        UPDATE requirement SET status = #{status}, updated_at = NOW() WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM requirement WHERE id = #{id}
+    </delete>
+
+</mapper>

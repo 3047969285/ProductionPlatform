@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: devflow
+    runtime: docker
+    plan: free
+    region: singapore
+    dockerfilePath: ./Dockerfile.standalone
+    dockerContext: .
+    healthCheckPath: /
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: SQL_INIT_MODE
+        value: always
+      - key: MYSQL_ROOT_PASSWORD
+        generateValue: true

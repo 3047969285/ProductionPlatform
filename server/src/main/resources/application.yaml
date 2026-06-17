@@ -1,15 +1,64 @@
 server:
+
   port: 8080
 
+
+
 spring:
+
   application:
+
     name: devflow-server
+
+  mvc:
+
+    throw-exception-if-no-handler-found: true
+
+  web:
+
+    resources:
+
+      add-mappings: false
+
   datasource:
-    url: jdbc:mysql://localhost:3306/devflow?useSSL=false&serverTimezone=Asia/Shanghai&characterEncoding=UTF-8
+
+    url: jdbc:mysql://localhost:3306/devflow?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=Asia/Shanghai&characterEncoding=UTF-8
+
     username: root
+
     password: root
 
+  sql:
+
+    init:
+
+      mode: always
+
+      schema-locations: classpath:schema.sql
+
+
+
 mybatis:
-  type-aliases-package: com.devflow.entity
+
+  mapper-locations: classpath:mapper/*.xml
+
+  type-aliases-package: com.devflow.model.entity
+
   configuration:
+
     map-underscore-to-camel-case: true
+
+
+
+logging:
+
+  pattern:
+
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{40} - traceId=%X{traceId} %msg%n"
+
+  level:
+
+    com.devflow: info
+
+    com.devflow.common.exception.GlobalExceptionHandler: warn
+

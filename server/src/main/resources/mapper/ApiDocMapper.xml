@@ -1,0 +1,53 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.devflow.mapper.ApiDocMapper">
+
+    <sql id="joinSelect">
+        SELECT a.id, a.api_no AS apiNo, a.title, a.content, a.method, a.path,
+               a.project_id AS projectId, a.folder_id AS folderId,
+               p.name AS projectName, f.name AS folderName,
+               a.status, a.proposer, a.owner, a.created_at AS createdAt, a.updated_at AS updatedAt
+        FROM api_doc a
+        LEFT JOIN project p ON a.project_id = p.id
+        LEFT JOIN doc_folder f ON a.folder_id = f.id
+    </sql>
+
+    <select id="findAll" resultType="com.devflow.model.vo.ApiDocVo">
+        <include refid="joinSelect"/>
+        ORDER BY a.created_at DESC
+    </select>
+
+    <select id="findByProject" resultType="com.devflow.model.vo.ApiDocVo">
+        <include refid="joinSelect"/>
+        WHERE a.project_id = #{projectId}
+        ORDER BY a.created_at DESC
+    </select>
+
+    <select id="findByFolder" resultType="com.devflow.model.vo.ApiDocVo">
+        <include refid="joinSelect"/>
+        WHERE a.project_id = #{projectId} AND a.folder_id = #{folderId}
+        ORDER BY a.created_at DESC
+    </select>
+
+    <select id="count" resultType="int">
+        SELECT COUNT(*) FROM api_doc
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO api_doc (api_no, title, content, method, path, project_id, folder_id, status, proposer, owner, created_at, updated_at)
+        VALUES (#{apiNo}, #{title}, #{content}, #{method}, #{path}, #{projectId}, #{folderId}, #{status}, #{proposer}, #{owner}, #{createdAt}, #{updatedAt})
+    </insert>
+
+    <update id="update">
+        UPDATE api_doc
+        SET title = #{title}, content = #{content}, method = #{method}, path = #{path},
+            project_id = #{projectId}, folder_id = #{folderId}, status = #{status},
+            proposer = #{proposer}, owner = #{owner}, updated_at = #{updatedAt}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM api_doc WHERE id = #{id}
+    </delete>
+
+</mapper>
