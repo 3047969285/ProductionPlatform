@@ -7,6 +7,8 @@ export DATABASE_PASSWORD="$MYSQL_ROOT_PASSWORD"
 export DATABASE_URL="jdbc:mysql://127.0.0.1:3306/devflow?useSSL=false&serverTimezone=Asia/Shanghai&characterEncoding=UTF-8&allowPublicKeyRetrieval=true"
 export SPRING_PROFILES_ACTIVE=prod
 export SQL_INIT_MODE=always
+# Render 注入 PORT；同时给 Spring Boot 标准变量
+export SERVER_PORT="${PORT:-8080}"
 
 BOOTSTRAP_MARKER=/var/lib/mysql/.devflow_bootstrapped
 NEED_BOOTSTRAP=0
@@ -17,10 +19,25 @@ if [ ! -f "$BOOTSTRAP_MARKER" ]; then
   NEED_BOOTSTRAP=1
 fi
 
+# Render Free 约 512MB：MySQL + JVM 必须压内存，否则会被 OOM kill (exit 137)
 mysqld --user=mysql --datadir=/var/lib/mysql \
-  --innodb-buffer-pool-size=64M \
-  --max-connections=40 \
-  --bind-address=127.0.0.1 &
+  --bind-address=127.0.0.1 \
+  --port=3306 \
+  --performance-schema=OFF \
+  --skip-log-bin \
+  --innodb-buffer-pool-size=24M \
+  --innodb-log-buffer-size=1M \
+  --max-connections=20 \
+  --table-open-cache=32 \
+  --thread-cache-size=2 \
+  --key-buffer-size=4M \
+  --tmp-table-size=4M \
+  --max-heap-table-size=4M \
+  --sort-buffer-size=256K \
+  --read-buffer-size=256K \
+  --join-buffer-size=256K \
+  --net-buffer-length=4K \
+  &
 
 for i in $(seq 1 90); do
   if mysqladmin --protocol=socket -uroot ping --silent 2>/dev/null \
@@ -44,4 +61,5 @@ FLUSH PRIVILEGES;
   touch "$BOOTSTRAP_MARKER"
 fi
 
-exec java ${JAVA_OPTS:--Xmx384m -Xms256m} -jar /app/app.jar
+# SerialGC 峰值更低，适合 512MB 小实例
+exec java ${JAVA_OPTS:--Xmx160m -Xms48m -XX:+UseSerialGC -XX:MaxMetaspaceSize=64m -XX:ReservedCodeCacheSize=32m -XX:+TieredCompilation -XX:TieredStopAtLevel=1} -jar /app/app.jar

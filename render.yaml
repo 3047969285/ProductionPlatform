@@ -14,3 +14,5 @@ services:
         value: always
       - key: MYSQL_ROOT_PASSWORD
         generateValue: true
+      - key: JAVA_OPTS
+        value: "-Xmx160m -Xms48m -XX:+UseSerialGC -XX:MaxMetaspaceSize=64m -XX:ReservedCodeCacheSize=32m -XX:+TieredCompilation -XX:TieredStopAtLevel=1"
