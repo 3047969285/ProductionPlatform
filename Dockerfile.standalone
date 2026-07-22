@@ -21,8 +21,9 @@ WORKDIR /app
 RUN apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends mysql-server \
     && rm -rf /var/lib/apt/lists/* \
+    && rm -rf /var/lib/mysql/* \
     && mkdir -p /var/run/mysqld \
-    && chown mysql:mysql /var/run/mysqld
+    && chown mysql:mysql /var/run/mysqld /var/lib/mysql
 COPY --from=backend /build/server/target/server-*.jar /app/app.jar
 COPY deploy/entrypoint-standalone.sh /app/entrypoint.sh
 RUN chmod +x /app/entrypoint.sh
