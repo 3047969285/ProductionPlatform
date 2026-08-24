@@ -22,6 +22,22 @@ public interface DocFolderMapper {
     List<DocFolder> findByProject(@Param("projectId") Long projectId, @Param("moduleType") String moduleType);
 
     /**
+     * 根据编号查询目录
+     *
+     * @param id 目录编号
+     * @return 目录实体未找到返回空
+     */
+    DocFolder findById(Long id);
+
+    /**
+     * 查询子目录列表
+     *
+     * @param parentId 父目录编号
+     * @return 子目录列表
+     */
+    List<DocFolder> findByParentId(Long parentId);
+
+    /**
      * 新增目录
      *
      * @param folder 目录实体
@@ -44,4 +60,12 @@ public interface DocFolderMapper {
      * @return 影响行数
      */
     int deleteById(Long id);
+
+    /**
+     * 按项目删除全部目录
+     *
+     * @param projectId 项目编号
+     * @return 影响行数
+     */
+    int deleteByProjectId(Long projectId);
 }

@@ -1,13 +1,17 @@
 package com.devflow.service.impl;
 
 import com.devflow.common.BeanConvert;
-import com.devflow.model.dto.DocFolderDto;
+import com.devflow.common.exception.BizAssert;
+import com.devflow.mapper.ApiDocMapper;
 import com.devflow.mapper.DocFolderMapper;
+import com.devflow.mapper.RequirementMapper;
+import com.devflow.model.dto.DocFolderDto;
 import com.devflow.model.entity.DocFolder;
-import com.devflow.service.DocFolderService;
 import com.devflow.model.vo.DocFolderVo;
+import com.devflow.service.DocFolderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -20,6 +24,8 @@ import java.util.List;
 public class DocFolderServiceImpl implements DocFolderService {
 
     private final DocFolderMapper mapper;
+    private final ApiDocMapper apiDocMapper;
+    private final RequirementMapper requirementMapper;
 
     /**
      * 按项目与模块类型查询目录
@@ -56,13 +62,31 @@ public class DocFolderServiceImpl implements DocFolderService {
     }
 
     /**
-     * 删除目录
+     * 删除目录及其子目录和关联文档
      *
      * @param id 目录编号
      * @return 是否成功
      */
     @Override
+    @Transactional
     public boolean delete(Long id) {
-        return mapper.deleteById(id) > 0;
+        BizAssert.notNull(mapper.findById(id), "目录不存在");
+        cascadeDeleteFolder(id);
+        return true;
+    }
+
+    /**
+     * 递归删除目录及子目录下的需求和接口文档
+     *
+     * @param id 目录编号
+     */
+    private void cascadeDeleteFolder(Long id) {
+        List<DocFolder> children = mapper.findByParentId(id);
+        for (DocFolder child : children) {
+            cascadeDeleteFolder(child.getId());
+        }
+        apiDocMapper.deleteByFolderId(id);
+        requirementMapper.deleteByFolderId(id);
+        mapper.deleteById(id);
     }
 }

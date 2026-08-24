@@ -6,6 +6,7 @@ import com.devflow.common.ResultCode;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import jakarta.validation.ConstraintViolationException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.BindException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
@@ -75,6 +76,20 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MissingServletRequestParameterException.class)
     public ApiResult<Void> handleMissingParam(MissingServletRequestParameterException e, HttpServletRequest request) {
         String message = "缺少请求参数 " + e.getParameterName();
+        logWarn(request, ResultCode.BAD_REQUEST.getCode(), message, e);
+        return ApiResult.of(ResultCode.BAD_REQUEST.getCode(), message);
+    }
+
+    /**
+     * 处理数据完整性约束异常
+     *
+     * @param e 数据完整性异常
+     * @param request HTTP 请求
+     * @return 统一响应
+     */
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ApiResult<Void> handleDataIntegrity(DataIntegrityViolationException e, HttpServletRequest request) {
+        String message = "存在关联数据无法删除，请先清理子项或文件夹内容";
         logWarn(request, ResultCode.BAD_REQUEST.getCode(), message, e);
         return ApiResult.of(ResultCode.BAD_REQUEST.getCode(), message);
     }

@@ -65,4 +65,12 @@ public interface TestItemMapper {
      * @return 影响行数
      */
     int deleteById(Long id);
+
+    /**
+     * 按项目删除全部测试项
+     *
+     * @param projectId 项目编号
+     * @return 影响行数
+     */
+    int deleteByProjectId(Long projectId);
 }

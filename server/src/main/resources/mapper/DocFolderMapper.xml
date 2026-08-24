@@ -2,11 +2,28 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.devflow.mapper.DocFolderMapper">
 
+    <sql id="baseColumns">
+        id, project_id AS projectId, module_type AS moduleType, parent_id AS parentId,
+        name, sort_order AS sortOrder, created_at AS createdAt
+    </sql>
+
     <select id="findByProject" resultType="DocFolder">
-        SELECT id, project_id AS projectId, module_type AS moduleType, parent_id AS parentId,
-               name, sort_order AS sortOrder, created_at AS createdAt
+        SELECT <include refid="baseColumns"/>
         FROM doc_folder
         WHERE project_id = #{projectId} AND module_type = #{moduleType}
+        ORDER BY sort_order, id
+    </select>
+
+    <select id="findById" resultType="DocFolder">
+        SELECT <include refid="baseColumns"/>
+        FROM doc_folder
+        WHERE id = #{id}
+    </select>
+
+    <select id="findByParentId" resultType="DocFolder">
+        SELECT <include refid="baseColumns"/>
+        FROM doc_folder
+        WHERE parent_id = #{parentId}
         ORDER BY sort_order, id
     </select>
 
@@ -23,6 +40,10 @@
 
     <delete id="deleteById">
         DELETE FROM doc_folder WHERE id = #{id}
+    </delete>
+
+    <delete id="deleteByProjectId">
+        DELETE FROM doc_folder WHERE project_id = #{projectId}
     </delete>
 
 </mapper>

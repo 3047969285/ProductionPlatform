@@ -80,7 +80,9 @@ async function remove(id) {
     await api.delete(`${props.apiPath}/${id}`)
     ElMessage.success('已删除')
     loadList()
-  } catch { /* cancel */ }
+  } catch (e) {
+    if (e !== 'cancel') ElMessage.error(e.message || '删除失败')
+  }
 }
 
 async function addFolder() {
@@ -97,7 +99,50 @@ async function addFolder() {
     })
     ElMessage.success('文件夹已创建')
     loadFolders()
-  } catch { /* cancel */ }
+  } catch (e) {
+    if (e !== 'cancel') ElMessage.error(e.message || '创建失败')
+  }
+}
+
+async function renameFolder(folder) {
+  try {
+    const { value } = await ElMessageBox.prompt('文件夹名称', '重命名', {
+      inputValue: folder.name,
+      inputPattern: /\S+/,
+      inputErrorMessage: '名称不能为空',
+    })
+    await api.put('/folders', {
+      id: folder.id,
+      projectId: folder.projectId,
+      moduleType: folder.moduleType,
+      parentId: folder.parentId,
+      name: value,
+      sortOrder: folder.sortOrder,
+    })
+    ElMessage.success('已重命名')
+    loadFolders()
+  } catch (e) {
+    if (e !== 'cancel') ElMessage.error(e.message || '重命名失败')
+  }
+}
+
+async function removeFolder(folder) {
+  try {
+    await ElMessageBox.confirm(
+      `删除文件夹「${folder.name}」将同时删除其下全部${props.isApi ? '接口' : '需求'}，确定？`,
+      '提示',
+      { type: 'warning' },
+    )
+    await api.delete(`/folders/${folder.id}`)
+    if (selectedFolderId.value === folder.id) {
+      selectedFolderId.value = null
+    }
+    ElMessage.success('文件夹已删除')
+    loadFolders()
+    loadList()
+  } catch (e) {
+    if (e !== 'cancel') ElMessage.error(e.message || '删除失败')
+  }
 }
 
 function onFolderClick(data) {
@@ -123,14 +168,24 @@ onMounted(() => { loadFolders(); loadList() })
         highlight-current
         :expand-on-click-node="false"
         @node-click="onFolderClick"
-      />
+      >
+        <template #default="{ node, data }">
+          <div class="folder-node">
+            <span class="folder-label" :title="node.label">{{ node.label }}</span>
+            <span class="folder-actions">
+              <el-button size="small" text type="primary" @click.stop="renameFolder(data)">重命名</el-button>
+              <el-button size="small" text type="danger" @click.stop="removeFolder(data)">删除</el-button>
+            </span>
+          </div>
+        </template>
+      </el-tree>
       <el-button class="all-btn" text @click="selectedFolderId = null; loadList()">查看全部</el-button>
     </aside>
     <div class="main">
       <div class="toolbar">
         <el-button type="primary" @click="openAdd">+ 新增{{ isApi ? '接口' : '需求' }}</el-button>
       </div>
-      <el-table :data="list" v-loading="loading" stripe>
+      <el-table :data="list" v-loading="loading" stripe empty-text="暂无数据，可点击「查看全部」或新增内容">
         <el-table-column :prop="noField" label="编号" width="140" />
         <el-table-column prop="title" label="标题" min-width="180" show-overflow-tooltip />
         <el-table-column v-if="isApi" prop="method" label="方法" width="90" />
@@ -201,6 +256,24 @@ onMounted(() => { loadFolders(); loadList() })
   border-radius: 12px;
 }
 .side-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 15px; color: var(--muted); }
+.folder-node {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  width: 100%;
+  min-width: 0;
+  padding-right: 4px;
+}
+.folder-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.folder-actions { display: none; flex-shrink: 0; }
+.folder-node:hover .folder-actions { display: inline-flex; }
 .all-btn { width: 100%; margin-top: 8px; font-size: 14px; }
 .toolbar { margin-bottom: 12px; }
 .main { min-width: 0; }

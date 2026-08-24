@@ -64,4 +64,12 @@
         DELETE FROM requirement WHERE id = #{id}
     </delete>
 
+    <delete id="deleteByProjectId">
+        DELETE FROM requirement WHERE project_id = #{projectId}
+    </delete>
+
+    <delete id="deleteByFolderId">
+        DELETE FROM requirement WHERE folder_id = #{folderId}
+    </delete>
+
 </mapper>

@@ -45,4 +45,8 @@
         DELETE FROM ops_issue WHERE id = #{id}
     </delete>
 
+    <delete id="deleteByProjectId">
+        DELETE FROM ops_issue WHERE project_id = #{projectId}
+    </delete>
+
 </mapper>

@@ -48,7 +48,9 @@ async function remove(id) {
     await api.delete(`/projects/${id}`)
     ElMessage.success('已删除')
     load()
-  } catch { /* cancel */ }
+  } catch (e) {
+    if (e !== 'cancel') ElMessage.error(e.message || '删除失败')
+  }
 }
 
 onMounted(load)

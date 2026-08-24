@@ -67,4 +67,20 @@ public interface ApiDocMapper {
      * @return 影响行数
      */
     int deleteById(Long id);
+
+    /**
+     * 按项目删除全部接口文档
+     *
+     * @param projectId 项目编号
+     * @return 影响行数
+     */
+    int deleteByProjectId(Long projectId);
+
+    /**
+     * 按目录删除接口文档
+     *
+     * @param folderId 目录编号
+     * @return 影响行数
+     */
+    int deleteByFolderId(Long folderId);
 }
