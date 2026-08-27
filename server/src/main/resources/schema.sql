@@ -16,7 +16,7 @@ SET FOREIGN_KEY_CHECKS = 1;
 CREATE TABLE IF NOT EXISTS user (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(50) NOT NULL UNIQUE,
-    password VARCHAR(64) NOT NULL,
+    password VARCHAR(100) NOT NULL,
     nickname VARCHAR(50),
     role VARCHAR(20) NOT NULL DEFAULT 'developer',
     created_at DATETIME NOT NULL
@@ -116,8 +116,8 @@ CREATE TABLE IF NOT EXISTS ops_issue (
 );
 
 INSERT INTO user (id, username, password, nickname, role, created_at) VALUES
-(1, 'admin', '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9', '技术总监', 'admin', NOW()),
-(2, 'dev', '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9', '开发工程师', 'developer', NOW())
+(1, 'admin', '$2b$10$fxRsAFMopRsaL/PDCS.Hxuzf38bepCNeI28ASPZ1ZvVtCYbxpTZZm', '技术总监', 'admin', NOW()),
+(2, 'dev', '$2b$10$fxRsAFMopRsaL/PDCS.Hxuzf38bepCNeI28ASPZ1ZvVtCYbxpTZZm', '开发工程师', 'developer', NOW())
 ON DUPLICATE KEY UPDATE password = VALUES(password), nickname = VALUES(nickname), role = VALUES(role);
 
 INSERT INTO project (id, code, name, description, tech_stack, delivery_type, created_at) VALUES

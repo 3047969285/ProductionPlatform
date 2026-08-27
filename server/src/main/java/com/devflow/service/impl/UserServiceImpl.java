@@ -1,7 +1,7 @@
 package com.devflow.service.impl;
 
 import com.devflow.common.BeanConvert;
-import com.devflow.common.HashUtil;
+import com.devflow.common.PasswordEncoder;
 import com.devflow.model.dto.PasswordDto;
 import com.devflow.model.dto.UserDto;
 import com.devflow.mapper.UserMapper;
@@ -22,6 +22,7 @@ import java.util.List;
 public class UserServiceImpl implements UserService {
 
     private final UserMapper mapper;
+    private final PasswordEncoder passwordEncoder;
 
     /**
      * 查询全部用户
@@ -44,7 +45,7 @@ public class UserServiceImpl implements UserService {
     public boolean add(UserDto dto) {
         // DTO 转实体
         User user = BeanConvert.toModel(dto);
-        user.setPassword(HashUtil.sha256(user.getPassword())); // 明文密码哈希后入库
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setCreatedAt(LocalDateTime.now());
         // 未指定角色时默认开发者
         if (user.getRole() == null) {
@@ -73,7 +74,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public boolean resetPassword(PasswordDto dto) {
         // 只更新密码字段，哈希后写入
-        return mapper.updatePassword(dto.getId(), HashUtil.sha256(dto.getPassword())) > 0;
+        return mapper.updatePassword(dto.getId(), passwordEncoder.encode(dto.getPassword())) > 0;
     }
 
     /**

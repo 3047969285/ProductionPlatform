@@ -62,3 +62,11 @@ logging:
 
     com.devflow.common.exception.GlobalExceptionHandler: warn
 
+
+
+devflow:
+
+  auth:
+
+    token-ttl-hours: 24
+
