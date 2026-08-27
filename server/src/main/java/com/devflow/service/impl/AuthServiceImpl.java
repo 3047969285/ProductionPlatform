@@ -2,7 +2,7 @@ package com.devflow.service.impl;
 
 import com.devflow.auth.TokenStore;
 import com.devflow.common.BeanConvert;
-import com.devflow.common.HashUtil;
+import com.devflow.common.PasswordEncoder;
 import com.devflow.model.dto.LoginDto;
 import com.devflow.mapper.UserMapper;
 import com.devflow.model.entity.User;
@@ -23,6 +23,7 @@ public class AuthServiceImpl implements AuthService {
 
     private final UserMapper userMapper;
     private final TokenStore tokenStore;
+    private final PasswordEncoder passwordEncoder;
 
     /**
      * 用户登录校验账号密码并签发令牌
@@ -34,9 +35,12 @@ public class AuthServiceImpl implements AuthService {
     public Optional<LoginVo> login(LoginDto dto) {
         // 按用户名查库
         User user = userMapper.findByUsername(dto.getUsername());
-        // 用户不存在或密码哈希不匹配则登录失败
-        if (user == null || !HashUtil.sha256(dto.getPassword()).equals(user.getPassword())) {
+        if (user == null || !passwordEncoder.matches(dto.getPassword(), user.getPassword())) {
             return Optional.empty();
+        }
+
+        if (passwordEncoder.needsUpgrade(user.getPassword())) {
+            userMapper.updatePassword(user.getId(), passwordEncoder.encode(dto.getPassword()));
         }
 
         // 组装登录结果：令牌 + 用户信息（不含密码）
