@@ -1,7 +1,10 @@
 <template>
-  <PageShell tag="USERS" title="用户管理">
+  <PageShell tag="USERS" title="用户管理" subtitle="维护账号、角色与权限，支持密码重置与快速 onboarding。">
     <template #action><el-button type="primary" @click="openForm()">+ 新增</el-button></template>
-    <el-table :data="list" v-loading="loading" stripe>
+    <div class="toolbar">
+      <span class="count">共 {{ list.length }} 位用户</span>
+    </div>
+    <el-table :data="list" v-loading="loading" stripe empty-text="暂无用户数据">
       <el-table-column prop="username" label="用户名" width="120" />
       <el-table-column prop="nickname" label="昵称" width="120" />
       <el-table-column label="角色" width="100">

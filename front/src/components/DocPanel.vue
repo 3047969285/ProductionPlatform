@@ -213,7 +213,7 @@ onMounted(async () => {
 
 <template>
   <div class="doc-panel">
-    <aside class="sidebar">
+    <aside class="sidebar surface">
       <div class="side-head">
         <span>文件夹</span>
         <el-button size="default" text type="primary" @click="addFolder">+ 新建</el-button>
@@ -300,7 +300,7 @@ onMounted(async () => {
         <p v-if="isApi" class="detail-meta">{{ detailRow.method }} {{ detailRow.path }}</p>
         <p v-else class="detail-meta">优先级 {{ reqPriority[detailRow.priority] }} · 状态 {{ statusMap[detailRow.status] }}</p>
         <p class="detail-meta">提出人 {{ detailRow.proposer || '-' }} · 负责人 {{ detailRow.owner || '-' }}</p>
-        <div class="detail-content" v-html="detailRow.content || '<p>暂无内容</p>'" />
+        <div class="detail-content detail-box rich" v-html="detailRow.content || '<p>暂无内容</p>'" />
         <div class="detail-actions">
           <el-button type="primary" @click="openEdit(detailRow); detailVisible = false">编辑</el-button>
         </div>
@@ -352,14 +352,32 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-.doc-panel { display: grid; grid-template-columns: 220px 1fr; gap: 16px; min-height: 400px; }
-.sidebar {
-  padding: 12px;
-  background: rgba(0, 0, 0, 0.2);
-  border: 1px solid var(--border);
-  border-radius: 12px;
+.doc-panel {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 16px;
+  min-height: 420px;
 }
-.side-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 15px; color: var(--muted); }
+
+.sidebar {
+  padding: 14px;
+  align-self: start;
+  position: sticky;
+  top: calc(var(--nav-h) + 16px);
+}
+
+.side-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
 .folder-node {
   display: flex;
   align-items: center;
@@ -369,6 +387,7 @@ onMounted(async () => {
   min-width: 0;
   padding-right: 4px;
 }
+
 .folder-label {
   flex: 1;
   min-width: 0;
@@ -376,46 +395,29 @@ onMounted(async () => {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.folder-actions { display: inline-flex; flex-shrink: 0; opacity: 0.85; }
-.all-btn { width: 100%; margin-top: 8px; font-size: 14px; }
-.toolbar {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  align-items: center;
-  margin-bottom: 12px;
+
+.folder-actions {
+  display: inline-flex;
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity 0.2s var(--ease);
 }
-.search { width: 220px; }
-.status-filter { width: 140px; }
-.count { font-size: 14px; color: var(--muted); margin-right: auto; }
+
+.folder-node:hover .folder-actions { opacity: 1; }
+
+.all-btn {
+  width: 100%;
+  margin-top: 10px;
+  font-size: 14px;
+}
+
 .main { min-width: 0; }
-.link-title {
-  background: none;
-  border: none;
-  color: var(--cyan);
-  cursor: pointer;
-  padding: 0;
-  font: inherit;
-  text-align: left;
-}
-.link-title:hover { text-decoration: underline; }
-.pager { display: flex; justify-content: flex-end; margin-top: 12px; }
-.detail-meta { color: var(--muted); margin-bottom: 8px; font-size: 14px; }
-.detail-content {
-  margin-top: 16px;
-  padding: 16px;
-  background: rgba(0, 0, 0, 0.25);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  line-height: 1.7;
-  min-height: 180px;
-}
+
 .detail-actions { margin-top: 16px; }
-:deep(.el-tree) { background: transparent; color: var(--text); font-size: 15px; }
-:deep(.el-tree-node__content:hover) { background: rgba(0, 229, 255, 0.06); }
-:deep(.el-tree--highlight-current .el-tree-node.is-current > .el-tree-node__content) {
-  background: rgba(0, 229, 255, 0.1);
-  color: var(--cyan);
+
+@media (max-width: 768px) {
+  .doc-panel { grid-template-columns: 1fr; }
+  .sidebar { position: static; order: 2; }
+  .folder-actions { opacity: 1; }
 }
-@media (max-width: 768px) { .doc-panel { grid-template-columns: 1fr; } .sidebar { order: 2; } }
 </style>

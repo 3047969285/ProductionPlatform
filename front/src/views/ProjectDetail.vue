@@ -77,6 +77,13 @@ const breadcrumbs = computed(() => [
   { label: project.value?.name || '加载中', to: null },
 ])
 
+const overviewCards = computed(() => [
+  { key: 'req', label: '需求', value: overview.value?.requirements?.total ?? 0, color: 'var(--accent)' },
+  { key: 'api', label: '接口', value: overview.value?.apis ?? 0, color: 'var(--purple)' },
+  { key: 'test', label: '测试中', value: overview.value?.tests?.running ?? 0, color: 'var(--warning)' },
+  { key: 'ops', label: '待处理运维', value: overview.value?.ops?.open ?? 0, color: 'var(--danger)' },
+])
+
 async function loadProject() {
   try {
     project.value = (await api.get(`/projects/${projectId.value}`)).data
@@ -258,42 +265,42 @@ onMounted(async () => {
       </template>
     </nav>
 
-    <p class="intro">{{ project.description }}</p>
-    <p class="meta">{{ project.techStack }} · {{ project.deliveryType }}</p>
+    <p class="intro">{{ project.description || '暂无项目描述' }}</p>
+    <p class="meta">{{ project.techStack || '未设置技术栈' }} · {{ project.deliveryType }}</p>
 
     <el-tabs :model-value="tab" class="tabs" @tab-change="onTabChange">
       <el-tab-pane v-for="(label, key) in projectTabs" :key="key" :label="label" :name="key" lazy>
         <template v-if="key === 'overview'">
           <div v-loading="overviewLoading" class="overview">
             <div class="stat-grid">
-              <article class="stat-card" @click="goTab('req')">
-                <span class="num">{{ overview?.requirements?.total ?? 0 }}</span>
-                <span class="label">需求</span>
-              </article>
-              <article class="stat-card" @click="goTab('api')">
-                <span class="num">{{ overview?.apis ?? 0 }}</span>
-                <span class="label">接口</span>
-              </article>
-              <article class="stat-card" @click="goTab('test')">
-                <span class="num">{{ overview?.tests?.running ?? 0 }}</span>
-                <span class="label">测试中</span>
-              </article>
-              <article class="stat-card" @click="goTab('ops')">
-                <span class="num">{{ overview?.ops?.open ?? 0 }}</span>
-                <span class="label">待处理运维</span>
+              <article
+                v-for="(card, index) in overviewCards"
+                :key="card.key"
+                class="stat-card surface surface-hover animate-fade-up"
+                :class="`stagger-${index + 1}`"
+                @click="goTab(card.key)"
+              >
+                <span class="stat-number" :style="{ color: card.color }">{{ card.value }}</span>
+                <span class="stat-label">{{ card.label }}</span>
               </article>
             </div>
             <section v-if="overview?.requirements" class="status-section">
-              <h3>需求状态分布</h3>
+              <h3 class="section-title">需求状态分布</h3>
               <div class="chips">
-                <button v-for="(label, statusKey) in reqStatus" :key="statusKey" type="button" class="chip" @click="goTab('req')">
-                  {{ label }} {{ overview.requirements[statusKey] ?? 0 }}
+                <button
+                  v-for="(label, statusKey) in reqStatus"
+                  :key="statusKey"
+                  type="button"
+                  class="chip chip-interactive"
+                  @click="goTab('req')"
+                >
+                  {{ label }} <strong>{{ overview.requirements[statusKey] ?? 0 }}</strong>
                 </button>
               </div>
             </section>
             <section v-if="overview?.recentRequirements?.length" class="recent-section">
-              <h3>最近需求</h3>
-              <ul class="recent-list">
+              <h3 class="section-title">最近需求</h3>
+              <ul class="recent-list surface">
                 <li v-for="item in overview.recentRequirements" :key="item.id">
                   <span class="no">{{ item.reqNo }}</span>
                   <span class="title">{{ item.title }}</span>
@@ -328,7 +335,7 @@ onMounted(async () => {
         </template>
 
         <template v-else-if="key === 'test'">
-          <div class="tab-toolbar">
+          <div class="toolbar">
             <el-input v-model="testKeyword" clearable placeholder="搜索测试项" class="search" />
             <el-select v-model="testStatusFilter" clearable placeholder="全部状态" class="status-filter">
               <el-option v-for="(label, statusKey) in testStatus" :key="statusKey" :label="label" :value="statusKey" />
@@ -373,7 +380,7 @@ onMounted(async () => {
         </template>
 
         <template v-else-if="key === 'ops'">
-          <div class="tab-toolbar">
+          <div class="toolbar">
             <el-input v-model="opsKeyword" clearable placeholder="搜索运维问题" class="search" />
             <el-select v-model="opsStatusFilter" clearable placeholder="全部状态" class="status-filter">
               <el-option v-for="(label, statusKey) in opsStatus" :key="statusKey" :label="label" :value="statusKey" />
@@ -496,69 +503,58 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-.breadcrumb { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; font-size: 14px; color: var(--muted); }
-.breadcrumb a { color: var(--cyan); text-decoration: none; }
-.sep { opacity: 0.5; }
 .intro { font-size: 16px; color: var(--muted); margin-bottom: 6px; line-height: 1.6; }
-.meta { font-size: 15px; color: rgba(255, 255, 255, 0.35); margin-bottom: 20px; }
+.meta { font-size: 14px; color: var(--muted-light); margin-bottom: 20px; }
 .tabs { margin-top: 8px; }
-.tab-toolbar, .toolbar-like {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  align-items: center;
-  margin-bottom: 12px;
-}
-.search { width: 220px; }
-.status-filter { width: 140px; }
-.count { font-size: 14px; color: var(--muted); margin-right: auto; }
-.link-title { background: none; border: none; color: var(--cyan); cursor: pointer; padding: 0; font: inherit; text-align: left; }
-.pager { display: flex; justify-content: flex-end; margin-top: 12px; }
 .overview { padding: 8px 4px 16px; }
-.stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 24px; }
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 14px;
+  margin-bottom: 28px;
+}
 .stat-card {
-  padding: 18px;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  background: rgba(0, 0, 0, 0.2);
-  cursor: pointer;
-  transition: border-color 0.2s;
-}
-.stat-card:hover { border-color: rgba(0, 229, 255, 0.35); }
-.stat-card .num { display: block; font-family: var(--font-display); font-size: 1.8rem; font-weight: 800; }
-.stat-card .label { font-size: 14px; color: var(--muted); }
-.status-section, .recent-section { margin-bottom: 24px; }
-.status-section h3, .recent-section h3 { margin-bottom: 12px; font-size: 1rem; }
-.chips { display: flex; flex-wrap: wrap; gap: 8px; }
-.chip {
-  border: 1px solid var(--border);
-  background: rgba(0, 0, 0, 0.2);
-  color: var(--text);
-  border-radius: 999px;
-  padding: 8px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 22px 20px;
   cursor: pointer;
 }
-.recent-list { list-style: none; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+.stat-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.status-section,
+.recent-section {
+  margin-bottom: 28px;
+}
+.status-section .section-title,
+.recent-section .section-title {
+  font-size: 1.25rem;
+  margin-bottom: 14px;
+}
+.chips { display: flex; flex-wrap: wrap; gap: 10px; }
+.recent-list {
+  list-style: none;
+  overflow: hidden;
+}
 .recent-list li {
   display: grid;
   grid-template-columns: 120px 1fr auto;
   gap: 12px;
-  padding: 14px 16px;
-  border-bottom: 1px solid var(--border);
+  padding: 16px 18px;
   align-items: center;
 }
-.recent-list li:last-child { border-bottom: none; }
-.detail-meta { color: var(--muted); margin-bottom: 8px; font-size: 14px; }
-.detail-box {
-  margin-top: 12px;
-  padding: 16px;
-  background: rgba(0, 0, 0, 0.25);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  line-height: 1.7;
-  min-height: 120px;
+.recent-list li + li {
+  border-top: 1px solid var(--border);
 }
-.detail-box.rich :deep(p) { margin-bottom: 8px; }
-:deep(.el-tabs__item) { font-size: 16px; }
-:deep(.el-tabs__nav-wrap::after) { background: var(--border); }
+.recent-list .no {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 14px;
+}
+.recent-list .title {
+  color: var(--muted);
+}
 </style>

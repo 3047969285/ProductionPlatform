@@ -67,7 +67,7 @@ onMounted(load)
 </script>
 
 <template>
-  <PageShell tag="PROJECTS" title="项目中心">
+  <PageShell tag="PROJECTS" title="项目中心" subtitle="每个项目是一个完整的交付空间：需求、接口、测试与运维一站式管理。">
     <template #action>
       <el-button type="primary" @click="openAdd">+ 新建项目</el-button>
     </template>
@@ -76,7 +76,13 @@ onMounted(load)
       <span class="count">共 {{ filteredList.length }} 个项目</span>
     </div>
     <div v-loading="loading" class="grid">
-      <article v-for="p in filteredList" :key="p.id" class="card" @click="router.push(`/projects/${p.id}`)">
+      <article
+        v-for="(p, index) in filteredList"
+        :key="p.id"
+        class="card surface surface-hover animate-fade-up"
+        :class="`stagger-${Math.min(index + 1, 6)}`"
+        @click="router.push(`/projects/${p.id}`)"
+      >
         <div class="card-top">
           <span class="code">{{ p.code }}</span>
           <div class="actions" @click.stop>
@@ -86,10 +92,12 @@ onMounted(load)
         </div>
         <h2>{{ p.name }}</h2>
         <p class="desc">{{ p.description || '暂无描述' }}</p>
-        <p class="meta">{{ p.techStack }} · {{ p.deliveryType }}</p>
+        <p class="meta">{{ p.techStack || '未设置技术栈' }} · {{ p.deliveryType }}</p>
         <span class="enter">进入项目 →</span>
       </article>
-      <p v-if="!loading && !filteredList.length" class="empty">{{ keyword ? '没有匹配的项目' : '暂无项目，点击右上角新建' }}</p>
+      <p v-if="!loading && !filteredList.length" class="empty-state">
+        {{ keyword ? '没有匹配的项目' : '暂无项目，点击右上角新建' }}
+      </p>
     </div>
 
     <el-dialog v-model="dialog" :title="editing ? '编辑项目' : '新建项目'" width="520px">
@@ -109,24 +117,61 @@ onMounted(load)
 </template>
 
 <style scoped>
-.toolbar { display: flex; gap: 12px; align-items: center; margin-bottom: 16px; padding: 0 8px; }
-.search { max-width: 320px; }
-.count { font-size: 14px; color: var(--muted); }
-.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; padding: 8px; }
-.card {
-  padding: 22px;
-  background: rgba(0, 0, 0, 0.2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  cursor: pointer;
-  transition: border-color 0.2s, transform 0.2s;
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 14px;
 }
-.card:hover { border-color: rgba(0, 229, 255, 0.35); transform: translateY(-2px); }
-.card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-.code { font-size: 14px; color: var(--cyan); font-weight: 600; letter-spacing: 0.05em; }
-h2 { font-family: var(--font-display); font-size: 1.35rem; font-weight: 700; margin-bottom: 8px; }
-.desc { font-size: 15px; color: var(--muted); line-height: 1.6; margin-bottom: 10px; min-height: 48px; }
-.meta { font-size: 14px; color: rgba(255, 255, 255, 0.35); margin-bottom: 14px; }
-.enter { font-size: 14px; color: var(--cyan); }
-.empty { grid-column: 1 / -1; text-align: center; color: var(--muted); padding: 40px; font-size: 16px; }
+
+.card {
+  padding: 24px;
+  cursor: pointer;
+}
+
+.card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.code {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent);
+  padding: 4px 10px;
+  border-radius: 980px;
+  background: var(--accent-soft);
+}
+
+h2 {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 8px;
+}
+
+.desc {
+  font-size: 15px;
+  color: var(--muted);
+  line-height: 1.6;
+  margin-bottom: 10px;
+  min-height: 48px;
+}
+
+.meta {
+  font-size: 13px;
+  color: var(--muted-light);
+  margin-bottom: 16px;
+}
+
+.enter {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--accent);
+}
 </style>
