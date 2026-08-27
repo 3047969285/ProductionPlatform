@@ -1,7 +1,10 @@
 <template>
-  <PageShell tag="TEAMS" title="研发团队">
+  <PageShell tag="TEAMS" title="研发团队" subtitle="管理团队并发容量与可用状态，支撑项目排期与资源分配。">
     <template #action><el-button type="primary" @click="openForm()">+ 新增</el-button></template>
-    <el-table :data="list" v-loading="loading" stripe>
+    <div class="toolbar">
+      <span class="count">共 {{ list.length }} 个团队</span>
+    </div>
+    <el-table :data="list" v-loading="loading" stripe empty-text="暂无团队数据">
       <el-table-column prop="code" label="编码" width="110" />
       <el-table-column prop="name" label="名称" min-width="120" />
       <el-table-column prop="capacity" label="并发上限" width="100" />

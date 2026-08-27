@@ -5,6 +5,7 @@ import com.devflow.common.exception.BizAssert;
 import com.devflow.common.validation.ValidGroups;
 import com.devflow.model.dto.ProjectDto;
 import com.devflow.service.ProjectService;
+import com.devflow.model.vo.ProjectOverviewVo;
 import com.devflow.model.vo.ProjectVo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
@@ -44,6 +45,17 @@ public class ProjectController {
         ProjectVo project = projectService.getById(id);
         BizAssert.notNullResource(project, "项目不存在"); // 查不到返回 404
         return ApiResult.ok(project);
+    }
+
+    /**
+     * 获取项目研发交付概览
+     *
+     * @param id 项目编号
+     * @return 需求/接口/测试/运维汇总
+     */
+    @GetMapping("/{id}/overview")
+    public ApiResult<ProjectOverviewVo> overview(@PathVariable Long id) {
+        return ApiResult.ok(projectService.getOverview(id));
     }
 
     /**

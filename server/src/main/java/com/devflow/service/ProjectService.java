@@ -1,6 +1,7 @@
 package com.devflow.service;
 
 import com.devflow.model.dto.ProjectDto;
+import com.devflow.model.vo.ProjectOverviewVo;
 import com.devflow.model.vo.ProjectVo;
 
 import java.util.List;
@@ -24,6 +25,14 @@ public interface ProjectService {
      * @return 项目视图未找到返回空
      */
     ProjectVo getById(Long id);
+
+    /**
+     * 获取单个项目的研发交付概览。
+     *
+     * @param id 项目编号
+     * @return 需求/接口/测试/运维汇总
+     */
+    ProjectOverviewVo getOverview(Long id);
 
     /**
      * 统计项目总数

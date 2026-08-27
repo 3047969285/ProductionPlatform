@@ -1,3 +1,11 @@
+export const projectTabs = {
+  overview: '概览',
+  req: '需求',
+  api: '接口',
+  test: '测试',
+  ops: '运维',
+}
+
 export const roles = { admin: '管理员', developer: '开发者' }
 export const teamStatus = { active: '活跃', inactive: '休整' }
 
