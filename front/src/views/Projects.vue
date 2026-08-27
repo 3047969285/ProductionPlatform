@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import PageShell from '../components/PageShell.vue'
@@ -8,9 +8,19 @@ import api from '../api'
 const router = useRouter()
 const list = ref([])
 const loading = ref(false)
+const keyword = ref('')
 const dialog = ref(false)
 const editing = ref(false)
 const form = ref({ code: '', name: '', description: '', techStack: '', deliveryType: 'SaaS' })
+
+const filteredList = computed(() => {
+  const query = keyword.value.trim().toLowerCase()
+  if (!query) return list.value
+  return list.value.filter((project) =>
+    [project.code, project.name, project.description, project.techStack]
+      .some((field) => String(field || '').toLowerCase().includes(query)),
+  )
+})
 
 async function load() {
   loading.value = true
@@ -61,8 +71,12 @@ onMounted(load)
     <template #action>
       <el-button type="primary" @click="openAdd">+ 新建项目</el-button>
     </template>
+    <div class="toolbar">
+      <el-input v-model="keyword" clearable placeholder="搜索项目编码/名称/技术栈" class="search" />
+      <span class="count">共 {{ filteredList.length }} 个项目</span>
+    </div>
     <div v-loading="loading" class="grid">
-      <article v-for="p in list" :key="p.id" class="card" @click="router.push(`/projects/${p.id}`)">
+      <article v-for="p in filteredList" :key="p.id" class="card" @click="router.push(`/projects/${p.id}`)">
         <div class="card-top">
           <span class="code">{{ p.code }}</span>
           <div class="actions" @click.stop>
@@ -75,7 +89,7 @@ onMounted(load)
         <p class="meta">{{ p.techStack }} · {{ p.deliveryType }}</p>
         <span class="enter">进入项目 →</span>
       </article>
-      <p v-if="!loading && !list.length" class="empty">暂无项目，点击右上角新建</p>
+      <p v-if="!loading && !filteredList.length" class="empty">{{ keyword ? '没有匹配的项目' : '暂无项目，点击右上角新建' }}</p>
     </div>
 
     <el-dialog v-model="dialog" :title="editing ? '编辑项目' : '新建项目'" width="520px">
@@ -95,6 +109,9 @@ onMounted(load)
 </template>
 
 <style scoped>
+.toolbar { display: flex; gap: 12px; align-items: center; margin-bottom: 16px; padding: 0 8px; }
+.search { max-width: 320px; }
+.count { font-size: 14px; color: var(--muted); }
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; padding: 8px; }
 .card {
   padding: 22px;

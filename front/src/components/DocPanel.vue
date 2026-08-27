@@ -3,6 +3,9 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import api from '../api'
 import RichEditor from './RichEditor.vue'
+import { useListFilter } from '../composables/useListFilter'
+import { useUsers } from '../composables/useUsers'
+import { formatDateTime } from '../utils/datetime'
 import { buildFolderTree, reqStatus, reqPriority, apiStatus, httpMethods, badgeClass } from '../constants'
 
 const props = defineProps({
@@ -11,19 +14,32 @@ const props = defineProps({
   apiPath: { type: String, required: true },
   noField: { type: String, default: 'reqNo' },
   isApi: { type: Boolean, default: false },
+  initialFolderId: { type: Number, default: null },
 })
+
+const emit = defineEmits(['update:folderId'])
 
 const folders = ref([])
 const folderTree = computed(() => buildFolderTree(folders.value))
-const selectedFolderId = ref(null)
+const selectedFolderId = ref(props.initialFolderId)
 const list = ref([])
 const loading = ref(false)
 const dialog = ref(false)
 const editing = ref(false)
 const form = ref({})
+const detailVisible = ref(false)
+const detailRow = ref(null)
 
 const statusMap = computed(() => (props.isApi ? apiStatus : reqStatus))
 const statusOptions = computed(() => Object.entries(statusMap.value))
+
+const { keyword, status: statusFilter, page, pageSize, paged, total } = useListFilter(list, {
+  searchFields: props.isApi ? ['title', 'path', 'apiNo'] : ['title', 'reqNo'],
+  pageSize: 10,
+})
+
+const { loadUsers, toOptions } = useUsers()
+const userOptions = computed(() => toOptions())
 
 async function loadFolders() {
   folders.value = (await api.get('/folders', { params: { projectId: props.projectId, moduleType: props.moduleType } })).data
@@ -61,6 +77,11 @@ function openEdit(row) {
   dialog.value = true
 }
 
+function openDetail(row) {
+  detailRow.value = row
+  detailVisible.value = true
+}
+
 async function save() {
   if (!form.value.title?.trim()) return ElMessage.warning('请填写标题')
   try {
@@ -74,9 +95,26 @@ async function save() {
   }
 }
 
-async function remove(id) {
+async function changeStatus(row, status) {
+  if (row.status === status) return
+  const previous = row.status
+  row.status = status
   try {
-    await ElMessageBox.confirm('确定删除？', '提示', { type: 'warning' })
+    if (props.isApi) {
+      await api.put(props.apiPath, { ...row, status })
+    } else {
+      await api.put(`${props.apiPath}/${row.id}/status`, null, { params: { status } })
+    }
+    ElMessage.success('状态已更新')
+  } catch (e) {
+    row.status = previous
+    ElMessage.error(e.message)
+  }
+}
+
+async function remove(id, title) {
+  try {
+    await ElMessageBox.confirm(`确定删除「${title || '该记录'}」？`, '提示', { type: 'warning' })
     await api.delete(`${props.apiPath}/${id}`)
     ElMessage.success('已删除')
     loadList()
@@ -136,6 +174,7 @@ async function removeFolder(folder) {
     await api.delete(`/folders/${folder.id}`)
     if (selectedFolderId.value === folder.id) {
       selectedFolderId.value = null
+      emit('update:folderId', null)
     }
     ElMessage.success('文件夹已删除')
     loadFolders()
@@ -146,12 +185,30 @@ async function removeFolder(folder) {
 }
 
 function onFolderClick(data) {
-  selectedFolderId.value = data.id === selectedFolderId.value ? null : data.id
+  selectedFolderId.value = data.id
+  emit('update:folderId', data.id)
+  loadList()
+}
+
+function clearFolder() {
+  selectedFolderId.value = null
+  emit('update:folderId', null)
   loadList()
 }
 
 watch(() => props.projectId, () => { loadFolders(); loadList() })
-onMounted(() => { loadFolders(); loadList() })
+watch(() => props.initialFolderId, (value) => {
+  if (value !== selectedFolderId.value) {
+    selectedFolderId.value = value
+    loadList()
+  }
+})
+
+onMounted(async () => {
+  await loadUsers()
+  await loadFolders()
+  await loadList()
+})
 </script>
 
 <template>
@@ -166,6 +223,7 @@ onMounted(() => { loadFolders(); loadList() })
         node-key="id"
         default-expand-all
         highlight-current
+        :current-node-key="selectedFolderId"
         :expand-on-click-node="false"
         @node-click="onFolderClick"
       >
@@ -179,15 +237,26 @@ onMounted(() => { loadFolders(); loadList() })
           </div>
         </template>
       </el-tree>
-      <el-button class="all-btn" text @click="selectedFolderId = null; loadList()">查看全部</el-button>
+      <el-button class="all-btn" text :type="selectedFolderId ? 'default' : 'primary'" @click="clearFolder">查看全部</el-button>
     </aside>
+
     <div class="main">
       <div class="toolbar">
+        <el-input v-model="keyword" clearable placeholder="搜索编号/标题/路径" class="search" />
+        <el-select v-model="statusFilter" clearable placeholder="全部状态" class="status-filter">
+          <el-option v-for="[key, label] in statusOptions" :key="key" :label="label" :value="key" />
+        </el-select>
+        <span class="count">共 {{ total }} 条</span>
         <el-button type="primary" @click="openAdd">+ 新增{{ isApi ? '接口' : '需求' }}</el-button>
       </div>
-      <el-table :data="list" v-loading="loading" stripe empty-text="暂无数据，可点击「查看全部」或新增内容">
+
+      <el-table :data="paged" v-loading="loading" stripe empty-text="暂无数据，可调整筛选或新增内容">
         <el-table-column :prop="noField" label="编号" width="140" />
-        <el-table-column prop="title" label="标题" min-width="180" show-overflow-tooltip />
+        <el-table-column prop="title" label="标题" min-width="180" show-overflow-tooltip>
+          <template #default="{ row }">
+            <button type="button" class="link-title" @click="openDetail(row)">{{ row.title }}</button>
+          </template>
+        </el-table-column>
         <el-table-column v-if="isApi" prop="method" label="方法" width="90" />
         <el-table-column v-if="isApi" prop="path" label="路径" min-width="140" show-overflow-tooltip />
         <el-table-column v-if="!isApi" label="优先级" width="90">
@@ -195,46 +264,81 @@ onMounted(() => { loadFolders(); loadList() })
             <span class="badge" :class="badgeClass('priority', row.priority)">{{ reqPriority[row.priority] }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="状态" width="100">
+        <el-table-column label="状态" width="130">
           <template #default="{ row }">
-            <span class="badge" :class="badgeClass(isApi ? 'api' : 'req', row.status)">{{ statusMap[row.status] }}</span>
+            <el-select :model-value="row.status" size="small" @change="(value) => changeStatus(row, value)">
+              <el-option v-for="[key, label] in statusOptions" :key="key" :label="label" :value="key" />
+            </el-select>
           </template>
         </el-table-column>
-        <el-table-column prop="proposer" label="提出人" width="100" />
         <el-table-column prop="owner" label="负责人" width="100" />
-        <el-table-column label="操作" width="160" fixed="right">
+        <el-table-column prop="updatedAt" label="更新时间" width="150">
+          <template #default="{ row }">{{ formatDateTime(row.updatedAt || row.createdAt) }}</template>
+        </el-table-column>
+        <el-table-column label="操作" width="180" fixed="right">
           <template #default="{ row }">
+            <el-button size="default" @click="openDetail(row)">查看</el-button>
             <el-button size="default" @click="openEdit(row)">编辑</el-button>
-            <el-button size="default" type="danger" @click="remove(row.id)">删除</el-button>
+            <el-button size="default" type="danger" @click="remove(row.id, row.title)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
+
+      <div v-if="total > pageSize" class="pager">
+        <el-pagination
+          v-model:current-page="page"
+          v-model:page-size="pageSize"
+          layout="total, prev, pager, next"
+          :total="total"
+        />
+      </div>
     </div>
+
+    <el-drawer v-model="detailVisible" :title="detailRow?.title || '详情'" size="520px">
+      <template v-if="detailRow">
+        <p class="detail-meta"><strong>{{ detailRow[noField] }}</strong> · {{ formatDateTime(detailRow.updatedAt || detailRow.createdAt) }}</p>
+        <p v-if="isApi" class="detail-meta">{{ detailRow.method }} {{ detailRow.path }}</p>
+        <p v-else class="detail-meta">优先级 {{ reqPriority[detailRow.priority] }} · 状态 {{ statusMap[detailRow.status] }}</p>
+        <p class="detail-meta">提出人 {{ detailRow.proposer || '-' }} · 负责人 {{ detailRow.owner || '-' }}</p>
+        <div class="detail-content" v-html="detailRow.content || '<p>暂无内容</p>'" />
+        <div class="detail-actions">
+          <el-button type="primary" @click="openEdit(detailRow); detailVisible = false">编辑</el-button>
+        </div>
+      </template>
+    </el-drawer>
 
     <el-dialog v-model="dialog" :title="editing ? '编辑' : '新增'" width="640px" destroy-on-close>
       <el-form label-width="80px" size="default">
         <el-form-item label="标题"><el-input v-model="form.title" /></el-form-item>
         <el-form-item v-if="isApi" label="方法">
           <el-select v-model="form.method" style="width: 100%">
-            <el-option v-for="m in httpMethods" :key="m" :label="m" :value="m" />
+            <el-option v-for="method in httpMethods" :key="method" :label="method" :value="method" />
           </el-select>
         </el-form-item>
         <el-form-item v-if="isApi" label="路径"><el-input v-model="form.path" placeholder="/api/..." /></el-form-item>
         <el-form-item v-if="!isApi" label="优先级">
           <el-select v-model="form.priority" style="width: 100%">
-            <el-option v-for="(l, k) in reqPriority" :key="k" :label="l" :value="k" />
+            <el-option v-for="(label, key) in reqPriority" :key="key" :label="label" :value="key" />
           </el-select>
         </el-form-item>
         <el-form-item label="状态">
           <el-select v-model="form.status" style="width: 100%">
-            <el-option v-for="[k, l] in statusOptions" :key="k" :label="l" :value="k" />
+            <el-option v-for="[key, label] in statusOptions" :key="key" :label="label" :value="key" />
           </el-select>
         </el-form-item>
-        <el-form-item label="提出人"><el-input v-model="form.proposer" /></el-form-item>
-        <el-form-item label="负责人"><el-input v-model="form.owner" /></el-form-item>
+        <el-form-item label="提出人">
+          <el-select v-model="form.proposer" filterable allow-create clearable style="width: 100%" placeholder="选择或输入">
+            <el-option v-for="option in userOptions" :key="option.value" :label="option.label" :value="option.value" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="负责人">
+          <el-select v-model="form.owner" filterable allow-create clearable style="width: 100%" placeholder="选择或输入">
+            <el-option v-for="option in userOptions" :key="option.value" :label="option.label" :value="option.value" />
+          </el-select>
+        </el-form-item>
         <el-form-item label="文件夹">
           <el-select v-model="form.folderId" clearable style="width: 100%" placeholder="可选">
-            <el-option v-for="f in folders" :key="f.id" :label="f.name" :value="f.id" />
+            <el-option v-for="folder in folders" :key="folder.id" :label="folder.name" :value="folder.id" />
           </el-select>
         </el-form-item>
         <el-form-item label="内容"><RichEditor v-model="form.content" /></el-form-item>
@@ -272,11 +376,41 @@ onMounted(() => { loadFolders(); loadList() })
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.folder-actions { display: none; flex-shrink: 0; }
-.folder-node:hover .folder-actions { display: inline-flex; }
+.folder-actions { display: inline-flex; flex-shrink: 0; opacity: 0.85; }
 .all-btn { width: 100%; margin-top: 8px; font-size: 14px; }
-.toolbar { margin-bottom: 12px; }
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.search { width: 220px; }
+.status-filter { width: 140px; }
+.count { font-size: 14px; color: var(--muted); margin-right: auto; }
 .main { min-width: 0; }
+.link-title {
+  background: none;
+  border: none;
+  color: var(--cyan);
+  cursor: pointer;
+  padding: 0;
+  font: inherit;
+  text-align: left;
+}
+.link-title:hover { text-decoration: underline; }
+.pager { display: flex; justify-content: flex-end; margin-top: 12px; }
+.detail-meta { color: var(--muted); margin-bottom: 8px; font-size: 14px; }
+.detail-content {
+  margin-top: 16px;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  line-height: 1.7;
+  min-height: 180px;
+}
+.detail-actions { margin-top: 16px; }
 :deep(.el-tree) { background: transparent; color: var(--text); font-size: 15px; }
 :deep(.el-tree-node__content:hover) { background: rgba(0, 229, 255, 0.06); }
 :deep(.el-tree--highlight-current .el-tree-node.is-current > .el-tree-node__content) {
