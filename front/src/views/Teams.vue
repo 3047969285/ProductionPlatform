@@ -1,7 +1,8 @@
 <template>
   <PageShell tag="03 / TEAMS" title="团队">
     <template #action><el-button type="primary" @click="openForm()">+ 新增</el-button></template>
-    <el-table :data="list" v-loading="loading" stripe>
+    <div class="table-frame">
+      <el-table :data="list" v-loading="loading" stripe>
       <el-table-column prop="code" label="编码" width="110" />
       <el-table-column prop="name" label="名称" min-width="120" />
       <el-table-column prop="capacity" label="并发上限" width="100" />
@@ -16,7 +17,8 @@
           <el-button size="small" type="danger" @click="remove(row.id)">删除</el-button>
         </template>
       </el-table-column>
-    </el-table>
+      </el-table>
+    </div>
     <el-dialog :title="form.id ? '编辑团队' : '新增团队'" v-model="visible" width="420px">
       <el-form :model="form" label-width="90px">
         <el-form-item label="编码" required><el-input v-model="form.code" /></el-form-item>

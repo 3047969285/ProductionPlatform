@@ -161,9 +161,9 @@ onMounted(load)
 </template>
 
 <style scoped>
-.reports { display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 16px; }
-.card { padding: 20px; background: rgba(23, 27, 25, .86); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); }
-.card h3 { font-size: 16px; font-weight: 700; margin-bottom: 16px; }
+.reports { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.card { min-width: 0; padding: 18px; background: rgba(23, 27, 25, .86); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); }
+.card h3 { font-size: 15px; font-weight: 600; margin-bottom: 14px; }
 .status-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
 .type-name { font-size: 13px; color: var(--cyan); margin-bottom: 10px; }
 .bars { display: flex; flex-direction: column; gap: 8px; }
@@ -177,5 +177,6 @@ onMounted(load)
 .trend-col { flex: 1; display: flex; align-items: flex-end; }
 .trend-fill { width: 100%; background: linear-gradient(180deg, var(--cyan), var(--purple)); border-radius: 3px 3px 0 0; min-height: 3px; }
 .empty { color: var(--muted); text-align: center; padding: 20px; }
-@media (max-width: 640px) { .trend-grid { grid-template-columns: 1fr; } }
+@media (max-width: 1080px) { .reports { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 640px) { .reports { grid-template-columns: 1fr; } .trend-grid { grid-template-columns: 1fr; } }
 </style>

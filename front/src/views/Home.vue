@@ -126,7 +126,7 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.home { position: relative; max-width: 1180px; margin: 0 auto; padding: 70px clamp(20px, 5vw, 72px) 90px; }
+.home { position: relative; max-width: 1500px; margin: 0 auto; padding: 58px clamp(18px, 3.4vw, 48px) 80px; }
 .bg { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
 .orb { position: absolute; border-radius: 50%; filter: blur(90px); opacity: .1; will-change: transform; }
 .o1 { width: 360px; height: 360px; background: var(--accent); top: -8%; right: -5%; }

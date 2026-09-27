@@ -1,7 +1,8 @@
 <template>
   <PageShell tag="05 / USERS" title="用户">
     <template #action><el-button type="primary" @click="openForm()">+ 新增</el-button></template>
-    <el-table :data="list" v-loading="loading" stripe>
+    <div class="table-frame">
+      <el-table :data="list" v-loading="loading" stripe>
       <el-table-column prop="username" label="用户名" width="120" />
       <el-table-column prop="nickname" label="昵称" width="120" />
       <el-table-column label="角色" width="100">
@@ -14,7 +15,8 @@
           <el-button size="small" type="danger" @click="remove(row.id)">删除</el-button>
         </template>
       </el-table-column>
-    </el-table>
+      </el-table>
+    </div>
     <el-dialog :title="form.id ? '编辑用户' : '新增用户'" v-model="visible" width="420px">
       <el-form :model="form" label-width="70px">
         <el-form-item label="用户名" required><el-input v-model="form.username" :disabled="!!form.id" /></el-form-item>

@@ -115,12 +115,14 @@ ul, ol { margin: 0; padding: 0; list-style: none; }
 .layout .card,
 .layout .panel,
 .layout .table-wrap,
-.layout .form-card {
+.layout .form-card,
+.layout .table-frame {
   color: var(--text);
   background: var(--glass);
   border-color: var(--border);
   box-shadow: var(--shadow-sm);
 }
+.layout .table-frame { overflow: hidden; }
 .layout .muted,
 .layout .empty { color: var(--muted); }
 .layout .toolbar,
