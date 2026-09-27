@@ -96,13 +96,13 @@ onMounted(load)
 </script>
 
 <template>
-  <PageShell tag="PROJECTS" title="项目中心">
+  <PageShell tag="02 / PROJECTS" title="项目">
     <template #action>
-      <el-button type="primary" @click="openAdd">+ 新建项目</el-button>
+      <el-button type="primary" @click="openAdd">+ 新建</el-button>
     </template>
     <div class="toolbar">
-      <el-input v-model="keyword" clearable placeholder="搜索项目名称、编码或描述" class="search" />
-      <span class="result-tip">{{ filteredList.length }} 个项目</span>
+      <el-input v-model="keyword" clearable placeholder="搜索项目" class="search" />
+      <span class="result-tip">{{ filteredList.length }} 项</span>
     </div>
     <div v-loading="loading" class="grid">
       <article v-for="p in filteredList" :key="p.id" class="card" @click="router.push(`/projects/${p.id}`)">
@@ -127,9 +127,9 @@ onMounted(load)
           <el-progress :percentage="completionRate(p)" :stroke-width="7" :show-text="false" />
           <b>{{ completionRate(p) }}%</b>
         </div>
-        <span class="enter">进入交付驾驶舱 →</span>
+        <span class="enter">打开驾驶舱 ↗</span>
       </article>
-      <p v-if="!loading && !filteredList.length" class="empty">{{ list.length ? '没有匹配的项目，换个关键词试试' : '暂无项目，点击右上角新建' }}</p>
+      <p v-if="!loading && !filteredList.length" class="empty">{{ list.length ? '无匹配' : '暂无项目' }}</p>
     </div>
 
     <el-dialog v-model="dialog" :title="editing ? '编辑项目' : '新建项目'" width="520px">
@@ -149,32 +149,34 @@ onMounted(load)
 </template>
 
 <style scoped>
-.toolbar { display: flex; align-items: center; gap: 12px; margin: 0 8px 14px; }
+.toolbar { display: flex; align-items: center; gap: 12px; margin: 0 8px 18px; }
 .search { max-width: 420px; }
 .result-tip { color: var(--muted); font-size: 13px; }
-.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; padding: 8px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1px; padding: 1px; background: var(--border); }
 .card {
+  position: relative;
   padding: 22px;
-  background: var(--surface);
+  background: rgba(23, 27, 25, .9);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   cursor: pointer;
-  transition: border-color 0.2s, transform 0.2s;
+  transition: border-color .3s var(--ease), transform .3s var(--ease), background .3s var(--ease);
 }
-.card:hover { border-color: rgba(0, 229, 255, 0.35); transform: translateY(-2px); }
+.card::before { position: absolute; top: 0; left: 22px; width: 26px; height: 1px; background: var(--accent); content: ""; opacity: .65; }
+.card:hover { z-index: 1; border-color: var(--accent); background: rgba(39, 44, 36, .95); transform: translateY(-4px); }
 .card-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 10px; }
 .code { font-size: 14px; color: var(--cyan); font-weight: 600; letter-spacing: 0.05em; }
-.hint { margin-left: auto; padding: 3px 8px; border-radius: 999px; color: var(--accent); background: rgba(0,113,227,.08); font-size: 12px; white-space: nowrap; }
-h2 { font-family: var(--font-display); font-size: 1.35rem; font-weight: 700; margin-bottom: 8px; }
-.desc { font-size: 15px; color: var(--muted); line-height: 1.6; margin-bottom: 10px; min-height: 48px; }
-.meta { font-size: 14px; color: var(--muted); margin-bottom: 14px; }
+.hint { margin-left: auto; padding: 3px 8px; border: 1px solid rgba(203, 210, 118, .28); color: var(--accent); background: rgba(203, 210, 118, .06); font-size: 10px; letter-spacing: .04em; white-space: nowrap; }
+h2 { font-family: var(--font-display); font-size: 1.7rem; font-weight: 400; letter-spacing: -.03em; margin-bottom: 8px; }
+.desc { font-size: 13px; color: var(--muted); line-height: 1.6; margin-bottom: 10px; min-height: 42px; }
+.meta { font-size: 11px; color: var(--muted-light); letter-spacing: .04em; margin-bottom: 14px; }
 .metrics { display: flex; gap: 14px; padding: 10px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); color: var(--muted); font-size: 12px; }
 .metrics b { color: var(--text); font-size: 14px; margin-left: 3px; }
 .progress-row { display: grid; grid-template-columns: auto 1fr auto; gap: 8px; align-items: center; margin: 12px 0 14px; color: var(--muted); font-size: 12px; }
 .progress-row b { color: var(--accent); font-size: 12px; }
 .progress-row :deep(.el-progress) { min-width: 60px; }
-.enter { font-size: 14px; color: var(--cyan); }
-.empty { grid-column: 1 / -1; text-align: center; color: var(--muted); padding: 40px; font-size: 16px; }
+.enter { font-size: 12px; color: var(--accent); letter-spacing: .06em; }
+.empty { grid-column: 1 / -1; text-align: center; color: var(--muted); padding: 40px; font-size: 13px; }
 @media (max-width: 640px) {
   .toolbar { align-items: stretch; flex-direction: column; }
   .search { max-width: none; }

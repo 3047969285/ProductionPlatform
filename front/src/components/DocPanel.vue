@@ -270,8 +270,8 @@ onMounted(() => { loadFolders(); loadList() })
 .doc-panel { display: grid; grid-template-columns: 220px 1fr; gap: 16px; min-height: 400px; }
 .sidebar {
   padding: 12px;
-  background: rgba(245, 245, 247, 0.7);
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  background: rgba(255, 255, 255, .025);
+  border: 1px solid var(--border);
   border-radius: var(--radius);
 }
 .side-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 15px; color: var(--muted); }
@@ -279,9 +279,9 @@ onMounted(() => { loadFolders(); loadList() })
 .toolbar { margin-bottom: 12px; }
 .main { min-width: 0; }
 :deep(.el-tree) { background: transparent; color: var(--text); font-size: 15px; }
-:deep(.el-tree-node__content:hover) { background: rgba(0, 229, 255, 0.06); }
+:deep(.el-tree-node__content:hover) { background: rgba(203, 210, 118, .06); }
 :deep(.el-tree--highlight-current .el-tree-node.is-current > .el-tree-node__content) {
-  background: rgba(0, 229, 255, 0.1);
+  background: rgba(203, 210, 118, .1);
   color: var(--cyan);
 }
 :deep(.el-tree-node__content) { height: 32px; }
@@ -296,13 +296,13 @@ onMounted(() => { loadFolders(); loadList() })
 .tree-actions { display: flex; gap: 6px; flex-shrink: 0; }
 .tree-action {
   font-size: 12px; color: var(--accent); cursor: pointer;
-  border: 1px solid rgba(0, 113, 227, 0.25);
-  border-radius: 8px; padding: 1px 8px;
-  background: rgba(0, 113, 227, 0.06);
+  border: 1px solid rgba(203, 210, 118, .25);
+  border-radius: var(--radius); padding: 1px 8px;
+  background: rgba(203, 210, 118, .06);
   opacity: 0.8;
   font-weight: 500;
 }
-.tree-action:hover { opacity: 1; background: rgba(0, 113, 227, 0.12); }
+.tree-action:hover { opacity: 1; background: rgba(203, 210, 118, .12); }
 .tree-action.del { color: var(--pink); border-color: rgba(245, 108, 108, 0.3); background: rgba(245, 108, 108, 0.06); }
 .tree-action.del:hover { background: rgba(245, 108, 108, 0.15); }
 .clickable-table :deep(.el-table__row) { cursor: pointer; }

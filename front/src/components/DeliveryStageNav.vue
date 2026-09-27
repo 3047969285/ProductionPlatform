@@ -102,31 +102,31 @@ onUnmounted(() => {
 
 <style scoped>
 .stage-nav {
-  padding: 20px 22px 18px;
+  padding: 22px 22px 20px;
   border: 1px solid var(--border);
-  border-radius: 18px;
-  background: rgba(255, 255, 255, .78);
+  border-radius: var(--radius-lg);
+  background: rgba(23, 27, 25, .84);
   box-shadow: var(--shadow-sm);
 }
 .stage-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 22px; }
-.eyebrow { color: var(--accent); font-size: 11px; font-weight: 700; letter-spacing: .16em; margin-bottom: 6px; }
-h2 { font-family: var(--font-display); font-size: clamp(1.25rem, 2vw, 1.7rem); letter-spacing: -.03em; margin-bottom: 4px; }
+.eyebrow { color: var(--accent); font-size: 10px; font-weight: 700; letter-spacing: .18em; margin-bottom: 7px; }
+h2 { font-family: var(--font-display); font-size: clamp(1.45rem, 2vw, 2rem); font-weight: 400; letter-spacing: -.04em; margin-bottom: 4px; }
 .stage-heading p:last-child { color: var(--muted); font-size: 13px; }
 .stage-counter { display: flex; align-items: baseline; gap: 4px; color: var(--muted-light); }
 .stage-counter strong { color: var(--accent); font-family: var(--font-display); font-size: 2rem; line-height: 1; }
 .stage-counter span { font-size: 12px; }
 .stage-rail { position: relative; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
-.stage-progress { position: absolute; top: 16px; left: 7%; right: 7%; height: 2px; background: rgba(0, 113, 227, .12); z-index: 0; overflow: hidden; }
-.stage-progress-fill { display: block; width: 100%; height: 100%; background: linear-gradient(90deg, var(--accent), var(--purple)); transform: scaleX(0); transform-origin: left center; }
+.stage-progress { position: absolute; top: 16px; left: 7%; right: 7%; height: 1px; background: rgba(234, 238, 222, .15); z-index: 0; overflow: hidden; }
+.stage-progress-fill { display: block; width: 100%; height: 100%; background: var(--accent); transform: scaleX(0); transform-origin: left center; }
 .stage { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 8px; min-width: 0; border: 0; background: transparent; color: var(--muted); cursor: pointer; font: inherit; text-align: center; }
-.stage-dot { display: grid; place-items: center; width: 34px; height: 34px; border: 2px solid rgba(0, 113, 227, .2); border-radius: 50%; background: var(--surface); color: var(--muted); font-size: 13px; font-weight: 700; transition: background .25s var(--ease), border-color .25s var(--ease), color .25s var(--ease), box-shadow .25s var(--ease); }
+.stage-dot { display: grid; place-items: center; width: 34px; height: 34px; border: 1px solid var(--border-strong); border-radius: 50%; background: var(--surface); color: var(--muted); font-size: 11px; font-weight: 700; transition: background .25s var(--ease), border-color .25s var(--ease), color .25s var(--ease), box-shadow .25s var(--ease), transform .25s var(--ease); }
 .stage-text strong, .stage-text small { display: block; }
 .stage-text strong { font-size: 14px; color: var(--text); transition: color .25s var(--ease); }
 .stage-text small { margin-top: 2px; color: var(--muted); font-size: 11px; white-space: nowrap; }
 .stage:hover .stage-dot { border-color: var(--accent); color: var(--accent); transform: translateY(-1px); }
-.stage.is-active .stage-dot { border-color: var(--accent); background: var(--accent); color: #fff; box-shadow: 0 0 0 6px rgba(0, 113, 227, .1); }
+.stage.is-active .stage-dot { border-color: var(--accent); background: var(--accent); color: #11140f; box-shadow: 0 0 0 6px rgba(203, 210, 118, .1); }
 .stage.is-active .stage-text strong { color: var(--accent); }
-.stage.is-complete .stage-dot { border-color: var(--accent); color: var(--accent); background: rgba(0,113,227,.08); }
+.stage.is-complete .stage-dot { border-color: var(--accent); color: var(--accent); background: rgba(203, 210, 118, .08); }
 @media (max-width: 700px) {
   .stage-nav { padding: 16px 12px 14px; }
   .stage-heading { margin-bottom: 18px; }

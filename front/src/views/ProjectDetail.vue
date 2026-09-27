@@ -373,21 +373,21 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.intro { font-size: 16px; color: rgba(0,0,0,0.55); margin-bottom: 6px; line-height: 1.6; }
-.meta { font-size: 15px; color: rgba(0,0,0,0.4); margin-bottom: 20px; }
+.intro { font-size: 13px; color: var(--muted); margin-bottom: 6px; line-height: 1.6; }
+.meta { font-size: 11px; color: var(--muted-light); margin-bottom: 20px; letter-spacing: .04em; }
 .project-flow { display: flex; flex-direction: column; gap: 16px; }
 .project-body { display: grid; grid-template-columns: 210px 1fr; gap: 20px; align-items: start; }
 .side-nav {
   position: sticky; top: calc(var(--nav-h) + 16px);
   background: var(--glass);
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 14px 10px;
   backdrop-filter: blur(16px) saturate(1.3);
   box-shadow: var(--shadow-sm);
 }
 .phase-menu-head { display: flex; align-items: center; gap: 10px; padding: 2px 8px 14px; border-bottom: 1px solid var(--border); margin-bottom: 10px; }
-.phase-number { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 10px; color: var(--accent); background: rgba(0,113,227,.1); font-family: var(--font-display); font-size: 13px; font-weight: 700; }
+.phase-number { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; color: var(--accent); background: rgba(203, 210, 118, .1); font-family: var(--font-display); font-size: 13px; font-weight: 700; }
 .phase-menu-head strong, .phase-menu-head small { display: block; }
 .phase-menu-head strong { font-size: 15px; }
 .phase-menu-head small { color: var(--muted); font-size: 11px; margin-top: 2px; }
@@ -395,15 +395,15 @@ onMounted(() => {
   display: flex; align-items: center; gap: 8px;
   width: 100%; padding: 9px 12px; margin-bottom: 2px;
   font-size: 15px; color: var(--muted); text-align: left;
-  background: transparent; border: none; border-radius: 10px; cursor: pointer;
-  transition: background 0.15s, color 0.15s;
+  background: transparent; border: none; border-left: 1px solid transparent; border-radius: 0; cursor: pointer;
+  transition: background .25s var(--ease), color .25s var(--ease), border-color .25s var(--ease);
 }
-.nav-item:hover { background: rgba(0, 0, 0, 0.045); color: var(--text); }
-.nav-item.active { background: rgba(0, 113, 227, 0.1); color: var(--accent); font-weight: 600; }
+.nav-item:hover { background: rgba(203, 210, 118, .05); color: var(--text); }
+.nav-item.active { background: rgba(203, 210, 118, .08); border-left-color: var(--accent); color: var(--accent); font-weight: 600; }
 .nav-icon { width: 20px; text-align: center; }
 .nav-arrow { margin-left: auto; font-size: 16px; }
 .phase-hint { padding: 12px 8px 2px; color: var(--muted); font-size: 12px; line-height: 1.55; }
-.content { min-width: 0; background: var(--glass); border: 1px solid rgba(0,0,0,0.06); border-radius: var(--radius-lg); padding: 20px; box-shadow: var(--shadow-sm); }
+.content { min-width: 0; background: var(--glass); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; box-shadow: var(--shadow-sm); }
 .tab-toolbar { margin-bottom: 12px; }
 .clickable-table :deep(.el-table__row) { cursor: pointer; }
 :deep(.el-tabs__item) { font-size: 16px; }

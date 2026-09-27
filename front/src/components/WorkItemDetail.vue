@@ -213,14 +213,14 @@ watch(() => props.visible, (v) => {
 }
 .m-get { background: #409eff; } .m-post { background: #67c23a; }
 .m-put { background: #e6a23c; } .m-delete { background: #f56c6c; } .m-patch { background: #909399; }
-.api-line code { color: var(--text); background: #f2f2f4; padding: 3px 8px; border-radius: 6px; border: 1px solid rgba(0,0,0,0.06); }
+.api-line code { color: var(--text); background: rgba(255,255,255,.045); padding: 3px 8px; border-radius: var(--radius); border: 1px solid var(--border); }
 .fields { margin-bottom: 16px; }
 .content { margin-bottom: 16px; }
 .content h4, .section h4 { font-size: 15px; font-weight: 700; margin-bottom: 10px; color: var(--muted); }
 .rich-body {
-  border: 1px solid rgba(0, 0, 0, 0.06); border-radius: 12px;
+  border: 1px solid var(--border); border-radius: var(--radius);
   padding: 14px 16px; line-height: 1.7; font-size: 15px;
-  background: #f7f7f9;
+  background: rgba(255,255,255,.035);
 }
 .rich-body :deep(h2) { font-size: 21px; margin: 10px 0 6px; }
 .rich-body :deep(h3) { font-size: 18px; margin: 8px 0 4px; }
@@ -232,8 +232,8 @@ watch(() => props.visible, (v) => {
 .section { margin-top: 20px; }
 .comment-list { max-height: 220px; overflow-y: auto; margin-bottom: 10px; }
 .comment {
-  border: 1px solid rgba(0, 0, 0, 0.05); border-radius: 10px;
-  padding: 8px 12px; margin-bottom: 8px; background: #f7f7f9;
+  border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 8px 12px; margin-bottom: 8px; background: rgba(255,255,255,.035);
 }
 .c-head { display: flex; justify-content: space-between; font-size: 13px; color: var(--muted); margin-bottom: 4px; }
 .c-body { font-size: 14px; line-height: 1.6; white-space: pre-wrap; }

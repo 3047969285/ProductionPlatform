@@ -162,14 +162,14 @@ onMounted(load)
 
 <style scoped>
 .reports { display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 16px; }
-.card { padding: 20px; background: var(--surface); border: 1px solid rgba(0,0,0,0.06); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); }
+.card { padding: 20px; background: rgba(23, 27, 25, .86); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); }
 .card h3 { font-size: 16px; font-weight: 700; margin-bottom: 16px; }
 .status-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
 .type-name { font-size: 13px; color: var(--cyan); margin-bottom: 10px; }
 .bars { display: flex; flex-direction: column; gap: 8px; }
 .bar-row { display: grid; grid-template-columns: 60px 1fr 36px; gap: 8px; align-items: center; font-size: 13px; }
 .bar-label { color: var(--muted); }
-.bar-track { height: 8px; border-radius: 999px; background: rgba(0, 0, 0, 0.07); overflow: hidden; }
+.bar-track { height: 4px; border-radius: 999px; background: rgba(234, 238, 222, .1); overflow: hidden; }
 .bar-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--cyan), var(--purple)); }
 .bar-val { text-align: right; color: var(--text); }
 .trend-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }

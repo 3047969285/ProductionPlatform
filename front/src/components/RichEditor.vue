@@ -75,10 +75,10 @@ watch(model, (v) => {
 
 <style scoped>
 .rich-editor {
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  border-radius: 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
   overflow: hidden;
-  background: #fff;
+  background: rgba(23, 27, 25, .86);
   box-shadow: var(--shadow-sm);
 }
 .toolbar {
@@ -87,17 +87,17 @@ watch(model, (v) => {
   gap: 4px;
   padding: 8px 10px;
   border-bottom: 1px solid var(--border);
-  background: #f7f7f9;
+  background: rgba(255, 255, 255, .035);
   align-items: center;
 }
 .block-select { width: 110px; margin-right: 4px; }
 .tool {
   padding: 5px 10px;
   font-size: 14px;
-  color: rgba(0, 0, 0, 0.7);
-  background: #fff;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  border-radius: 8px;
+  color: var(--muted);
+  background: rgba(255, 255, 255, .04);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
   cursor: pointer;
   transition: all 0.15s var(--ease);
 }
@@ -124,13 +124,13 @@ watch(model, (v) => {
   border-left: 3px solid var(--accent);
   padding: 4px 12px;
   margin: 8px 0;
-  color: rgba(0, 0, 0, 0.55);
-  background: rgba(0, 113, 227, 0.05);
+  color: var(--muted);
+  background: rgba(203, 210, 118, .06);
 }
 .body :deep(pre) {
-  background: #f2f2f4;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  border-radius: 8px;
+  background: rgba(255, 255, 255, .045);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
   padding: 10px 12px;
   font-family: 'Consolas', monospace;
   font-size: 14px;

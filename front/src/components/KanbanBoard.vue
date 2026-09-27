@@ -94,16 +94,16 @@ watch(() => props.projectId, load)
 .kanban { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 8px; }
 .col {
   min-height: 120px; padding: 10px; border-radius: 12px;
-  background: rgba(245, 245, 247, 0.7); border: 1px dashed rgba(0, 0, 0, 0.15);
+  background: rgba(255, 255, 255, .025); border: 1px dashed var(--border-strong);
 }
 .col-head { font-size: 14px; font-weight: 600; margin-bottom: 8px; color: var(--muted); }
 .cnt { margin-left: 6px; font-size: 12px; color: var(--cyan); }
 .card {
   padding: 10px 12px; margin-bottom: 8px; cursor: grab;
-  background: #fff; border: 1px solid rgba(0,0,0,0.06); border-radius: 12px; box-shadow: var(--shadow-sm);
+  background: rgba(29, 34, 31, .94); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-sm);
 }
 .card:active { cursor: grabbing; }
 .card-title { font-size: 14px; line-height: 1.5; margin-bottom: 6px; }
 .card-meta { display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--muted); }
-.empty { text-align: center; color: rgba(0,0,0,0.25); font-size: 13px; padding: 20px 0; }
+.empty { text-align: center; color: var(--muted-light); font-size: 13px; padding: 20px 0; }
 </style>

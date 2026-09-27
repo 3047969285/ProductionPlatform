@@ -84,19 +84,19 @@ const progress = computed(() => {
 
 const health = computed(() => {
   if (overdueMilestones.value.length || seriousBugs.value.some((item) => item.severity === 'critical')) {
-    return { tone: 'danger', label: '需要关注', hint: '存在逾期里程碑或紧急缺陷' }
+    return { tone: 'danger', label: '需要关注', hint: '逾期 / 紧急' }
   }
   if (seriousBugs.value.length || unassignedTasks.value.length) {
-    return { tone: 'warning', label: '有待处理事项', hint: '先处理高优先级问题或补充负责人' }
+    return { tone: 'warning', label: '有待处理', hint: '高优 / 待分配' }
   }
-  return { tone: 'good', label: '节奏正常', hint: '当前没有明显交付阻塞' }
+  return { tone: 'good', label: '节奏正常', hint: '无明显阻塞' }
 })
 
 const stats = computed(() => [
-  { key: 'progress', label: '交付进度', value: `${progress.value}%`, note: '需求 + 任务 + 缺陷综合完成度', tone: 'blue' },
-  { key: 'tasks', label: '待办任务', value: pendingTasks.value.length, note: `${tasks.value.filter(isDoneTask).length} 项已完成`, tone: 'purple' },
-  { key: 'bugs', label: '待处理缺陷', value: openBugs.value.length, note: `${seriousBugs.value.length} 项高/紧急`, tone: 'pink' },
-  { key: 'milestones', label: '下个里程碑', value: overdueMilestones.value.length ? '逾期' : (milestones.value.length ? '按计划' : '未设置'), note: overdueMilestones.value.length ? '请优先调整交付计划' : '发布前记得设置检查点', tone: overdueMilestones.value.length ? 'pink' : 'green' },
+  { key: 'progress', label: '交付进度', value: `${progress.value}%`, note: '综合完成度', tone: 'blue' },
+  { key: 'tasks', label: '待办任务', value: pendingTasks.value.length, note: `${tasks.value.filter(isDoneTask).length} 项完成`, tone: 'purple' },
+  { key: 'bugs', label: '待处理缺陷', value: openBugs.value.length, note: `${seriousBugs.value.length} 项高优`, tone: 'pink' },
+  { key: 'milestones', label: '下个里程碑', value: overdueMilestones.value.length ? '逾期' : (milestones.value.length ? '按计划' : '未设置'), note: overdueMilestones.value.length ? '需要调整' : '发布前设置', tone: overdueMilestones.value.length ? 'pink' : 'green' },
 ])
 
 const nextActions = computed(() => {
@@ -225,8 +225,8 @@ onUnmounted(() => animationContext?.revert())
     <section class="cockpit-hero">
       <div>
         <p class="eyebrow">PDE DELIVERY COCKPIT</p>
-        <h2>先看清楚，再做下一步</h2>
-        <p class="hero-copy">这里把项目交付过程中最重要的事情排好顺序，不需要记住每个模块该怎么用。</p>
+        <h2>交付驾驶舱</h2>
+        <p class="hero-copy">状态 / 下一步</p>
       </div>
       <div class="health" :class="health.tone">
         <span class="health-dot" />
@@ -249,29 +249,29 @@ onUnmounted(() => animationContext?.revert())
       <div class="section-heading">
         <div>
           <p class="eyebrow">QUICK START</p>
-          <h3>现在要做什么？</h3>
+          <h3>下一步</h3>
         </div>
         <el-button text @click="load(false)" :loading="refreshing">重新读取</el-button>
       </div>
       <div class="action-grid">
         <button class="action-card" type="button" @click="go('req')">
           <span class="action-icon blue">＋</span>
-          <span><strong>录入需求</strong><small>把客户要什么先写清楚</small></span>
+          <span><strong>录入需求</strong><small>写清目标</small></span>
           <span class="action-arrow">→</span>
         </button>
         <button class="action-card" type="button" @click="go('task')">
           <span class="action-icon purple">✓</span>
-          <span><strong>拆成任务</strong><small>明确谁做、做什么、何时完成</small></span>
+          <span><strong>拆成任务</strong><small>分配工作</small></span>
           <span class="action-arrow">→</span>
         </button>
         <button class="action-card" type="button" @click="go('test')">
           <span class="action-icon green">⌁</span>
-          <span><strong>开始验证</strong><small>用测试用例确认交付质量</small></span>
+          <span><strong>开始验证</strong><small>确认质量</small></span>
           <span class="action-arrow">→</span>
         </button>
         <button class="action-card" type="button" @click="go('release')">
           <span class="action-icon orange">↑</span>
-          <span><strong>准备发布</strong><small>记录版本、环境和上线结果</small></span>
+          <span><strong>准备发布</strong><small>记录上线</small></span>
           <span class="action-arrow">→</span>
         </button>
       </div>
@@ -282,7 +282,7 @@ onUnmounted(() => animationContext?.revert())
         <div class="section-heading">
           <div>
             <p class="eyebrow">NEXT ACTION</p>
-            <h3>建议先处理</h3>
+            <h3>待处理</h3>
           </div>
           <span class="section-count">{{ nextActions.length }}</span>
         </div>
@@ -295,7 +295,7 @@ onUnmounted(() => animationContext?.revert())
         </div>
         <div v-else class="all-clear">
           <span>✓</span>
-          <div><strong>当前没有明显阻塞</strong><small>可以继续完善需求，或直接进入测试与发布。</small></div>
+          <div><strong>没有明显阻塞</strong><small>继续推进</small></div>
         </div>
       </section>
 
@@ -303,7 +303,7 @@ onUnmounted(() => animationContext?.revert())
         <div class="section-heading">
           <div>
             <p class="eyebrow">DELIVERY PULSE</p>
-            <h3>项目节奏</h3>
+            <h3>节奏</h3>
           </div>
         </div>
         <div class="pulse-list">
@@ -319,7 +319,7 @@ onUnmounted(() => animationContext?.revert())
       <div class="section-heading">
         <div>
           <p class="eyebrow">MILESTONES & RELEASES</p>
-          <h3>交付时间线</h3>
+          <h3>节点</h3>
         </div>
         <el-button text @click="go('release')">管理交付节点 →</el-button>
       </div>
@@ -333,7 +333,7 @@ onUnmounted(() => animationContext?.revert())
     </section>
 
     <el-alert v-if="errors.length" class="load-alert" type="warning" :closable="false" show-icon>
-      部分统计暂时不可用，基础功能仍可继续使用。刷新页面或检查后端服务后再试。
+      部分数据未读，可继续操作。
     </el-alert>
   </div>
 </template>
@@ -347,7 +347,7 @@ onUnmounted(() => animationContext?.revert())
 .eyebrow { color: var(--accent); font-size: 11px; font-weight: 700; letter-spacing: .16em; margin-bottom: 6px; }
 .cockpit h2 { font-family: var(--font-display); font-size: clamp(1.45rem, 3vw, 2rem); letter-spacing: -.03em; margin-bottom: 6px; }
 .hero-copy { color: var(--muted); font-size: 14px; }
-.health { display: flex; align-items: center; gap: 10px; min-width: 190px; padding: 12px 14px; border: 1px solid var(--border); border-radius: 14px; background: rgba(255,255,255,.7); }
+.health { display: flex; align-items: center; gap: 10px; min-width: 190px; padding: 12px 14px; border: 1px solid var(--border); border-radius: var(--radius); background: rgba(23, 27, 25, .78); }
 .health strong, .health small { display: block; }
 .health strong { font-size: 14px; }
 .health small { color: var(--muted); font-size: 12px; margin-top: 2px; }
@@ -355,7 +355,7 @@ onUnmounted(() => animationContext?.revert())
 .health.warning .health-dot { background: var(--orange); box-shadow: 0 0 0 5px rgba(255,159,10,.14); }
 .health.danger .health-dot { background: var(--pink); box-shadow: 0 0 0 5px rgba(255,55,95,.12); }
 .stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
-.stat-card { min-height: 118px; padding: 16px; border: 1px solid var(--border); border-radius: 16px; background: var(--surface); box-shadow: var(--shadow-sm); border-top: 3px solid var(--accent); }
+.stat-card { min-height: 118px; padding: 16px; border: 1px solid var(--border); border-radius: var(--radius); background: rgba(23, 27, 25, .84); box-shadow: var(--shadow-sm); border-top: 1px solid var(--accent); }
 .stat-card.purple { border-top-color: var(--purple); }
 .stat-card.pink { border-top-color: var(--pink); }
 .stat-card.green { border-top-color: var(--lime); }
@@ -363,19 +363,19 @@ onUnmounted(() => animationContext?.revert())
 .stat-label { font-size: 13px; margin-bottom: 8px; }
 .stat-card strong { display: block; font-family: var(--font-display); font-size: 1.75rem; line-height: 1.1; margin-bottom: 8px; }
 .stat-card small { font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.cockpit-section { padding: 18px; border: 1px solid var(--border); border-radius: 18px; background: rgba(255,255,255,.72); box-shadow: var(--shadow-sm); }
+.cockpit-section { padding: 18px; border: 1px solid var(--border); border-radius: var(--radius-lg); background: rgba(23, 27, 25, .78); box-shadow: var(--shadow-sm); }
 .section-heading { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 14px; }
 .section-heading h3 { font-size: 17px; font-weight: 700; }
-.section-count { display: inline-grid; place-items: center; min-width: 26px; height: 26px; padding: 0 8px; border-radius: 999px; color: var(--accent); background: rgba(0,113,227,.1); font-size: 13px; font-weight: 700; }
+.section-count { display: inline-grid; place-items: center; min-width: 26px; height: 26px; padding: 0 8px; border: 1px solid var(--border-strong); border-radius: 999px; color: var(--accent); background: rgba(203, 210, 118, .08); font-size: 13px; font-weight: 700; }
 .action-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
 .action-card, .next-item { width: 100%; border: 1px solid var(--border); background: var(--surface); text-align: left; cursor: pointer; font: inherit; transition: transform .25s var(--ease), border-color .25s var(--ease), box-shadow .25s var(--ease); }
 .action-card { display: grid; grid-template-columns: 34px 1fr 18px; gap: 10px; align-items: center; padding: 13px; border-radius: 14px; }
-.action-card:hover, .next-item:hover { transform: translateY(-2px); border-color: rgba(0,113,227,.28); box-shadow: var(--shadow-md); }
+.action-card:hover, .next-item:hover { transform: translateY(-2px); border-color: rgba(203, 210, 118, .5); box-shadow: var(--shadow-md); }
 .action-card strong, .action-card small, .next-copy strong, .next-copy small { display: block; }
 .action-card strong { font-size: 14px; margin-bottom: 3px; }
 .action-card small, .next-copy small { color: var(--muted); font-size: 12px; line-height: 1.45; }
 .action-icon { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 10px; font-size: 20px; font-weight: 700; }
-.action-icon.blue { color: var(--accent); background: rgba(0,113,227,.1); }
+.action-icon.blue { color: var(--accent); background: rgba(203, 210, 118, .1); }
 .action-icon.purple { color: var(--purple); background: rgba(94,92,230,.1); }
 .action-icon.green { color: #248a3d; background: rgba(52,199,89,.12); }
 .action-icon.orange { color: #a86500; background: rgba(255,159,10,.14); }
@@ -384,7 +384,7 @@ onUnmounted(() => animationContext?.revert())
 .cockpit-columns { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(300px, .85fr); gap: 16px; }
 .next-list { display: flex; flex-direction: column; gap: 8px; }
 .next-item { display: grid; grid-template-columns: 10px 1fr 18px; gap: 10px; align-items: center; padding: 12px; border-radius: 12px; }
-.next-marker { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 4px rgba(0,113,227,.1); }
+.next-marker { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 4px rgba(203, 210, 118, .1); }
 .next-item.warning .next-marker { background: var(--orange); box-shadow: 0 0 0 4px rgba(255,159,10,.13); }
 .next-item.danger .next-marker { background: var(--pink); box-shadow: 0 0 0 4px rgba(255,55,95,.12); }
 .next-copy strong { font-size: 14px; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -394,7 +394,7 @@ onUnmounted(() => animationContext?.revert())
 .all-clear strong { font-size: 14px; }
 .all-clear small { color: var(--muted); font-size: 12px; margin-top: 3px; }
 .pulse-list { display: flex; flex-direction: column; gap: 0; }
-.pulse-row { display: flex; justify-content: space-between; gap: 12px; padding: 12px 0; border-bottom: 1px solid rgba(0,0,0,.06); }
+.pulse-row { display: flex; justify-content: space-between; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
 .pulse-row:first-child { padding-top: 2px; }
 .pulse-row:last-child { border-bottom: 0; padding-bottom: 2px; }
 .pulse-row span { color: var(--muted); font-size: 13px; }
@@ -402,7 +402,7 @@ onUnmounted(() => animationContext?.revert())
 .dangerText { color: var(--pink); }
 .timeline { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
 .timeline-item { position: relative; min-height: 84px; padding: 10px 10px 8px 15px; border-left: 1px solid var(--border-strong); }
-.timeline-dot { position: absolute; left: -5px; top: 12px; width: 9px; height: 9px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 4px rgba(0,113,227,.1); }
+.timeline-dot { position: absolute; left: -5px; top: 12px; width: 9px; height: 9px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 4px rgba(203, 210, 118, .1); }
 .timeline-dot.good { background: var(--lime); box-shadow: 0 0 0 4px rgba(52,199,89,.12); }
 .timeline-dot.danger { background: var(--pink); box-shadow: 0 0 0 4px rgba(255,55,95,.12); }
 .timeline-item small, .timeline-item strong { display: block; }
