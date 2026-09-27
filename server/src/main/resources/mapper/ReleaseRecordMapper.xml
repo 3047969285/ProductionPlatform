@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.devflow.mapper.ReleaseRecordMapper">
+
+    <sql id="joinSelect">
+        SELECT r.id, r.project_id AS projectId, p.name AS projectName,
+               r.version, r.environment, r.description, r.status, r.operator,
+               r.released_at AS releasedAt, r.created_at AS createdAt
+        FROM release_record r
+        LEFT JOIN project p ON r.project_id = p.id
+    </sql>
+
+    <select id="findByProject" resultType="com.devflow.model.vo.ReleaseRecordVo">
+        <include refid="joinSelect"/>
+        WHERE r.project_id = #{projectId}
+        ORDER BY r.created_at DESC
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO release_record (project_id, version, environment, description, status, operator, released_at, created_at)
+        VALUES (#{projectId}, #{version}, #{environment}, #{description}, #{status}, #{operator}, #{releasedAt}, #{createdAt})
+    </insert>
+
+    <update id="update">
+        UPDATE release_record
+        SET version = #{version}, environment = #{environment}, description = #{description},
+            status = #{status}, operator = #{operator}, released_at = #{releasedAt}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM release_record WHERE id = #{id}
+    </delete>
+
+    <select id="count" resultType="int">
+        SELECT COUNT(*) FROM release_record
+    </select>
+
+    <delete id="deleteByProject">
+        DELETE FROM release_record WHERE project_id = #{projectId}
+    </delete>
+
+</mapper>

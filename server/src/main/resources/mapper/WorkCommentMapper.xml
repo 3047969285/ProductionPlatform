@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.devflow.mapper.WorkCommentMapper">
+
+    <select id="findByWork" resultType="com.devflow.model.vo.WorkCommentVo">
+        SELECT id, work_type AS workType, work_id AS workId,
+               user_id AS userId, user_name AS userName, content, created_at AS createdAt
+        FROM work_comment
+        WHERE work_type = #{workType} AND work_id = #{workId}
+        ORDER BY created_at DESC
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO work_comment (work_type, work_id, user_id, user_name, content, created_at)
+        VALUES (#{workType}, #{workId}, #{userId}, #{userName}, #{content}, #{createdAt})
+    </insert>
+
+    <delete id="deleteById">
+        DELETE FROM work_comment WHERE id = #{id}
+    </delete>
+
+</mapper>

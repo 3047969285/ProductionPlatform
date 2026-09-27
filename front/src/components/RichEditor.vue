@@ -3,9 +3,28 @@ import { ref, watch, onMounted } from 'vue'
 
 const model = defineModel({ type: String, default: '' })
 const editor = ref(null)
+const blockTag = ref('p')
 
 function exec(cmd, val = null) {
+  editor.value?.focus()
   document.execCommand(cmd, false, val)
+  if (editor.value) model.value = editor.value.innerHTML
+}
+
+function execBlock(tag) {
+  editor.value?.focus()
+  document.execCommand('formatBlock', false, tag)
+  if (editor.value) model.value = editor.value.innerHTML
+}
+
+function addLink() {
+  const url = prompt('请输入链接地址', 'https://')
+  if (url) exec('createLink', url)
+}
+
+function clearFormat() {
+  editor.value?.focus()
+  document.execCommand('removeFormat')
   if (editor.value) model.value = editor.value.innerHTML
 }
 
@@ -25,11 +44,24 @@ watch(model, (v) => {
 <template>
   <div class="rich-editor">
     <div class="toolbar">
-      <button type="button" @click="exec('bold')"><b>B</b></button>
-      <button type="button" @click="exec('italic')"><i>I</i></button>
-      <button type="button" @click="exec('underline')"><u>U</u></button>
-      <button type="button" @click="exec('insertUnorderedList')">列表</button>
-      <button type="button" @click="exec('formatBlock', 'h3')">标题</button>
+      <el-select v-model="blockTag" size="small" class="block-select" @change="execBlock($event)">
+        <el-option value="p" label="正文" />
+        <el-option value="h2" label="标题 2" />
+        <el-option value="h3" label="标题 3" />
+        <el-option value="h4" label="标题 4" />
+        <el-option value="blockquote" label="引用" />
+        <el-option value="pre" label="代码块" />
+      </el-select>
+      <button type="button" class="tool" title="加粗" @click="exec('bold')"><b>B</b></button>
+      <button type="button" class="tool" title="斜体" @click="exec('italic')"><i>I</i></button>
+      <button type="button" class="tool" title="下划线" @click="exec('underline')"><u>U</u></button>
+      <button type="button" class="tool" title="删除线" @click="exec('strikeThrough')"><s>S</s></button>
+      <button type="button" class="tool" title="无序列表" @click="exec('insertUnorderedList')">• 列表</button>
+      <button type="button" class="tool" title="有序列表" @click="exec('insertOrderedList')">1. 列表</button>
+      <button type="button" class="tool" title="左对齐" @click="exec('justifyLeft')">左</button>
+      <button type="button" class="tool" title="居中" @click="exec('justifyCenter')">中</button>
+      <button type="button" class="tool" title="链接" @click="addLink">🔗</button>
+      <button type="button" class="tool" title="清除格式" @click="clearFormat">⌫</button>
     </div>
     <div
       ref="editor"
@@ -43,31 +75,36 @@ watch(model, (v) => {
 
 <style scoped>
 .rich-editor {
-  border: 1px solid var(--border);
+  border: 1px solid rgba(0, 0, 0, 0.1);
   border-radius: 12px;
   overflow: hidden;
-  background: rgba(0, 0, 0, 0.2);
+  background: #fff;
+  box-shadow: var(--shadow-sm);
 }
 .toolbar {
   display: flex;
-  gap: 6px;
+  flex-wrap: wrap;
+  gap: 4px;
   padding: 8px 10px;
   border-bottom: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.03);
+  background: #f7f7f9;
+  align-items: center;
 }
-.toolbar button {
-  padding: 6px 12px;
+.block-select { width: 110px; margin-right: 4px; }
+.tool {
+  padding: 5px 10px;
   font-size: 14px;
-  color: var(--text);
-  background: transparent;
-  border: 1px solid var(--border);
+  color: rgba(0, 0, 0, 0.7);
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.1);
   border-radius: 8px;
   cursor: pointer;
+  transition: all 0.15s var(--ease);
 }
-.toolbar button:hover { border-color: var(--cyan); color: var(--cyan); }
+.tool:hover { border-color: var(--accent); color: var(--accent); }
 .body {
   min-height: 160px;
-  max-height: 320px;
+  max-height: 420px;
   overflow-y: auto;
   padding: 14px 16px;
   font-size: 16px;
@@ -79,6 +116,26 @@ watch(model, (v) => {
   content: attr(data-placeholder);
   color: var(--muted);
 }
-.body :deep(h3) { font-size: 18px; margin: 8px 0; }
-.body :deep(ul) { padding-left: 20px; }
+.body :deep(h2) { font-size: 22px; margin: 12px 0 8px; font-weight: 700; }
+.body :deep(h3) { font-size: 19px; margin: 10px 0 6px; font-weight: 700; }
+.body :deep(h4) { font-size: 17px; margin: 8px 0 4px; font-weight: 600; }
+.body :deep(ul), .body :deep(ol) { padding-left: 22px; margin: 6px 0; }
+.body :deep(blockquote) {
+  border-left: 3px solid var(--accent);
+  padding: 4px 12px;
+  margin: 8px 0;
+  color: rgba(0, 0, 0, 0.55);
+  background: rgba(0, 113, 227, 0.05);
+}
+.body :deep(pre) {
+  background: #f2f2f4;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-family: 'Consolas', monospace;
+  font-size: 14px;
+  overflow-x: auto;
+}
+.body :deep(a) { color: var(--cyan); }
+.body :deep(img) { max-width: 100%; border-radius: 8px; }
 </style>

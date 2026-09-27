@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import PageShell from '../components/PageShell.vue'
@@ -7,6 +7,9 @@ import api from '../api'
 
 const router = useRouter()
 const list = ref([])
+const workSummary = ref([])
+const completionSummary = ref([])
+const keyword = ref('')
 const loading = ref(false)
 const dialog = ref(false)
 const editing = ref(false)
@@ -14,9 +17,45 @@ const form = ref({ code: '', name: '', description: '', techStack: '', deliveryT
 
 async function load() {
   loading.value = true
-  try { list.value = (await api.get('/projects')).data }
+  try {
+    const [projects, work, completion] = await Promise.all([
+      api.get('/projects'),
+      api.get('/reports/projects').catch(() => ({ data: [] })),
+      api.get('/reports/completion').catch(() => ({ data: [] })),
+    ])
+    list.value = projects.data
+    workSummary.value = work.data
+    completionSummary.value = completion.data
+  }
   catch (e) { ElMessage.error(e.message) }
   finally { loading.value = false }
+}
+
+const filteredList = computed(() => {
+  const value = keyword.value.trim().toLowerCase()
+  if (!value) return list.value
+  return list.value.filter((project) => `${project.code} ${project.name} ${project.description || ''}`.toLowerCase().includes(value))
+})
+
+function workFor(project) {
+  return workSummary.value.find((item) => Number(item.projectId) === Number(project.id)) || {}
+}
+
+function completionFor(project) {
+  return completionSummary.value.find((item) => Number(item.projectId) === Number(project.id)) || {}
+}
+
+function completionRate(project) {
+  const item = completionFor(project)
+  return item.total ? Math.round(Number(item.doneCnt || 0) / Number(item.total) * 100) : 0
+}
+
+function deliveryHint(project) {
+  const work = workFor(project)
+  if (Number(work.bugCnt || 0) > 0) return '优先查看缺陷'
+  if (Number(work.reqCnt || 0) === 0) return '先录入需求'
+  if (Number(work.taskCnt || 0) === 0) return '把需求拆成任务'
+  return '继续推进交付'
 }
 
 function openAdd() {
@@ -61,10 +100,15 @@ onMounted(load)
     <template #action>
       <el-button type="primary" @click="openAdd">+ 新建项目</el-button>
     </template>
+    <div class="toolbar">
+      <el-input v-model="keyword" clearable placeholder="搜索项目名称、编码或描述" class="search" />
+      <span class="result-tip">{{ filteredList.length }} 个项目</span>
+    </div>
     <div v-loading="loading" class="grid">
-      <article v-for="p in list" :key="p.id" class="card" @click="router.push(`/projects/${p.id}`)">
+      <article v-for="p in filteredList" :key="p.id" class="card" @click="router.push(`/projects/${p.id}`)">
         <div class="card-top">
           <span class="code">{{ p.code }}</span>
+          <span class="hint">{{ deliveryHint(p) }}</span>
           <div class="actions" @click.stop>
             <el-button size="default" @click="openEdit(p)">编辑</el-button>
             <el-button size="default" type="danger" @click="remove(p.id)">删除</el-button>
@@ -73,9 +117,19 @@ onMounted(load)
         <h2>{{ p.name }}</h2>
         <p class="desc">{{ p.description || '暂无描述' }}</p>
         <p class="meta">{{ p.techStack }} · {{ p.deliveryType }}</p>
-        <span class="enter">进入项目 →</span>
+        <div class="metrics">
+          <span>需求 <b>{{ workFor(p).reqCnt || 0 }}</b></span>
+          <span>任务 <b>{{ workFor(p).taskCnt || 0 }}</b></span>
+          <span>缺陷 <b>{{ workFor(p).bugCnt || 0 }}</b></span>
+        </div>
+        <div class="progress-row">
+          <span>需求完成率</span>
+          <el-progress :percentage="completionRate(p)" :stroke-width="7" :show-text="false" />
+          <b>{{ completionRate(p) }}%</b>
+        </div>
+        <span class="enter">进入交付驾驶舱 →</span>
       </article>
-      <p v-if="!loading && !list.length" class="empty">暂无项目，点击右上角新建</p>
+      <p v-if="!loading && !filteredList.length" class="empty">{{ list.length ? '没有匹配的项目，换个关键词试试' : '暂无项目，点击右上角新建' }}</p>
     </div>
 
     <el-dialog v-model="dialog" :title="editing ? '编辑项目' : '新建项目'" width="520px">
@@ -95,21 +149,34 @@ onMounted(load)
 </template>
 
 <style scoped>
+.toolbar { display: flex; align-items: center; gap: 12px; margin: 0 8px 14px; }
+.search { max-width: 420px; }
+.result-tip { color: var(--muted); font-size: 13px; }
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; padding: 8px; }
 .card {
   padding: 22px;
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   cursor: pointer;
   transition: border-color 0.2s, transform 0.2s;
 }
 .card:hover { border-color: rgba(0, 229, 255, 0.35); transform: translateY(-2px); }
-.card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.card-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 10px; }
 .code { font-size: 14px; color: var(--cyan); font-weight: 600; letter-spacing: 0.05em; }
+.hint { margin-left: auto; padding: 3px 8px; border-radius: 999px; color: var(--accent); background: rgba(0,113,227,.08); font-size: 12px; white-space: nowrap; }
 h2 { font-family: var(--font-display); font-size: 1.35rem; font-weight: 700; margin-bottom: 8px; }
 .desc { font-size: 15px; color: var(--muted); line-height: 1.6; margin-bottom: 10px; min-height: 48px; }
-.meta { font-size: 14px; color: rgba(255, 255, 255, 0.35); margin-bottom: 14px; }
+.meta { font-size: 14px; color: var(--muted); margin-bottom: 14px; }
+.metrics { display: flex; gap: 14px; padding: 10px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); color: var(--muted); font-size: 12px; }
+.metrics b { color: var(--text); font-size: 14px; margin-left: 3px; }
+.progress-row { display: grid; grid-template-columns: auto 1fr auto; gap: 8px; align-items: center; margin: 12px 0 14px; color: var(--muted); font-size: 12px; }
+.progress-row b { color: var(--accent); font-size: 12px; }
+.progress-row :deep(.el-progress) { min-width: 60px; }
 .enter { font-size: 14px; color: var(--cyan); }
 .empty { grid-column: 1 / -1; text-align: center; color: var(--muted); padding: 40px; font-size: 16px; }
+@media (max-width: 640px) {
+  .toolbar { align-items: stretch; flex-direction: column; }
+  .search { max-width: none; }
+}
 </style>

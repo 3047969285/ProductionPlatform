@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.devflow.mapper.ApiDocMapper">
 
@@ -56,6 +56,15 @@
 
     <delete id="deleteByFolderId">
         DELETE FROM api_doc WHERE folder_id = #{folderId}
+    </delete>
+
+    <update id="clearFolderId">
+        UPDATE api_doc SET folder_id = NULL WHERE folder_id IN
+        <foreach collection="folderIds" item="fid" open="(" separator="," close=")">#{fid}</foreach>
+    </update>
+
+    <delete id="deleteByProject">
+        DELETE FROM api_doc WHERE project_id = #{projectId}
     </delete>
 
 </mapper>

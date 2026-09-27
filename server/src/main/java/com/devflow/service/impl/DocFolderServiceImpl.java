@@ -1,7 +1,6 @@
 package com.devflow.service.impl;
 
 import com.devflow.common.BeanConvert;
-import com.devflow.common.exception.BizAssert;
 import com.devflow.mapper.ApiDocMapper;
 import com.devflow.mapper.DocFolderMapper;
 import com.devflow.mapper.RequirementMapper;
@@ -14,7 +13,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * 文档目录服务实现
@@ -24,8 +26,8 @@ import java.util.List;
 public class DocFolderServiceImpl implements DocFolderService {
 
     private final DocFolderMapper mapper;
-    private final ApiDocMapper apiDocMapper;
     private final RequirementMapper requirementMapper;
+    private final ApiDocMapper apiDocMapper;
 
     /**
      * 按项目与模块类型查询目录
@@ -62,31 +64,45 @@ public class DocFolderServiceImpl implements DocFolderService {
     }
 
     /**
-     * 删除目录及其子目录和关联文档
+     * 删除目录并级联处理子目录与文档
      *
      * @param id 目录编号
      * @return 是否成功
      */
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public boolean delete(Long id) {
-        BizAssert.notNull(mapper.findById(id), "目录不存在");
-        cascadeDeleteFolder(id);
-        return true;
+        DocFolder folder = mapper.findById(id);
+        if (folder == null) {
+            return false;
+        }
+        // 收集该目录及全部后代目录
+        List<DocFolder> all = mapper.findByProject(folder.getProjectId(), folder.getModuleType());
+        Set<Long> ids = new HashSet<>();
+        collectSubtree(folder.getId(), all, ids);
+        if (ids.isEmpty()) {
+            return false;
+        }
+        // 先解绑目录下所有需求与接口文档
+        List<Long> idList = new ArrayList<>(ids);
+        requirementMapper.clearFolderId(idList);
+        apiDocMapper.clearFolderId(idList);
+        return mapper.deleteByIds(idList) > 0;
     }
 
     /**
-     * 递归删除目录及子目录下的需求和接口文档
+     * 收集目录子树编号
      *
-     * @param id 目录编号
+     * @param parentId 父目录编号
+     * @param all 全部目录
+     * @param ids 收集结果
      */
-    private void cascadeDeleteFolder(Long id) {
-        List<DocFolder> children = mapper.findByParentId(id);
-        for (DocFolder child : children) {
-            cascadeDeleteFolder(child.getId());
+    private void collectSubtree(Long parentId, List<DocFolder> all, Set<Long> ids) {
+        ids.add(parentId);
+        for (DocFolder folder : all) {
+            if (parentId.equals(folder.getParentId()) && !ids.contains(folder.getId())) {
+                collectSubtree(folder.getId(), all, ids);
+            }
         }
-        apiDocMapper.deleteByFolderId(id);
-        requirementMapper.deleteByFolderId(id);
-        mapper.deleteById(id);
     }
 }

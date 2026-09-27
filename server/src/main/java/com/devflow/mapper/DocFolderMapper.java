@@ -38,6 +38,14 @@ public interface DocFolderMapper {
     List<DocFolder> findByParentId(Long parentId);
 
     /**
+     * 批量删除目录
+     *
+     * @param ids 目录编号列表
+     * @return 影响行数
+     */
+    int deleteByIds(@Param("ids") List<Long> ids);
+
+    /**
      * 新增目录
      *
      * @param folder 目录实体
@@ -68,4 +76,12 @@ public interface DocFolderMapper {
      * @return 影响行数
      */
     int deleteByProjectId(Long projectId);
+
+    /**
+     * 删除项目全部目录
+     *
+     * @param projectId 项目编号
+     * @return 影响行数
+     */
+    int deleteByProject(Long projectId);
 }

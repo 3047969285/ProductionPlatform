@@ -47,17 +47,18 @@ async function submit() {
   padding: 24px;
 }
 .bg { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
-.orb { position: absolute; border-radius: 50%; filter: blur(100px); opacity: 0.35; }
+.orb { position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.16; }
 .o1 { width: 400px; height: 400px; background: var(--purple); top: -10%; right: -5%; }
 .o2 { width: 300px; height: 300px; background: var(--cyan); bottom: 0; left: -10%; }
 .card {
   width: 100%;
   max-width: 380px;
-  padding: 40px 32px;
-  background: var(--glass);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  backdrop-filter: blur(20px);
+  padding: 44px 36px;
+  background: var(--glass-strong);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 24px;
+  backdrop-filter: blur(30px) saturate(1.5);
+  box-shadow: var(--shadow-lg);
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -70,14 +71,14 @@ h1 {
   text-align: center;
   margin-bottom: 4px;
 }
-.hint { font-size: 14px; color: var(--muted); text-align: center; margin-bottom: 8px; }
+.hint { font-size: 14px; color: rgba(0,0,0,0.5); text-align: center; margin-bottom: 8px; }
 .btn {
   margin-top: 8px;
   padding: 14px;
   font-weight: 600;
   font-size: 16px;
-  color: var(--bg);
-  background: linear-gradient(135deg, var(--cyan), var(--purple));
+  color: #fff;
+  background: var(--accent);
   border: none;
   border-radius: 999px;
   cursor: pointer;

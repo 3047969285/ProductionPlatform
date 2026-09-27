@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.devflow.mapper.BugMapper">
+
+    <sql id="joinSelect">
+        SELECT b.id, b.project_id AS projectId, p.name AS projectName,
+               b.sprint_id AS sprintId, s.name AS sprintName,
+               b.title, b.content, b.severity, b.priority, b.status,
+               b.steps, b.expected_result AS expectedResult, b.actual_result AS actualResult,
+               b.assignee, b.reporter, b.fix_version AS fixVersion,
+               b.resolved_at AS resolvedAt, b.created_at AS createdAt, b.updated_at AS updatedAt
+        FROM bug b
+        LEFT JOIN project p ON b.project_id = p.id
+        LEFT JOIN sprint s ON b.sprint_id = s.id
+    </sql>
+
+    <select id="findAll" resultType="com.devflow.model.vo.BugVo">
+        <include refid="joinSelect"/>
+        ORDER BY b.created_at DESC
+    </select>
+
+    <select id="findByProject" resultType="com.devflow.model.vo.BugVo">
+        <include refid="joinSelect"/>
+        WHERE b.project_id = #{projectId}
+        ORDER BY b.created_at DESC
+    </select>
+
+    <select id="count" resultType="int">
+        SELECT COUNT(*) FROM bug
+    </select>
+
+    <select id="countByStatus" resultType="int">
+        SELECT COUNT(*) FROM bug WHERE status = #{status}
+    </select>
+
+    <select id="countBySeverity" resultType="int">
+        SELECT COUNT(*) FROM bug WHERE severity = #{severity}
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO bug (project_id, sprint_id, title, content, severity, priority, status, steps, expected_result, actual_result, assignee, reporter, fix_version, resolved_at, created_at, updated_at)
+        VALUES (#{projectId}, #{sprintId}, #{title}, #{content}, #{severity}, #{priority}, #{status}, #{steps}, #{expectedResult}, #{actualResult}, #{assignee}, #{reporter}, #{fixVersion}, #{resolvedAt}, #{createdAt}, #{updatedAt})
+    </insert>
+
+    <update id="update">
+        UPDATE bug
+        SET sprint_id = #{sprintId}, title = #{title}, content = #{content},
+            severity = #{severity}, priority = #{priority}, status = #{status},
+            steps = #{steps}, expected_result = #{expectedResult}, actual_result = #{actualResult},
+            assignee = #{assignee}, reporter = #{reporter}, fix_version = #{fixVersion},
+            resolved_at = #{resolvedAt}, updated_at = #{updatedAt}
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateStatus">
+        UPDATE bug SET status = #{status}, resolved_at = #{resolvedAt}, updated_at = NOW() WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM bug WHERE id = #{id}
+    </delete>
+
+    <delete id="deleteByProject">
+        DELETE FROM bug WHERE project_id = #{projectId}
+    </delete>
+
+</mapper>

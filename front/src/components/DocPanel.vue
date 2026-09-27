@@ -3,6 +3,7 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import api from '../api'
 import RichEditor from './RichEditor.vue'
+import WorkItemDetail from './WorkItemDetail.vue'
 import { buildFolderTree, reqStatus, reqPriority, apiStatus, httpMethods, badgeClass } from '../constants'
 
 const props = defineProps({
@@ -83,6 +84,14 @@ async function remove(id) {
   } catch (e) {
     if (e !== 'cancel') ElMessage.error(e.message || '删除失败')
   }
+}
+
+const detailVisible = ref(false)
+const detailId = ref(null)
+
+function openDetail(row) {
+  detailId.value = row.id
+  detailVisible.value = true
 }
 
 async function addFolder() {
@@ -170,11 +179,11 @@ onMounted(() => { loadFolders(); loadList() })
         @node-click="onFolderClick"
       >
         <template #default="{ node, data }">
-          <div class="folder-node">
-            <span class="folder-label" :title="node.label">{{ node.label }}</span>
-            <span class="folder-actions">
-              <el-button size="small" text type="primary" @click.stop="renameFolder(data)">重命名</el-button>
-              <el-button size="small" text type="danger" @click.stop="removeFolder(data)">删除</el-button>
+          <div class="tree-node" :class="{ selected: selectedFolderId === data.id }">
+            <span class="tree-label" @click.stop="onFolderClick(data)">{{ data.name }}</span>
+            <span class="tree-actions">
+              <span class="tree-action" title="重命名" @click.stop="renameFolder(data)">改名</span>
+              <span class="tree-action del" title="删除" @click.stop="removeFolder(data)">删除</span>
             </span>
           </div>
         </template>
@@ -185,7 +194,14 @@ onMounted(() => { loadFolders(); loadList() })
       <div class="toolbar">
         <el-button type="primary" @click="openAdd">+ 新增{{ isApi ? '接口' : '需求' }}</el-button>
       </div>
-      <el-table :data="list" v-loading="loading" stripe empty-text="暂无数据，可点击「查看全部」或新增内容">
+      <el-table
+        :data="list"
+        v-loading="loading"
+        stripe
+        empty-text="暂无数据，可点击「查看全部」或新增内容"
+        @row-click="openDetail"
+        class="clickable-table"
+      >
         <el-table-column :prop="noField" label="编号" width="140" />
         <el-table-column prop="title" label="标题" min-width="180" show-overflow-tooltip />
         <el-table-column v-if="isApi" prop="method" label="方法" width="90" />
@@ -202,10 +218,11 @@ onMounted(() => { loadFolders(); loadList() })
         </el-table-column>
         <el-table-column prop="proposer" label="提出人" width="100" />
         <el-table-column prop="owner" label="负责人" width="100" />
-        <el-table-column label="操作" width="160" fixed="right">
+        <el-table-column label="操作" width="220" fixed="right">
           <template #default="{ row }">
-            <el-button size="default" @click="openEdit(row)">编辑</el-button>
-            <el-button size="default" type="danger" @click="remove(row.id)">删除</el-button>
+            <el-button size="default" @click.stop="openDetail(row)">详情</el-button>
+            <el-button size="default" @click.stop="openEdit(row)">编辑</el-button>
+            <el-button size="default" type="danger" @click.stop="remove(row.id)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -244,6 +261,8 @@ onMounted(() => { loadFolders(); loadList() })
         <el-button type="primary" @click="save">保存</el-button>
       </template>
     </el-dialog>
+
+    <WorkItemDetail v-model:visible="detailVisible" :work-type="isApi ? 'api' : 'requirement'" :work-id="detailId" @changed="loadList" />
   </div>
 </template>
 
@@ -251,29 +270,11 @@ onMounted(() => { loadFolders(); loadList() })
 .doc-panel { display: grid; grid-template-columns: 220px 1fr; gap: 16px; min-height: 400px; }
 .sidebar {
   padding: 12px;
-  background: rgba(0, 0, 0, 0.2);
-  border: 1px solid var(--border);
-  border-radius: 12px;
+  background: rgba(245, 245, 247, 0.7);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: var(--radius);
 }
 .side-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 15px; color: var(--muted); }
-.folder-node {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 4px;
-  width: 100%;
-  min-width: 0;
-  padding-right: 4px;
-}
-.folder-label {
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.folder-actions { display: none; flex-shrink: 0; }
-.folder-node:hover .folder-actions { display: inline-flex; }
 .all-btn { width: 100%; margin-top: 8px; font-size: 14px; }
 .toolbar { margin-bottom: 12px; }
 .main { min-width: 0; }
@@ -283,5 +284,27 @@ onMounted(() => { loadFolders(); loadList() })
   background: rgba(0, 229, 255, 0.1);
   color: var(--cyan);
 }
+:deep(.el-tree-node__content) { height: 32px; }
+.tree-node {
+  flex: 1; display: flex; align-items: center; justify-content: space-between;
+  min-width: 0; padding-right: 4px;
+}
+.tree-label {
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  cursor: pointer; flex: 1;
+}
+.tree-actions { display: flex; gap: 6px; flex-shrink: 0; }
+.tree-action {
+  font-size: 12px; color: var(--accent); cursor: pointer;
+  border: 1px solid rgba(0, 113, 227, 0.25);
+  border-radius: 8px; padding: 1px 8px;
+  background: rgba(0, 113, 227, 0.06);
+  opacity: 0.8;
+  font-weight: 500;
+}
+.tree-action:hover { opacity: 1; background: rgba(0, 113, 227, 0.12); }
+.tree-action.del { color: var(--pink); border-color: rgba(245, 108, 108, 0.3); background: rgba(245, 108, 108, 0.06); }
+.tree-action.del:hover { background: rgba(245, 108, 108, 0.15); }
+.clickable-table :deep(.el-table__row) { cursor: pointer; }
 @media (max-width: 768px) { .doc-panel { grid-template-columns: 1fr; } .sidebar { order: 2; } }
 </style>

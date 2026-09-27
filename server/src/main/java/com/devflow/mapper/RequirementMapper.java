@@ -108,4 +108,20 @@ public interface RequirementMapper {
      * @return 影响行数
      */
     int deleteByFolderId(Long folderId);
+
+    /**
+     * 删除项目全部需求
+     *
+     * @param projectId 项目编号
+     * @return 影响行数
+     */
+    int deleteByProject(Long projectId);
+
+    /**
+     * 解绑目录下全部需求
+     *
+     * @param folderIds 目录编号列表
+     * @return 影响行数
+     */
+    int clearFolderId(@Param("folderIds") List<Long> folderIds);
 }

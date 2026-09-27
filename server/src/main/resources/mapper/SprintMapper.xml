@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.devflow.mapper.SprintMapper">
+
+    <sql id="joinSelect">
+        SELECT s.id, s.project_id AS projectId, p.name AS projectName,
+               s.name, s.goal, s.start_date AS startDate, s.end_date AS endDate,
+               s.status, s.created_at AS createdAt
+        FROM sprint s
+        LEFT JOIN project p ON s.project_id = p.id
+    </sql>
+
+    <select id="findByProject" resultType="com.devflow.model.vo.SprintVo">
+        <include refid="joinSelect"/>
+        WHERE s.project_id = #{projectId}
+        ORDER BY s.start_date DESC, s.id DESC
+    </select>
+
+    <select id="findById" resultType="com.devflow.model.vo.SprintVo">
+        <include refid="joinSelect"/>
+        WHERE s.id = #{id}
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO sprint (project_id, name, goal, start_date, end_date, status, created_at)
+        VALUES (#{projectId}, #{name}, #{goal}, #{startDate}, #{endDate}, #{status}, #{createdAt})
+    </insert>
+
+    <update id="update">
+        UPDATE sprint
+        SET name = #{name}, goal = #{goal}, start_date = #{startDate},
+            end_date = #{endDate}, status = #{status}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM sprint WHERE id = #{id}
+    </delete>
+
+    <delete id="deleteByProject">
+        DELETE FROM sprint WHERE project_id = #{projectId}
+    </delete>
+
+    <update id="unlinkTasks">
+        UPDATE task SET sprint_id = NULL WHERE sprint_id = #{sprintId}
+    </update>
+
+    <update id="unlinkBugs">
+        UPDATE bug SET sprint_id = NULL WHERE sprint_id = #{sprintId}
+    </update>
+
+    <select id="countTasksByStatus" resultType="map">
+        SELECT status, COUNT(*) AS cnt FROM task WHERE sprint_id = #{sprintId} GROUP BY status
+    </select>
+
+    <select id="countBugsByStatus" resultType="map">
+        SELECT status, COUNT(*) AS cnt FROM bug WHERE sprint_id = #{sprintId} GROUP BY status
+    </select>
+
+</mapper>

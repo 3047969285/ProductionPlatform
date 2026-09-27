@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.devflow.mapper.TaskMapper">
+
+    <sql id="joinSelect">
+        SELECT t.id, t.project_id AS projectId, p.name AS projectName,
+               t.sprint_id AS sprintId, s.name AS sprintName,
+               t.title, t.content, t.priority, t.status,
+               t.assignee, t.creator, t.estimate_hours AS estimateHours,
+               t.resolved_at AS resolvedAt, t.created_at AS createdAt, t.updated_at AS updatedAt
+        FROM task t
+        LEFT JOIN project p ON t.project_id = p.id
+        LEFT JOIN sprint s ON t.sprint_id = s.id
+    </sql>
+
+    <select id="findAll" resultType="com.devflow.model.vo.TaskVo">
+        <include refid="joinSelect"/>
+        ORDER BY t.created_at DESC
+    </select>
+
+    <select id="findByProject" resultType="com.devflow.model.vo.TaskVo">
+        <include refid="joinSelect"/>
+        WHERE t.project_id = #{projectId}
+        ORDER BY t.created_at DESC
+    </select>
+
+    <select id="findBySprint" resultType="com.devflow.model.vo.TaskVo">
+        <include refid="joinSelect"/>
+        WHERE t.sprint_id = #{sprintId}
+        ORDER BY t.created_at DESC
+    </select>
+
+    <select id="count" resultType="int">
+        SELECT COUNT(*) FROM task
+    </select>
+
+    <select id="countByStatus" resultType="int">
+        SELECT COUNT(*) FROM task WHERE status = #{status}
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO task (project_id, sprint_id, title, content, priority, status, assignee, creator, estimate_hours, resolved_at, created_at, updated_at)
+        VALUES (#{projectId}, #{sprintId}, #{title}, #{content}, #{priority}, #{status}, #{assignee}, #{creator}, #{estimateHours}, #{resolvedAt}, #{createdAt}, #{updatedAt})
+    </insert>
+
+    <update id="update">
+        UPDATE task
+        SET sprint_id = #{sprintId}, title = #{title}, content = #{content}, priority = #{priority},
+            status = #{status}, assignee = #{assignee}, creator = #{creator}, estimate_hours = #{estimateHours},
+            resolved_at = #{resolvedAt}, updated_at = #{updatedAt}
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateStatus">
+        UPDATE task SET status = #{status}, resolved_at = #{resolvedAt}, updated_at = NOW() WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM task WHERE id = #{id}
+    </delete>
+
+    <delete id="deleteByProject">
+        DELETE FROM task WHERE project_id = #{projectId}
+    </delete>
+
+</mapper>

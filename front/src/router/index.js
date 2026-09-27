@@ -6,6 +6,16 @@ const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     { path: '/login', component: () => import('../views/Login.vue'), meta: { guest: true } },
+    { path: '/gpt-history', name: 'gpt-history', component: () => import('../views/GptHistory.vue') },
+    {
+      path: '/contest',
+      component: () => import('../components/ContestLayout.vue'),
+      children: [
+        { path: '', name: 'contest-home', component: () => import('../views/contest/ContestHome.vue') },
+        { path: 'works', name: 'contest-works', component: () => import('../views/contest/ContestWorks.vue') },
+        { path: 'entry', name: 'contest-entry', component: () => import('../views/contest/ContestEntry.vue') },
+      ],
+    },
     {
       path: '/',
       component: AppLayout,
@@ -15,6 +25,7 @@ const router = createRouter({
         { path: 'projects', component: () => import('../views/Projects.vue') },
         { path: 'projects/:id', component: () => import('../views/ProjectDetail.vue') },
         { path: 'teams', component: () => import('../views/Teams.vue') },
+        { path: 'reports', component: () => import('../views/Reports.vue') },
         { path: 'users', component: () => import('../views/Users.vue'), meta: { admin: true } },
       ],
     },

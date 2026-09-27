@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.devflow.mapper.ProjectMemberMapper">
+
+    <sql id="joinSelect">
+        SELECT m.id, m.project_id AS projectId, m.user_id AS userId,
+               u.username, u.nickname, m.role, m.joined_at AS joinedAt
+        FROM project_member m
+        LEFT JOIN user u ON m.user_id = u.id
+    </sql>
+
+    <select id="findByProject" resultType="com.devflow.model.vo.ProjectMemberVo">
+        <include refid="joinSelect"/>
+        WHERE m.project_id = #{projectId}
+        ORDER BY m.joined_at, m.id
+    </select>
+
+    <select id="findByProjectAndUser" resultType="com.devflow.model.vo.ProjectMemberVo">
+        <include refid="joinSelect"/>
+        WHERE m.project_id = #{projectId} AND m.user_id = #{userId}
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO project_member (project_id, user_id, role, joined_at)
+        VALUES (#{projectId}, #{userId}, #{role}, #{joinedAt})
+    </insert>
+
+    <update id="update">
+        UPDATE project_member SET role = #{role} WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM project_member WHERE id = #{id}
+    </delete>
+
+    <delete id="deleteByProject">
+        DELETE FROM project_member WHERE project_id = #{projectId}
+    </delete>
+
+</mapper>

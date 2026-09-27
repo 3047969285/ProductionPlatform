@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.devflow.mapper.TestCaseMapper">
+
+    <sql id="joinSelect">
+        SELECT c.id, c.project_id AS projectId, p.name AS projectName,
+               c.title, c.preconditions, c.steps, c.expected_result AS expectedResult,
+               c.priority, c.status, c.owner,
+               c.created_at AS createdAt, c.updated_at AS updatedAt
+        FROM test_case c
+        LEFT JOIN project p ON c.project_id = p.id
+    </sql>
+
+    <select id="findByProject" resultType="com.devflow.model.vo.TestCaseVo">
+        <include refid="joinSelect"/>
+        WHERE c.project_id = #{projectId}
+        ORDER BY c.created_at DESC
+    </select>
+
+    <select id="findAll" resultType="com.devflow.model.vo.TestCaseVo">
+        <include refid="joinSelect"/>
+        ORDER BY c.created_at DESC
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO test_case (project_id, title, preconditions, steps, expected_result, priority, status, owner, created_at, updated_at)
+        VALUES (#{projectId}, #{title}, #{preconditions}, #{steps}, #{expectedResult}, #{priority}, #{status}, #{owner}, #{createdAt}, #{updatedAt})
+    </insert>
+
+    <update id="update">
+        UPDATE test_case
+        SET title = #{title}, preconditions = #{preconditions}, steps = #{steps},
+            expected_result = #{expectedResult}, priority = #{priority},
+            status = #{status}, owner = #{owner}, updated_at = #{updatedAt}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM test_case WHERE id = #{id}
+    </delete>
+
+    <select id="count" resultType="int">
+        SELECT COUNT(*) FROM test_case
+    </select>
+
+    <delete id="deleteByProject">
+        DELETE FROM test_case WHERE project_id = #{projectId}
+    </delete>
+
+</mapper>

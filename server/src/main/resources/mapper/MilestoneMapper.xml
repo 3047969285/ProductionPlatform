@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.devflow.mapper.MilestoneMapper">
+
+    <sql id="joinSelect">
+        SELECT m.id, m.project_id AS projectId, p.name AS projectName,
+               m.name, m.description, m.due_date AS dueDate, m.status, m.created_at AS createdAt
+        FROM milestone m
+        LEFT JOIN project p ON m.project_id = p.id
+    </sql>
+
+    <select id="findByProject" resultType="com.devflow.model.vo.MilestoneVo">
+        <include refid="joinSelect"/>
+        WHERE m.project_id = #{projectId}
+        ORDER BY m.due_date, m.id
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO milestone (project_id, name, description, due_date, status, created_at)
+        VALUES (#{projectId}, #{name}, #{description}, #{dueDate}, #{status}, #{createdAt})
+    </insert>
+
+    <update id="update">
+        UPDATE milestone
+        SET name = #{name}, description = #{description}, due_date = #{dueDate}, status = #{status}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM milestone WHERE id = #{id}
+    </delete>
+
+    <select id="count" resultType="int">
+        SELECT COUNT(*) FROM milestone
+    </select>
+
+    <delete id="deleteByProject">
+        DELETE FROM milestone WHERE project_id = #{projectId}
+    </delete>
+
+</mapper>

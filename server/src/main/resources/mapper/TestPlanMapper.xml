@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.devflow.mapper.TestPlanMapper">
+
+    <sql id="joinSelect">
+        SELECT p.id, p.project_id AS projectId, pr.name AS projectName,
+               p.name, p.description, p.start_date AS startDate, p.end_date AS endDate,
+               p.status, p.owner, p.created_at AS createdAt, p.updated_at AS updatedAt
+        FROM test_plan p
+        LEFT JOIN project pr ON p.project_id = pr.id
+    </sql>
+
+    <select id="findByProject" resultType="com.devflow.model.vo.TestPlanVo">
+        <include refid="joinSelect"/>
+        WHERE p.project_id = #{projectId}
+        ORDER BY p.created_at DESC
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO test_plan (project_id, name, description, start_date, end_date, status, owner, created_at, updated_at)
+        VALUES (#{projectId}, #{name}, #{description}, #{startDate}, #{endDate}, #{status}, #{owner}, #{createdAt}, #{updatedAt})
+    </insert>
+
+    <update id="update">
+        UPDATE test_plan
+        SET name = #{name}, description = #{description}, start_date = #{startDate},
+            end_date = #{endDate}, status = #{status}, owner = #{owner}, updated_at = #{updatedAt}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM test_plan WHERE id = #{id}
+    </delete>
+
+    <insert id="addCase">
+        INSERT IGNORE INTO test_plan_case (plan_id, case_id, status, executed_at)
+        VALUES (#{planId}, #{caseId}, 'pending', NULL)
+    </insert>
+
+    <select id="findCases" resultType="com.devflow.model.vo.TestPlanCaseVo">
+        SELECT pc.id, pc.plan_id AS planId, pc.case_id AS caseId,
+               c.title AS caseTitle, c.priority, c.preconditions, c.steps, c.expected_result AS expectedResult,
+               pc.status, pc.actual_result AS actualResult, pc.executor, pc.executed_at AS executedAt
+        FROM test_plan_case pc
+        LEFT JOIN test_case c ON pc.case_id = c.id
+        WHERE pc.plan_id = #{planId}
+        ORDER BY pc.id
+    </select>
+
+    <select id="countCasesByStatus" resultType="map">
+        SELECT status, COUNT(*) AS cnt FROM test_plan_case WHERE plan_id = #{planId} GROUP BY status
+    </select>
+
+    <update id="updateCaseResult">
+        UPDATE test_plan_case
+        SET status = #{status}, actual_result = #{actualResult}, executor = #{executor}, executed_at = #{executedAt}
+        WHERE plan_id = #{planId} AND case_id = #{caseId}
+    </update>
+
+    <delete id="removeCase">
+        DELETE FROM test_plan_case WHERE plan_id = #{planId} AND case_id = #{caseId}
+    </delete>
+
+    <select id="count" resultType="int">
+        SELECT COUNT(*) FROM test_plan
+    </select>
+
+    <delete id="deletePlanCasesByProject">
+        DELETE FROM test_plan_case WHERE plan_id IN (SELECT id FROM test_plan WHERE project_id = #{projectId})
+    </delete>
+
+    <delete id="deleteByProject">
+        DELETE FROM test_plan WHERE project_id = #{projectId}
+    </delete>
+
+</mapper>
