@@ -107,8 +107,10 @@ onMounted(load)
     <div v-loading="loading" class="grid">
       <article v-for="p in filteredList" :key="p.id" class="card" @click="router.push(`/projects/${p.id}`)">
         <div class="card-top">
-          <span class="code">{{ p.code }}</span>
-          <span class="hint">{{ deliveryHint(p) }}</span>
+          <div class="card-context">
+            <span class="code">{{ p.code }}</span>
+            <span class="hint">{{ deliveryHint(p) }}</span>
+          </div>
           <div class="actions" @click.stop>
             <el-button size="default" @click="openEdit(p)">编辑</el-button>
             <el-button size="default" type="danger" @click="remove(p.id)">删除</el-button>
@@ -152,21 +154,28 @@ onMounted(load)
 .toolbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin: 0 0 16px; }
 .search { width: min(100%, 360px); max-width: 360px; }
 .result-tip { color: var(--muted); font-size: 13px; }
-.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1px; padding: 1px; background: var(--border); }
+.grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; padding: 0; }
 .card {
   position: relative;
-  padding: 22px;
+  display: flex;
+  min-width: 0;
+  min-height: 326px;
+  flex-direction: column;
+  padding: 21px;
   background: rgba(23, 27, 25, .9);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   cursor: pointer;
   transition: border-color .3s var(--ease), transform .3s var(--ease), background .3s var(--ease);
 }
-.card::before { position: absolute; top: 0; left: 22px; width: 26px; height: 1px; background: var(--accent); content: ""; opacity: .65; }
+.card::before { position: absolute; top: 0; left: 21px; width: 26px; height: 1px; background: var(--accent); content: ""; opacity: .65; }
 .card:hover { z-index: 1; border-color: var(--accent); background: rgba(39, 44, 36, .95); transform: translateY(-4px); }
-.card-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 10px; }
+.card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 14px; min-height: 52px; margin-bottom: 13px; }
+.card-context { display: flex; min-width: 0; flex-wrap: wrap; align-items: flex-start; gap: 8px; }
 .code { font-size: 14px; color: var(--cyan); font-weight: 600; letter-spacing: 0.05em; }
-.hint { margin-left: auto; padding: 3px 8px; border: 1px solid rgba(203, 210, 118, .28); color: var(--accent); background: rgba(203, 210, 118, .06); font-size: 10px; letter-spacing: .04em; white-space: nowrap; }
+.hint { padding: 3px 8px; border: 1px solid rgba(203, 210, 118, .28); color: var(--accent); background: rgba(203, 210, 118, .06); font-size: 10px; letter-spacing: .04em; white-space: nowrap; }
+.actions { display: flex; flex: 0 0 auto; gap: 6px; }
+.actions :deep(.el-button) { margin-left: 0; padding: 6px 10px; font-size: 12px; }
 h2 { font-family: var(--font-display); font-size: 1.7rem; font-weight: 400; letter-spacing: -.03em; margin-bottom: 8px; }
 .desc { display: -webkit-box; overflow: hidden; min-height: 42px; margin-bottom: 10px; color: var(--muted); font-size: 13px; line-height: 1.6; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
 .meta { font-size: 11px; color: var(--muted-light); letter-spacing: .04em; margin-bottom: 14px; }
@@ -175,10 +184,13 @@ h2 { font-family: var(--font-display); font-size: 1.7rem; font-weight: 400; lett
 .progress-row { display: grid; grid-template-columns: auto 1fr auto; gap: 8px; align-items: center; margin: 12px 0 14px; color: var(--muted); font-size: 12px; }
 .progress-row b { color: var(--accent); font-size: 12px; }
 .progress-row :deep(.el-progress) { min-width: 60px; }
-.enter { font-size: 12px; color: var(--accent); letter-spacing: .06em; }
+.enter { margin-top: auto; padding-top: 16px; font-size: 12px; color: var(--accent); letter-spacing: .06em; }
 .empty { grid-column: 1 / -1; text-align: center; color: var(--muted); padding: 40px; font-size: 13px; }
+@media (max-width: 1100px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 640px) {
   .toolbar { align-items: stretch; flex-direction: column; gap: 10px; }
   .search { max-width: none; }
+  .grid { grid-template-columns: 1fr; }
+  .card { min-height: 0; }
 }
 </style>

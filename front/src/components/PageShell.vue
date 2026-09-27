@@ -46,7 +46,7 @@ onUnmounted(() => context?.revert())
 <style scoped>
 .page {
   position: relative;
-  max-width: 1320px;
+  max-width: 1500px;
   margin: 0 auto;
   padding: 34px clamp(18px, 3.4vw, 48px) 64px;
   isolation: isolate;
