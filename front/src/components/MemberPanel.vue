@@ -64,7 +64,8 @@ watch(() => props.projectId, () => { load(); loadUsers() })
     <div class="toolbar">
       <el-button type="primary" @click="openAdd">+ 添加成员</el-button>
     </div>
-    <el-table :data="list" v-loading="loading" stripe>
+    <div class="table-frame">
+      <el-table :data="list" v-loading="loading" stripe>
       <el-table-column prop="username" label="用户名" width="140" />
       <el-table-column prop="nickname" label="昵称" width="140" />
       <el-table-column label="项目角色" width="120">
@@ -81,7 +82,8 @@ watch(() => props.projectId, () => { load(); loadUsers() })
           <el-button size="small" type="danger" @click="remove(row)">移出</el-button>
         </template>
       </el-table-column>
-    </el-table>
+      </el-table>
+    </div>
 
     <el-dialog v-model="dialog" :title="editing ? '修改成员角色' : '添加成员'" width="420px" destroy-on-close>
       <el-form label-width="80px" size="default">
@@ -106,5 +108,6 @@ watch(() => props.projectId, () => { load(); loadUsers() })
 </template>
 
 <style scoped>
-.toolbar { margin-bottom: 12px; }
+.toolbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+.table-frame { margin-bottom: 14px; }
 </style>

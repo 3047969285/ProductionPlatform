@@ -122,7 +122,11 @@ ul, ol { margin: 0; padding: 0; list-style: none; }
   border-color: var(--border);
   box-shadow: var(--shadow-sm);
 }
-.layout .table-frame { overflow: hidden; }
+.layout .table-frame {
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
 .layout .muted,
 .layout .empty { color: var(--muted); }
 .layout .toolbar,

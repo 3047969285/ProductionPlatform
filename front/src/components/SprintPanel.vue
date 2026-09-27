@@ -84,7 +84,8 @@ watch(() => props.projectId, load)
     <div class="toolbar">
       <el-button type="primary" @click="openAdd">+ 新建迭代</el-button>
     </div>
-    <el-table :data="list" v-loading="loading" stripe>
+    <div class="table-frame">
+      <el-table :data="list" v-loading="loading" stripe>
       <el-table-column prop="name" label="迭代" min-width="160" />
       <el-table-column prop="goal" label="目标" min-width="180" show-overflow-tooltip />
       <el-table-column label="周期" width="200">
@@ -108,7 +109,8 @@ watch(() => props.projectId, load)
           <el-button size="small" type="danger" @click="remove(row.id)">删除</el-button>
         </template>
       </el-table-column>
-    </el-table>
+      </el-table>
+    </div>
 
     <el-dialog v-model="dialog" :title="editing ? '编辑迭代' : '新建迭代'" width="520px" destroy-on-close>
       <el-form label-width="80px" size="default">
@@ -150,9 +152,10 @@ watch(() => props.projectId, load)
 </template>
 
 <style scoped>
-.toolbar { margin-bottom: 12px; }
+.toolbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
 .mini { font-size: 12px; color: var(--muted); }
 .burn-tip { margin-bottom: 8px; color: var(--muted); font-size: 14px; }
 .burn-svg { width: 100%; height: auto; }
 .empty { color: var(--muted); text-align: center; padding: 60px 0; }
+.table-frame { margin-bottom: 14px; }
 </style>

@@ -99,7 +99,8 @@ watch(() => props.projectId, () => { loadMilestones(); if (sub.value === 'releas
         <div class="toolbar">
           <el-button type="primary" @click="openMsAdd">+ 新建里程碑</el-button>
         </div>
-        <el-table :data="milestones" v-loading="msLoading" stripe>
+        <div class="table-frame">
+          <el-table :data="milestones" v-loading="msLoading" stripe>
           <el-table-column prop="name" label="里程碑" min-width="180" />
           <el-table-column prop="description" label="描述" min-width="180" show-overflow-tooltip />
           <el-table-column prop="dueDate" label="计划日期" width="120" />
@@ -114,14 +115,16 @@ watch(() => props.projectId, () => { loadMilestones(); if (sub.value === 'releas
               <el-button size="small" type="danger" @click="removeMs(row.id)">删除</el-button>
             </template>
           </el-table-column>
-        </el-table>
+          </el-table>
+        </div>
       </el-tab-pane>
 
       <el-tab-pane label="发布记录" name="releases">
         <div class="toolbar">
           <el-button type="primary" @click="openRelAdd">+ 登记发布</el-button>
         </div>
-        <el-table :data="releases" v-loading="relLoading" stripe>
+        <div class="table-frame">
+          <el-table :data="releases" v-loading="relLoading" stripe>
           <el-table-column prop="version" label="版本" width="120" />
           <el-table-column label="环境" width="90">
             <template #default="{ row }">
@@ -144,7 +147,8 @@ watch(() => props.projectId, () => { loadMilestones(); if (sub.value === 'releas
               <el-button size="small" type="danger" @click="removeRel(row.id)">删除</el-button>
             </template>
           </el-table-column>
-        </el-table>
+          </el-table>
+        </div>
       </el-tab-pane>
     </el-tabs>
 
@@ -190,5 +194,6 @@ watch(() => props.projectId, () => { loadMilestones(); if (sub.value === 'releas
 </template>
 
 <style scoped>
-.toolbar { margin-bottom: 12px; }
+.toolbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+.table-frame { margin-bottom: 14px; }
 </style>

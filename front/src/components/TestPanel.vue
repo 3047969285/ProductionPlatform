@@ -146,7 +146,8 @@ watch(() => props.projectId, () => { loadCases(); if (sub.value === 'plans') loa
         <div class="toolbar">
           <el-button type="primary" @click="openCaseAdd">+ 新增用例</el-button>
         </div>
-        <el-table :data="cases" v-loading="caseLoading" stripe>
+        <div class="table-frame">
+          <el-table :data="cases" v-loading="caseLoading" stripe>
           <el-table-column prop="id" label="#" width="60" />
           <el-table-column prop="title" label="用例标题" min-width="200" show-overflow-tooltip />
           <el-table-column label="优先级" width="90">
@@ -166,7 +167,8 @@ watch(() => props.projectId, () => { loadCases(); if (sub.value === 'plans') loa
               <el-button size="small" type="danger" @click="removeCase(row.id)">删除</el-button>
             </template>
           </el-table-column>
-        </el-table>
+          </el-table>
+        </div>
       </el-tab-pane>
 
       <!-- 测试计划 -->
@@ -174,7 +176,8 @@ watch(() => props.projectId, () => { loadCases(); if (sub.value === 'plans') loa
         <div class="toolbar">
           <el-button type="primary" @click="openPlanAdd">+ 新建计划</el-button>
         </div>
-        <el-table :data="plans" v-loading="planLoading" stripe>
+        <div class="table-frame">
+          <el-table :data="plans" v-loading="planLoading" stripe>
           <el-table-column prop="name" label="计划" min-width="180" />
           <el-table-column label="状态" width="100">
             <template #default="{ row }">
@@ -195,7 +198,8 @@ watch(() => props.projectId, () => { loadCases(); if (sub.value === 'plans') loa
               <el-button size="small" type="danger" @click="removePlan(row.id)">删除</el-button>
             </template>
           </el-table-column>
-        </el-table>
+          </el-table>
+        </div>
       </el-tab-pane>
     </el-tabs>
 
@@ -249,7 +253,8 @@ watch(() => props.projectId, () => { loadCases(); if (sub.value === 'plans') loa
       <div class="toolbar">
         <el-button size="small" @click="addCasesToPlan">+ 从用例库加入</el-button>
       </div>
-      <el-table :data="planCases" v-loading="caseLoading" stripe>
+      <div class="table-frame">
+        <el-table :data="planCases" v-loading="caseLoading" stripe>
         <el-table-column prop="caseId" label="#" width="60" />
         <el-table-column prop="caseTitle" label="用例" min-width="160" show-overflow-tooltip />
         <el-table-column prop="steps" label="步骤" min-width="140" show-overflow-tooltip />
@@ -266,13 +271,19 @@ watch(() => props.projectId, () => { loadCases(); if (sub.value === 'plans') loa
             <el-button size="small" type="danger" @click="removePlanCase(row)">移除</el-button>
           </template>
         </el-table-column>
-      </el-table>
+        </el-table>
+      </div>
     </el-dialog>
   </div>
 </template>
 
 <style scoped>
-.toolbar { margin-bottom: 12px; }
+.toolbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
 .mini { font-size: 12px; color: var(--muted); }
 .date-row { display: flex; gap: 8px; align-items: center; width: 100%; }
+.table-frame { margin-bottom: 14px; }
+@media (max-width: 720px) {
+  .date-row { flex-wrap: wrap; }
+  .date-row :deep(.el-date-editor) { width: 100%; }
+}
 </style>

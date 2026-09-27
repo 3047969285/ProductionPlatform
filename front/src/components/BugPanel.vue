@@ -103,7 +103,8 @@ watch(() => props.projectId, () => { load(); loadSprints() })
         <el-option label="未指派" value="unassigned" />
       </el-select>
     </div>
-    <el-table :data="filteredList" v-loading="loading" stripe :empty-text="keyword || filter !== 'all' ? '没有匹配的缺陷' : '还没有登记缺陷，点击上方登记'" @row-click="openDetail" class="clickable-table">
+    <div class="table-frame">
+      <el-table :data="filteredList" v-loading="loading" stripe :empty-text="keyword || filter !== 'all' ? '没有匹配的缺陷' : '还没有登记缺陷，点击上方登记'" @row-click="openDetail" class="clickable-table">
       <el-table-column prop="title" label="缺陷" min-width="200" show-overflow-tooltip />
       <el-table-column label="严重程度" width="100">
         <template #default="{ row }">
@@ -127,7 +128,8 @@ watch(() => props.projectId, () => { load(); loadSprints() })
           <el-button size="small" type="danger" @click.stop="remove(row.id)">删除</el-button>
         </template>
       </el-table-column>
-    </el-table>
+      </el-table>
+    </div>
 
     <el-dialog v-model="dialog" :title="editing ? '编辑缺陷' : '登记缺陷'" width="640px" destroy-on-close>
       <el-form label-width="90px" size="default">
@@ -171,9 +173,10 @@ watch(() => props.projectId, () => { load(); loadSprints() })
 </template>
 
 <style scoped>
-.toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.toolbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
 .search { max-width: 300px; margin-left: auto; }
 .filter { width: 130px; }
+.table-frame { margin-bottom: 14px; }
 .clickable-table :deep(.el-table__row) { cursor: pointer; }
 @media (max-width: 720px) {
   .toolbar { flex-wrap: wrap; }
