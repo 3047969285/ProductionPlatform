@@ -46,13 +46,13 @@ onUnmounted(() => context?.revert())
 <style scoped>
 .page {
   position: relative;
-  max-width: 1440px;
+  max-width: 1320px;
   margin: 0 auto;
-  padding: 44px clamp(20px, 4vw, 64px) 72px;
+  padding: 34px clamp(18px, 3.4vw, 48px) 64px;
   isolation: isolate;
 }
 .page-grid {
-  position: absolute; z-index: -1; top: 18px; right: clamp(20px, 4vw, 64px); width: min(30vw, 360px); height: 180px;
+  position: absolute; z-index: -1; top: 10px; right: clamp(18px, 3.4vw, 48px); width: min(28vw, 330px); height: 150px;
   border-top: 1px solid rgba(203, 210, 118, .12); border-right: 1px solid rgba(203, 210, 118, .12);
   pointer-events: none; opacity: .8;
   background: linear-gradient(90deg, transparent 49.8%, rgba(234, 238, 222, .05) 50%, transparent 50.2%), linear-gradient(rgba(234, 238, 222, .05) 1px, transparent 1px);
@@ -63,25 +63,25 @@ onUnmounted(() => context?.revert())
   justify-content: space-between;
   align-items: flex-end;
   gap: 16px;
-  margin-bottom: 30px;
+  margin-bottom: 22px;
   flex-wrap: wrap;
 }
 .tag { display: flex; align-items: center; gap: 8px; color: var(--accent); font-size: 10px; font-weight: 600; letter-spacing: .18em; margin-bottom: 9px; }
 .tag i { width: 22px; height: 1px; background: var(--accent); }
-h1 { font-family: var(--font-display); font-size: clamp(2.1rem, 4.2vw, 3.7rem); font-weight: 400; letter-spacing: -.045em; line-height: 1.05; }
+h1 { font-family: var(--font-display); font-size: clamp(2rem, 3.8vw, 3.25rem); font-weight: 400; letter-spacing: -.045em; line-height: 1.05; }
 .page-signal { margin-top: 11px; color: var(--muted-light); font-size: 9px; letter-spacing: .18em; }
 .page-action { display: flex; align-items: center; }
 .panel {
   background: var(--glass);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: clamp(16px, 2vw, 24px);
+  padding: clamp(14px, 1.8vw, 20px);
   backdrop-filter: blur(16px) saturate(1.3);
   -webkit-backdrop-filter: blur(16px) saturate(1.3);
   box-shadow: var(--shadow-sm);
 }
 @media (max-width: 700px) {
-  .page { padding-top: 30px; }
+  .page { padding-top: 26px; }
   .page-grid { width: 52vw; height: 130px; }
 }
 </style>

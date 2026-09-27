@@ -149,10 +149,10 @@ onMounted(load)
 </template>
 
 <style scoped>
-.toolbar { display: flex; align-items: center; gap: 12px; margin: 0 8px 18px; }
-.search { max-width: 420px; }
+.toolbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin: 0 0 16px; }
+.search { width: min(100%, 360px); max-width: 360px; }
 .result-tip { color: var(--muted); font-size: 13px; }
-.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1px; padding: 1px; background: var(--border); }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1px; padding: 1px; background: var(--border); }
 .card {
   position: relative;
   padding: 22px;
@@ -168,7 +168,7 @@ onMounted(load)
 .code { font-size: 14px; color: var(--cyan); font-weight: 600; letter-spacing: 0.05em; }
 .hint { margin-left: auto; padding: 3px 8px; border: 1px solid rgba(203, 210, 118, .28); color: var(--accent); background: rgba(203, 210, 118, .06); font-size: 10px; letter-spacing: .04em; white-space: nowrap; }
 h2 { font-family: var(--font-display); font-size: 1.7rem; font-weight: 400; letter-spacing: -.03em; margin-bottom: 8px; }
-.desc { font-size: 13px; color: var(--muted); line-height: 1.6; margin-bottom: 10px; min-height: 42px; }
+.desc { display: -webkit-box; overflow: hidden; min-height: 42px; margin-bottom: 10px; color: var(--muted); font-size: 13px; line-height: 1.6; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
 .meta { font-size: 11px; color: var(--muted-light); letter-spacing: .04em; margin-bottom: 14px; }
 .metrics { display: flex; gap: 14px; padding: 10px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); color: var(--muted); font-size: 12px; }
 .metrics b { color: var(--text); font-size: 14px; margin-left: 3px; }
@@ -178,7 +178,7 @@ h2 { font-family: var(--font-display); font-size: 1.7rem; font-weight: 400; lett
 .enter { font-size: 12px; color: var(--accent); letter-spacing: .06em; }
 .empty { grid-column: 1 / -1; text-align: center; color: var(--muted); padding: 40px; font-size: 13px; }
 @media (max-width: 640px) {
-  .toolbar { align-items: stretch; flex-direction: column; }
+  .toolbar { align-items: stretch; flex-direction: column; gap: 10px; }
   .search { max-width: none; }
 }
 </style>

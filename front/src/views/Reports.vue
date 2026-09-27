@@ -55,7 +55,7 @@ onMounted(load)
 </script>
 
 <template>
-  <PageShell tag="REPORTS" title="报表中心">
+  <PageShell tag="04 / REPORTS" title="报表">
     <template #action>
       <el-button @click="load">刷新</el-button>
     </template>

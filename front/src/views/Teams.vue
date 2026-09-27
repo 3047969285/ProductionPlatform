@@ -1,5 +1,5 @@
 <template>
-  <PageShell tag="TEAMS" title="研发团队">
+  <PageShell tag="03 / TEAMS" title="团队">
     <template #action><el-button type="primary" @click="openForm()">+ 新增</el-button></template>
     <el-table :data="list" v-loading="loading" stripe>
       <el-table-column prop="code" label="编码" width="110" />

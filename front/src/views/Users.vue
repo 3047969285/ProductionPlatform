@@ -1,5 +1,5 @@
 <template>
-  <PageShell tag="USERS" title="用户管理">
+  <PageShell tag="05 / USERS" title="用户">
     <template #action><el-button type="primary" @click="openForm()">+ 新增</el-button></template>
     <el-table :data="list" v-loading="loading" stripe>
       <el-table-column prop="username" label="用户名" width="120" />

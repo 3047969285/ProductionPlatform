@@ -17,7 +17,6 @@ const links = [
   { to: '/projects', label: '项目', match: '/projects' },
   { to: '/teams', label: '团队' },
   { to: '/reports', label: '报表' },
-  { to: '/contest', label: '大赛', match: '/contest' },
   { to: '/users', label: '用户', admin: true },
 ]
 
