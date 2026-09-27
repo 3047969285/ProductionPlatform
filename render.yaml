@@ -12,6 +12,8 @@ services:
         value: prod
       - key: SQL_INIT_MODE
         value: always
+      - key: CORS_ALLOWED_ORIGINS
+        value: https://3047969285.github.io
       - key: MYSQL_ROOT_PASSWORD
         generateValue: true
       - key: JAVA_OPTS

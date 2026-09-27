@@ -2,6 +2,7 @@ import axios from 'axios'
 import { clearAuth, getToken } from './auth'
 
 const apiBase = import.meta.env.VITE_API_BASE_URL || '/api'
+const loginPath = `${import.meta.env.BASE_URL}login`
 
 const http = axios.create({ baseURL: apiBase })
 
@@ -16,7 +17,7 @@ http.interceptors.response.use(
     const body = res.data
     if (body.code === 401) {
       clearAuth()
-      window.location.href = '/login'
+      window.location.href = loginPath
       return Promise.reject(new Error(body.message))
     }
     if (body.code !== 200) {
@@ -27,7 +28,7 @@ http.interceptors.response.use(
   (err) => {
     if (err.response?.status === 401) {
       clearAuth()
-      window.location.href = '/login'
+      window.location.href = loginPath
     }
     return Promise.reject(err.response?.data?.message ? new Error(err.response.data.message) : err)
   },
