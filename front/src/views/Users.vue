@@ -3,12 +3,12 @@
     <template #action><el-button type="primary" @click="openForm()">+ 新增</el-button></template>
     <div class="table-frame">
       <el-table :data="list" v-loading="loading" stripe>
-      <el-table-column prop="username" label="用户名" width="120" />
-      <el-table-column prop="nickname" label="昵称" width="120" />
-      <el-table-column label="角色" width="100">
+      <el-table-column prop="username" label="用户名" min-width="180" />
+      <el-table-column prop="nickname" label="昵称" min-width="180" />
+      <el-table-column label="角色" min-width="160">
         <template #default="{ row }">{{ roles[row.role] }}</template>
       </el-table-column>
-      <el-table-column label="操作" width="200" fixed="right">
+      <el-table-column label="操作" min-width="260" fixed="right">
         <template #default="{ row }">
           <el-button size="small" @click="openForm(row)">编辑</el-button>
           <el-button size="small" @click="resetPwd(row)">重置密码</el-button>
@@ -71,3 +71,12 @@ async function resetPwd(row) {
 
 onMounted(load)
 </script>
+
+<style scoped>
+.table-frame :deep(.el-table__cell) { padding: 14px 16px; }
+.table-frame :deep(.el-table__row) { transition: background .25s var(--ease); }
+@media (max-width: 720px) {
+  .table-frame { overflow-x: auto; }
+  .table-frame :deep(.el-table) { min-width: 680px !important; }
+}
+</style>

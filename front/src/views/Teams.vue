@@ -3,15 +3,15 @@
     <template #action><el-button type="primary" @click="openForm()">+ 新增</el-button></template>
     <div class="table-frame">
       <el-table :data="list" v-loading="loading" stripe>
-      <el-table-column prop="code" label="编码" width="110" />
-      <el-table-column prop="name" label="名称" min-width="120" />
-      <el-table-column prop="capacity" label="并发上限" width="100" />
-      <el-table-column label="状态" width="90">
+      <el-table-column prop="code" label="编码" min-width="150" />
+      <el-table-column prop="name" label="名称" min-width="240" />
+      <el-table-column prop="capacity" label="并发上限" min-width="150" />
+      <el-table-column label="状态" min-width="150">
         <template #default="{ row }">
           <span class="badge" :class="badgeClass('team', row.status)">{{ teamStatus[row.status] }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="操作" width="160" fixed="right">
+      <el-table-column label="操作" min-width="220" fixed="right">
         <template #default="{ row }">
           <el-button size="small" @click="openForm(row)">编辑</el-button>
           <el-button size="small" type="danger" @click="remove(row.id)">删除</el-button>
@@ -63,3 +63,12 @@ async function save() {
 
 onMounted(load)
 </script>
+
+<style scoped>
+.table-frame :deep(.el-table__cell) { padding: 14px 16px; }
+.table-frame :deep(.el-table__row) { transition: background .25s var(--ease); }
+@media (max-width: 720px) {
+  .table-frame { overflow-x: auto; }
+  .table-frame :deep(.el-table) { min-width: 760px !important; }
+}
+</style>

@@ -72,13 +72,7 @@ h1 { font-family: var(--font-display); font-size: clamp(2rem, 3.8vw, 3.25rem); f
 .page-signal { margin-top: 11px; color: var(--muted-light); font-size: 9px; letter-spacing: .18em; }
 .page-action { display: flex; align-items: center; }
 .panel {
-  background: var(--glass);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: clamp(14px, 1.8vw, 20px);
-  backdrop-filter: blur(16px) saturate(1.3);
-  -webkit-backdrop-filter: blur(16px) saturate(1.3);
-  box-shadow: var(--shadow-sm);
+  padding: 0;
 }
 @media (max-width: 700px) {
   .page { padding-top: 26px; }
