@@ -16,6 +16,7 @@ const sprints = ref([])
 const dialog = ref(false)
 const editing = ref(false)
 const saving = ref(false)
+const statusSavingIds = ref({})
 const form = ref({})
 
 async function loadSprints() {
@@ -69,11 +70,18 @@ async function save() {
 }
 
 async function changeStatus(row, status) {
+  if (statusSavingIds.value[row.id]) return
+  statusSavingIds.value = { ...statusSavingIds.value, [row.id]: true }
   try {
     await api.put(`/tasks/${row.id}/status?status=${status}`)
     ElMessage.success('状态已更新')
-    load()
+    await load()
   } catch (e) { ElMessage.error(e.message) }
+  finally {
+    const next = { ...statusSavingIds.value }
+    delete next[row.id]
+    statusSavingIds.value = next
+  }
 }
 
 const detailVisible = ref(false)
@@ -119,7 +127,7 @@ watch(() => props.projectId, () => { load(); loadSprints() })
       </el-table-column>
       <el-table-column label="状态" width="130">
         <template #default="{ row }">
-          <el-select :model-value="row.status" size="small" style="width: 110px" @change="(v) => changeStatus(row, v)">
+          <el-select :model-value="row.status" :disabled="statusSavingIds[row.id]" size="small" style="width: 110px" @change="(v) => changeStatus(row, v)">
             <el-option v-for="(l, k) in taskStatus" :key="k" :label="l" :value="k" />
           </el-select>
         </template>
