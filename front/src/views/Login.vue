@@ -364,6 +364,12 @@ onUnmounted(() => {
   .intro-caption { margin-top: 12px; font-size: 11px; }
   .intro-grid { background-size: 48px 48px; }
 }
+@media (max-width: 360px) {
+  .intro-brand { gap: 8px; font-size: 10px; letter-spacing: .1em; }
+  .intro-brand small { display: none; }
+  .intro-actions { gap: 8px; }
+  .intro-play, .intro-skip { gap: 6px; font-size: 10px; letter-spacing: 0; white-space: nowrap; }
+}
 @media (max-width: 1000px) { .intro-work { display: none; } }
 @media (max-height: 620px) and (min-width: 701px) {
   .intro-composition { width: min(72vmin, 620px); }
