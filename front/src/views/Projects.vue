@@ -223,6 +223,8 @@ onUnmounted(() => {
           :class="{ selected: index === activeIndex }"
           :style="cardStyle(index)"
           :aria-current="index === activeIndex ? 'true' : undefined"
+          :aria-hidden="Math.abs(index - activeIndex) > 2 ? 'true' : undefined"
+          :inert="Math.abs(index - activeIndex) > 2"
           @click="activateCard(index, p.id)"
         >
           <div class="project-cover" :class="'cover-' + (index % 4)">
