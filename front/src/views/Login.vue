@@ -10,11 +10,13 @@ const router = useRouter()
 const root = ref(null)
 const introVisible = ref(true)
 const loginReady = ref(false)
+const focusLoginAfterIntro = ref(false)
 const loading = ref(false)
 const form = ref({ username: 'admin', password: 'admin123' })
 let introContext
 let revealContext
 let introTimeline
+let revealTween
 let reducedMotion = false
 
 async function submit() {
@@ -32,21 +34,39 @@ async function submit() {
 }
 
 function showLogin() {
-  if (loginReady.value) return
+  if (loginReady.value) {
+    if (focusLoginAfterIntro.value) {
+      nextTick(() => {
+        if (revealTween?.isActive()) revealTween.eventCallback('onComplete', focusLoginInputIfRequested)
+        else focusLoginInputIfRequested()
+      })
+    }
+    return
+  }
   loginReady.value = true
-  if (reducedMotion) return
+  if (reducedMotion) {
+    nextTick(focusLoginInputIfRequested)
+    return
+  }
   nextTick(() => {
     if (!root.value) return
     revealContext = gsap.context(() => {
-      gsap.fromTo('.login-intro, .login-card',
+      revealTween = gsap.fromTo('.login-intro, .login-card',
         { autoAlpha: 0, y: 14 },
-        { autoAlpha: 1, y: 0, duration: 0.72, stagger: 0.12, ease: 'power3.out', clearProps: 'all' },
+        { autoAlpha: 1, y: 0, duration: 0.72, stagger: 0.12, ease: 'power3.out', clearProps: 'all', onComplete: focusLoginInputIfRequested },
       )
     }, root.value)
   })
 }
 
+function focusLoginInputIfRequested() {
+  if (!focusLoginAfterIntro.value) return
+  focusLoginAfterIntro.value = false
+  root.value?.querySelector('input[autocomplete="username"]')?.focus()
+}
+
 function skipIntro() {
+  focusLoginAfterIntro.value = true
   if (introTimeline) {
     introTimeline.progress(1)
     return
