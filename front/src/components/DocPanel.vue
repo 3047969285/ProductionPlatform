@@ -21,6 +21,7 @@ const list = ref([])
 const loading = ref(false)
 const dialog = ref(false)
 const editing = ref(false)
+const saving = ref(false)
 const form = ref({})
 
 const statusMap = computed(() => (props.isApi ? apiStatus : reqStatus))
@@ -36,6 +37,8 @@ async function loadList() {
     const params = { projectId: props.projectId }
     if (selectedFolderId.value) params.folderId = selectedFolderId.value
     list.value = (await api.get(props.apiPath, { params })).data
+  } catch (e) {
+    ElMessage.error(e.message || '列表加载失败')
   } finally {
     loading.value = false
   }
@@ -63,16 +66,19 @@ function openEdit(row) {
 }
 
 async function save() {
+  if (saving.value) return
   if (!form.value.title?.trim()) return ElMessage.warning('请填写标题')
+  form.value.title = form.value.title.trim()
+  saving.value = true
   try {
     if (editing.value) await api.put(props.apiPath, form.value)
     else await api.post(props.apiPath, form.value)
     ElMessage.success('保存成功')
     dialog.value = false
-    loadList()
+    await loadList()
   } catch (e) {
     ElMessage.error(e.message)
-  }
+  } finally { saving.value = false }
 }
 
 async function remove(id) {
@@ -228,8 +234,8 @@ onMounted(() => { loadFolders(); loadList() })
       </el-table>
     </div>
 
-    <el-dialog v-model="dialog" :title="editing ? '编辑' : '新增'" width="640px" destroy-on-close>
-      <el-form label-width="80px" size="default">
+    <el-dialog v-model="dialog" :title="editing ? '编辑' : '新增'" width="640px" destroy-on-close :close-on-click-modal="!saving" :close-on-press-escape="!saving" :show-close="!saving">
+      <el-form label-width="80px" size="default" :disabled="saving">
         <el-form-item label="标题"><el-input v-model="form.title" /></el-form-item>
         <el-form-item v-if="isApi" label="方法">
           <el-select v-model="form.method" style="width: 100%">
@@ -257,8 +263,8 @@ onMounted(() => { loadFolders(); loadList() })
         <el-form-item label="内容"><RichEditor v-model="form.content" /></el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="dialog = false">取消</el-button>
-        <el-button type="primary" @click="save">保存</el-button>
+        <el-button :disabled="saving" @click="dialog = false">取消</el-button>
+        <el-button type="primary" :loading="saving" @click="save">保存</el-button>
       </template>
     </el-dialog>
 
