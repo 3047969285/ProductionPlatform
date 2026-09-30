@@ -8,6 +8,7 @@ import { setAuth } from '../auth'
 
 const router = useRouter()
 const root = ref(null)
+const introSkipButton = ref(null)
 const introVisible = ref(true)
 const loginReady = ref(false)
 const focusLoginAfterIntro = ref(false)
@@ -66,18 +67,48 @@ function focusLoginInputIfRequested() {
   root.value?.querySelector('input[autocomplete="username"]')?.focus()
 }
 
-function skipIntro() {
+function focusLoginWhenReady() {
   focusLoginAfterIntro.value = true
+  nextTick(() => {
+    if (revealTween?.isActive()) revealTween.eventCallback('onComplete', focusLoginInputIfRequested)
+    else focusLoginInputIfRequested()
+  })
+}
+
+function skipIntro() {
   if (introTimeline) {
     introTimeline.progress(1)
     return
   }
   showLogin()
   introVisible.value = false
+  focusLoginWhenReady()
 }
 
 function handleIntroKeydown(event) {
-  if (event.key === 'Escape' && introVisible.value) skipIntro()
+  if (!introVisible.value) return
+  if (event.key === 'Escape') {
+    skipIntro()
+    return
+  }
+  if (event.key !== 'Tab') return
+
+  const dialog = root.value?.querySelector('.intro-screen')
+  const controls = dialog?.querySelectorAll('button:not(:disabled)')
+  if (!controls?.length) return
+  const first = controls[0]
+  const last = controls[controls.length - 1]
+
+  if (!dialog.contains(document.activeElement)) {
+    event.preventDefault()
+    first.focus()
+  } else if (event.shiftKey && document.activeElement === first) {
+    event.preventDefault()
+    last.focus()
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault()
+    first.focus()
+  }
 }
 
 function startIntroAnimation() {
@@ -93,7 +124,11 @@ function startIntroAnimation() {
 
     introTimeline = gsap.timeline({
       defaults: { ease: 'power3.out' },
-      onComplete: () => { introVisible.value = false },
+      onComplete: () => {
+        introVisible.value = false
+        introContext?.revert()
+        focusLoginWhenReady()
+      },
     })
       .to('.intro-ring--outer', { autoAlpha: 0.64, scale: 1, duration: 1.05 }, 0)
       .to('.intro-ring--inner', { autoAlpha: 1, scale: 1, duration: 1.18 }, 0.08)
@@ -117,6 +152,7 @@ function playIntroAnimation() {
 onMounted(() => {
   window.addEventListener('keydown', handleIntroKeydown)
   if (!root.value) return
+  nextTick(() => introSkipButton.value?.focus({ preventScroll: true }))
 
   reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
   prefersReducedMotion.value = reducedMotion
@@ -137,7 +173,7 @@ onUnmounted(() => {
 
 <template>
   <div ref="root" class="login">
-    <main v-if="loginReady" class="login-content">
+    <main v-if="loginReady" class="login-content" :inert="introVisible" :aria-hidden="introVisible ? 'true' : undefined">
       <div class="login-grid" aria-hidden="true">
         <span class="login-orbit" />
         <span class="login-beam" />
@@ -156,7 +192,7 @@ onUnmounted(() => {
       </form>
     </main>
 
-    <section v-if="introVisible" class="intro-screen" aria-label="DevFlow 开场动画">
+    <section v-if="introVisible" class="intro-screen" role="dialog" aria-modal="true" aria-labelledby="intro-title">
       <header class="intro-header">
         <div class="intro-brand" aria-label="DevFlow">
           <span class="intro-brand-mark">D</span>
@@ -164,7 +200,7 @@ onUnmounted(() => {
         </div>
         <div class="intro-actions">
           <button v-if="prefersReducedMotion" class="intro-play" type="button" @click="playIntroAnimation">播放开场 <span aria-hidden="true">↗</span></button>
-          <button class="intro-skip" type="button" @click="skipIntro">{{ prefersReducedMotion ? '进入登录' : '跳过动画' }} <span aria-hidden="true">↗</span></button>
+          <button ref="introSkipButton" class="intro-skip" type="button" @click="skipIntro">{{ prefersReducedMotion ? '进入登录' : '跳过动画' }} <span aria-hidden="true">↗</span></button>
         </div>
       </header>
 
@@ -230,7 +266,7 @@ onUnmounted(() => {
 
       <div class="intro-copy">
         <p class="intro-kicker">PRODUCTION / DELIVERY / LIVE</p>
-        <h2>从想法，<span>到交付。</span></h2>
+        <h2 id="intro-title">从想法，<span>到交付。</span></h2>
         <p class="intro-caption">让每一步，都清晰向前。</p>
       </div>
 
