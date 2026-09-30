@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter, RouterLink, RouterView } from 'vue-router'
 import { gsap } from 'gsap'
 import { clearAuth, getUser } from '../auth'
@@ -9,8 +9,12 @@ const route = useRoute()
 const router = useRouter()
 const user = computed(() => getUser())
 const root = ref(null)
+const routeCurtain = ref(null)
+const routeTransitioning = ref(false)
+const routeTransitionLabel = ref('')
 let animationContext
 let mediaContext
+let routeAnimationContext
 
 const links = [
   { to: '/', label: '总览' },
@@ -27,11 +31,41 @@ function isActive(link) {
   return route.path === link.to
 }
 
+function transitionLabel(path) {
+  if (path.startsWith('/projects/')) return '项目驾驶舱'
+  return links.find((link) => (link.match ? path.startsWith(link.match) : path === link.to))?.label || '工作台'
+}
+
 async function logout() {
   try { await api.post('/auth/logout') } catch { /* ignore */ }
   clearAuth()
   router.push('/login')
 }
+
+watch(() => route.fullPath, async (path, previousPath) => {
+  if (!previousPath || path === '/login' || !root.value) return
+  routeTransitionLabel.value = transitionLabel(route.path)
+  routeTransitioning.value = true
+  await nextTick()
+  if (!routeCurtain.value || !root.value) {
+    routeTransitioning.value = false
+    return
+  }
+
+  routeAnimationContext?.revert()
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  routeAnimationContext = gsap.context(() => {
+    const duration = reduced ? .01 : 1
+    const timeline = gsap.timeline({ onComplete: () => { routeTransitioning.value = false } })
+    timeline
+      .fromTo('.route-transition__veil', { scale: .001 }, { scale: 1, duration: duration * .36, ease: 'power4.in' })
+      .fromTo('.route-transition__rings', { rotation: -38, scale: .84, autoAlpha: .2 }, { rotation: 24, scale: 1, autoAlpha: 1, duration: duration * .55, ease: 'power3.out' }, 0)
+      .fromTo('.route-transition__label', { y: 10, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: duration * .24, ease: 'power2.out' }, duration * .24)
+      .to('.route-transition__veil', { scale: .001, duration: duration * .46, ease: 'power4.inOut' }, duration * .45)
+      .to('.route-transition__rings', { rotation: 88, scale: .92, autoAlpha: 0, duration: duration * .45, ease: 'power2.inOut' }, duration * .45)
+      .to('.route-transition__label', { y: -7, autoAlpha: 0, duration: duration * .2, ease: 'power2.in' }, duration * .62)
+  }, root.value)
+})
 
 onMounted(() => {
   if (!root.value) return
@@ -60,6 +94,7 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
+  routeAnimationContext?.revert()
   mediaContext?.revert()
   animationContext?.revert()
 })
@@ -86,6 +121,11 @@ onUnmounted(() => {
         </div>
       </div>
     </header>
+    <div v-if="routeTransitioning" ref="routeCurtain" class="route-transition" aria-hidden="true">
+      <div class="route-transition__veil" />
+      <div class="route-transition__rings"><i /><i /></div>
+      <div class="route-transition__label"><span>DEVFLOW / TRANSITION</span><strong>{{ routeTransitionLabel }}</strong></div>
+    </div>
     <main>
       <RouterView v-slot="{ Component }">
         <Transition name="page" mode="out-in">
@@ -98,6 +138,16 @@ onUnmounted(() => {
 
 <style scoped>
 .layout { min-height: 100vh; }
+.route-transition { position: fixed; z-index: 200; inset: 0; overflow: hidden; pointer-events: auto; }
+.route-transition__veil { position: absolute; top: 50%; left: 50%; width: 240vmax; height: 240vmax; border-radius: 50%; background: #020303; transform: translate3d(-50%, -50%, 0) scale(.001); will-change: transform; }
+.route-transition__rings { position: absolute; top: 50%; left: 50%; width: min(62vw, 60vh, 560px); aspect-ratio: 1; border: 1px solid rgba(239, 239, 235, .72); border-radius: 50%; transform: translate3d(-50%, -50%, 0); box-shadow: 0 0 0 13px rgba(239, 239, 235, .035), inset 0 0 72px rgba(239, 239, 235, .035); will-change: transform, opacity; }
+.route-transition__rings::before, .route-transition__rings::after, .route-transition__rings i { position: absolute; inset: 11px; border: 1px solid rgba(239, 239, 235, .19); border-radius: 47% 53% 51% 49%; content: ''; }
+.route-transition__rings::before { inset: -17px; transform: rotate(24deg); }
+.route-transition__rings::after { inset: 25px; border-color: rgba(239, 239, 235, .11); transform: rotate(-31deg); }
+.route-transition__rings i:first-child { inset: 21%; border-color: rgba(239, 239, 235, .28); transform: rotate(42deg); }
+.route-transition__rings i:last-child { inset: 35%; border-color: rgba(239, 239, 235, .13); transform: rotate(-18deg); }
+.route-transition__label { position: absolute; right: clamp(22px, 5.2vw, 84px); bottom: clamp(28px, 7vh, 64px); display: flex; align-items: baseline; gap: 12px; color: rgba(239, 239, 235, .58); font-size: 8px; letter-spacing: .16em; }
+.route-transition__label strong { color: var(--text); font-size: 11px; font-weight: 500; letter-spacing: .08em; }
 .nav {
   position: fixed; inset: 0 0 auto; z-index: 100;
   height: 78px; display: flex; align-items: center; justify-content: space-between;
@@ -147,6 +197,8 @@ onUnmounted(() => {
 main { padding-top: 0; }
 @media (max-width: 760px) {
   .nav { height: 64px; padding: 0 20px; }
+  .route-transition__rings { width: min(72vw, 54vh, 420px); }
+  .route-transition__label { right: 20px; bottom: 70px; }
   .brand-copy, .system-status { display: none; }
   .nav-list { right: 20px; bottom: 18px; left: 20px; justify-content: space-between; gap: 12px; }
   .nav-item { gap: 5px; font-size: 9px; }

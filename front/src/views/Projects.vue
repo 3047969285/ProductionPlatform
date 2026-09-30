@@ -15,10 +15,12 @@ const keyword = ref('')
 const loading = ref(false)
 const dialog = ref(false)
 const editing = ref(false)
+const openingProject = ref(false)
 const form = ref({ code: '', name: '', description: '', techStack: '', deliveryType: 'SaaS' })
 const activeIndex = ref(0)
 const viewportWidth = ref(window.innerWidth)
 let context
+let openingContext
 let hasEntered = false
 
 async function load() {
@@ -80,6 +82,7 @@ function cardStyle(index) {
 }
 
 function moveTo(index) {
+  if (openingProject.value) return
   const count = filteredList.value.length
   if (!count) return
   activeIndex.value = (index + count) % count
@@ -87,12 +90,36 @@ function moveTo(index) {
 
 function activateCard(index, id) {
   if (index !== activeIndex.value) moveTo(index)
-  else router.push('/projects/' + id)
+  else openProject(id)
+}
+
+function openProject(id) {
+  if (openingProject.value) return
+  const selectedCard = root.value?.querySelector('.project-card.selected')
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  if (!selectedCard || reduced) {
+    router.push('/projects/' + id)
+    return
+  }
+
+  openingProject.value = true
+  openingContext = gsap.context(() => {
+    gsap.timeline({ onComplete: () => router.push('/projects/' + id) })
+      .to(selectedCard.querySelector('.project-cover'), { scale: 1.06, y: -6, duration: .22, ease: 'power3.out' })
+      .to(selectedCard.querySelector('.project-cover'), { scale: 1.12, y: -14, autoAlpha: 0, duration: .3, ease: 'power4.in' })
+      .to(selectedCard.querySelector('.project-info'), { y: 18, autoAlpha: 0, duration: .3, ease: 'power3.in' }, '<')
+  }, root.value)
 }
 
 function handleGalleryKey(event) {
+  if (openingProject.value) { event.preventDefault(); return }
   if (event.key === 'ArrowLeft') { event.preventDefault(); moveTo(activeIndex.value - 1) }
   if (event.key === 'ArrowRight') { event.preventDefault(); moveTo(activeIndex.value + 1) }
+  if (event.key === 'Enter') {
+    event.preventDefault()
+    const selected = filteredList.value[activeIndex.value]
+    if (selected) openProject(selected.id)
+  }
 }
 
 function syncViewport() { viewportWidth.value = window.innerWidth }
@@ -159,6 +186,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener('resize', syncViewport)
+  openingContext?.revert()
   context?.revert()
 })
 </script>
@@ -169,13 +197,13 @@ onUnmounted(() => {
       <div class="project-tools">
         <label class="search-wrap">
           <span aria-hidden="true">⌕</span>
-          <input v-model="keyword" type="search" placeholder="搜索项目" aria-label="搜索项目" />
+          <input v-model="keyword" type="search" placeholder="搜索项目" aria-label="搜索项目" :disabled="openingProject" />
         </label>
-        <button class="create-button" type="button" @click="openAdd">＋ 新建</button>
+        <button class="create-button" type="button" :disabled="openingProject" @click="openAdd">＋ 新建</button>
       </div>
     </template>
-    <div ref="root" v-loading="loading" class="gallery-layout">
-      <div v-if="filteredList.length" class="gallery-stage" tabindex="0" aria-label="项目画廊，使用左右方向键切换" @keydown="handleGalleryKey">
+    <div ref="root" v-loading="loading" class="gallery-layout" :class="{ opening: openingProject }">
+      <div v-if="filteredList.length" class="gallery-stage" tabindex="0" aria-label="项目画廊，使用左右方向键切换，按回车打开当前项目" :aria-busy="openingProject" @keydown="handleGalleryKey">
         <span class="stage-note">PROJECTS / {{ String(filteredList.length).padStart(2, '0') }}</span>
         <article
           v-for="(p, index) in filteredList"
@@ -189,7 +217,7 @@ onUnmounted(() => {
           <div class="project-cover" :class="'cover-' + (index % 4)">
             <div class="cover-topline"><span>{{ p.code }}</span><span>{{ p.deliveryType || 'DELIVERY' }}</span></div>
             <div class="cover-art" aria-hidden="true"><i /><i /><i /></div>
-            <button type="button" class="cover-title" @click.stop="router.push('/projects/' + p.id)">{{ p.name }}</button>
+            <button type="button" class="cover-title" @click.stop="activateCard(index, p.id)">{{ p.name }}</button>
             <div class="cover-bottom"><span>{{ p.techStack || 'PRODUCT DEVELOPMENT' }}</span><span>{{ String(index + 1).padStart(2, '0') }}</span></div>
           </div>
           <div class="project-info">
@@ -249,6 +277,7 @@ onUnmounted(() => {
 .create-button { padding: 10px 14px; border: 1px solid rgba(239,239,235,.6); border-radius: 999px; color: #080808; background: var(--text); cursor: pointer; font-size: 10px; transition: color .25s ease, background .25s ease, transform .35s var(--ease); }
 .create-button:hover { color: var(--text); background: transparent; transform: translateY(-2px); }
 .gallery-layout { min-height: 57vh; }
+.gallery-layout.opening { pointer-events: none; }
 .gallery-stage { position: relative; height: clamp(360px, 47vh, 520px); overflow: visible; outline: none; perspective: 1500px; transform-style: preserve-3d; }
 .stage-note { position: absolute; top: -19px; left: 0; color: var(--muted-light); font-size: 8px; letter-spacing: .18em; }
 .project-card { position: absolute; top: 50%; left: 50%; display: flex; width: min(43vw, 650px); height: clamp(300px, 43.5vh, 500px); flex-direction: column; overflow: hidden; border: 1px solid rgba(239,239,235,.16); border-radius: 17px; background: #0d0d0d; box-shadow: 0 28px 80px rgba(0,0,0,.55); cursor: pointer; transform-origin: center center; transition: transform .85s cubic-bezier(.2,.75,.2,1), opacity .55s ease, border-color .5s ease, box-shadow .5s ease; will-change: transform, opacity; }
