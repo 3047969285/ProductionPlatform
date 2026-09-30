@@ -206,7 +206,7 @@ onUnmounted(() => {
           <span aria-hidden="true">⌕</span>
           <input v-model="keyword" type="search" placeholder="搜索项目" aria-label="搜索项目" :disabled="openingProject" />
         </label>
-        <button class="create-button" type="button" :disabled="openingProject" @click="openAdd">＋ 新建</button>
+        <button class="create-button" type="button" :disabled="openingProject || saving" @click="openAdd">＋ 新建</button>
       </div>
     </template>
     <div ref="root" v-loading="loading" class="gallery-layout" :class="{ opening: openingProject }">
@@ -261,7 +261,14 @@ onUnmounted(() => {
       </div>
     </div>
 
-    <el-dialog v-model="dialog" :title="editing ? '编辑项目' : '新建项目'" width="520px">
+    <el-dialog
+      v-model="dialog"
+      :title="editing ? '编辑项目' : '新建项目'"
+      width="520px"
+      :close-on-click-modal="!saving"
+      :close-on-press-escape="!saving"
+      :show-close="!saving"
+    >
       <el-form label-width="80px" size="default" :disabled="saving">
         <el-form-item label="编码"><el-input v-model="form.code" :disabled="editing" /></el-form-item>
         <el-form-item label="名称"><el-input v-model="form.name" /></el-form-item>
