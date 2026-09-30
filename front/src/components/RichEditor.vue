@@ -1,20 +1,28 @@
 <script setup>
 import { ref, watch, onMounted } from 'vue'
+import { sanitizeHtml } from '../sanitizeHtml'
 
 const model = defineModel({ type: String, default: '' })
 const editor = ref(null)
 const blockTag = ref('p')
 
+function syncModelFromEditor() {
+  if (!editor.value) return
+  const sanitized = sanitizeHtml(editor.value.innerHTML)
+  if (editor.value.innerHTML !== sanitized) editor.value.innerHTML = sanitized
+  model.value = sanitized
+}
+
 function exec(cmd, val = null) {
   editor.value?.focus()
   document.execCommand(cmd, false, val)
-  if (editor.value) model.value = editor.value.innerHTML
+  syncModelFromEditor()
 }
 
 function execBlock(tag) {
   editor.value?.focus()
   document.execCommand('formatBlock', false, tag)
-  if (editor.value) model.value = editor.value.innerHTML
+  syncModelFromEditor()
 }
 
 function addLink() {
@@ -25,19 +33,38 @@ function addLink() {
 function clearFormat() {
   editor.value?.focus()
   document.execCommand('removeFormat')
-  if (editor.value) model.value = editor.value.innerHTML
+  syncModelFromEditor()
 }
 
-function onInput(e) {
-  model.value = e.target.innerHTML
+function insertSafeTransfer(event) {
+  if (!editor.value) return
+  event.preventDefault()
+  const transfer = event.clipboardData || event.dataTransfer
+  if (!transfer) return
+
+  editor.value.focus()
+  const html = transfer.getData('text/html')
+  const text = transfer.getData('text/plain')
+  if (html) document.execCommand('insertHTML', false, sanitizeHtml(html))
+  else if (text) document.execCommand('insertText', false, text)
+  syncModelFromEditor()
+}
+
+function onInput() {
+  syncModelFromEditor()
 }
 
 onMounted(() => {
-  if (editor.value && model.value) editor.value.innerHTML = model.value
+  if (!editor.value) return
+  editor.value.innerHTML = sanitizeHtml(model.value)
+  syncModelFromEditor()
 })
 
 watch(model, (v) => {
-  if (editor.value && editor.value.innerHTML !== v) editor.value.innerHTML = v || ''
+  if (!editor.value) return
+  const sanitized = sanitizeHtml(v)
+  if (editor.value.innerHTML !== sanitized) editor.value.innerHTML = sanitized
+  if (v !== sanitized) model.value = sanitized
 })
 </script>
 
@@ -68,6 +95,8 @@ watch(model, (v) => {
       class="body"
       contenteditable
       @input="onInput"
+      @paste="insertSafeTransfer"
+      @drop="insertSafeTransfer"
       data-placeholder="在此输入内容，支持富文本格式"
     />
   </div>

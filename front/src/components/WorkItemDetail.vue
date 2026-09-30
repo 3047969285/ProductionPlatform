@@ -2,6 +2,7 @@
 import { computed, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import api from '../api'
+import { sanitizeHtml } from '../sanitizeHtml'
 import {
   reqStatus, reqPriority, apiStatus, httpMethods,
   taskStatus, bugStatus, bugSeverity,
@@ -36,6 +37,7 @@ const typeMeta = {
 }
 
 const meta = computed(() => typeMeta[props.workType] || typeMeta.requirement)
+const contentHtml = computed(() => sanitizeHtml(item.value?.[meta.value.content]))
 // badgeClass 需要的 key（requirement->req）
 const badgeKey = computed(() => (props.workType === 'requirement' ? 'req' : props.workType))
 
@@ -162,9 +164,9 @@ watch(() => props.visible, (v) => {
         </el-descriptions>
 
         <!-- 内容：富文本渲染 -->
-        <div v-if="item[meta.content]" class="content">
+        <div v-if="contentHtml" class="content">
           <h4>内容</h4>
-          <div class="rich-body" v-html="item[meta.content]" />
+          <div class="rich-body" v-html="contentHtml" />
         </div>
       </template>
       <p v-else-if="!loading" class="empty">未找到该工作项</p>
