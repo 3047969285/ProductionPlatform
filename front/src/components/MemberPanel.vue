@@ -11,6 +11,7 @@ const users = ref([])
 const loading = ref(false)
 const dialog = ref(false)
 const editing = ref(false)
+const saving = ref(false)
 const form = ref({})
 
 async function loadUsers() {
@@ -37,14 +38,17 @@ function openEdit(row) {
 }
 
 async function save() {
+  if (saving.value) return
   if (!form.value.userId) return ElMessage.warning('请选择用户')
+  saving.value = true
   try {
     if (editing.value) await api.put(`/projects/${props.projectId}/members`, { id: form.value.id, role: form.value.role })
     else await api.post(`/projects/${props.projectId}/members`, { userId: form.value.userId, role: form.value.role })
     ElMessage.success('保存成功')
     dialog.value = false
-    load()
+    await load()
   } catch (e) { ElMessage.error(e.message) }
+  finally { saving.value = false }
 }
 
 async function remove(row) {
@@ -85,8 +89,8 @@ watch(() => props.projectId, () => { load(); loadUsers() })
       </el-table>
     </div>
 
-    <el-dialog v-model="dialog" :title="editing ? '修改成员角色' : '添加成员'" width="420px" destroy-on-close>
-      <el-form label-width="80px" size="default">
+    <el-dialog v-model="dialog" :title="editing ? '修改成员角色' : '添加成员'" width="420px" destroy-on-close :close-on-click-modal="!saving" :close-on-press-escape="!saving" :show-close="!saving">
+      <el-form label-width="80px" size="default" :disabled="saving">
         <el-form-item v-if="!editing" label="用户">
           <el-select v-model="form.userId" filterable style="width: 100%" placeholder="选择用户">
             <el-option v-for="u in users" :key="u.id" :label="u.nickname || u.username" :value="u.id" />
@@ -100,8 +104,8 @@ watch(() => props.projectId, () => { load(); loadUsers() })
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="dialog = false">取消</el-button>
-        <el-button type="primary" @click="save">保存</el-button>
+        <el-button :disabled="saving" @click="dialog = false">取消</el-button>
+        <el-button type="primary" :loading="saving" @click="save">保存</el-button>
       </template>
     </el-dialog>
   </div>
