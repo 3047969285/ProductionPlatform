@@ -69,13 +69,14 @@ onUnmounted(() => context?.revert())
 <style scoped>
 .login {
   position: relative; display: grid; grid-template-columns: minmax(220px, .8fr) minmax(320px, 430px); align-items: center; gap: clamp(48px, 10vw, 160px);
-  min-height: 100vh; max-width: 1160px; margin: 0 auto; padding: 64px clamp(24px, 6vw, 72px); overflow: hidden;
+  min-height: 100svh; max-width: 1320px; margin: 0 auto; padding: 80px clamp(24px, 6vw, 84px); overflow: hidden;
 }
 .login-grid { position: fixed; inset: 0; pointer-events: none; overflow: hidden; }
 .login-grid::before {
   position: absolute; top: -18vw; right: -7vw; width: 58vw; height: 58vw; max-width: 760px; max-height: 760px; border: 1px solid rgba(203, 210, 118, .14); border-radius: 50%; content: "";
   box-shadow: 0 0 0 62px rgba(203, 210, 118, .025), 0 0 0 124px rgba(203, 210, 118, .018);
 }
+.login-grid::before, .login-orbit, .login-beam { display: none; }
 .login-orbit { position: absolute; top: 12vh; right: 15vw; width: 10px; height: 10px; border: 1px solid var(--accent); border-radius: 50%; box-shadow: 0 0 0 5px rgba(203, 210, 118, .12); }
 .login-beam { position: absolute; top: 34%; left: -20%; width: 40%; height: 1px; background: linear-gradient(90deg, transparent, var(--accent), transparent); opacity: .35; }
 .login-intro { align-self: center; }
@@ -86,13 +87,13 @@ onUnmounted(() => context?.revert())
 .login-intro > p:last-child { margin-top: 28px; color: var(--muted); font-size: 13px; letter-spacing: .18em; }
 .login-card {
   display: flex; flex-direction: column; gap: 18px; padding: clamp(24px, 4vw, 42px);
-  background: rgba(22, 26, 24, .86); border: 1px solid var(--border-strong); border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); backdrop-filter: blur(20px);
+  background: rgba(12, 12, 12, .9); border: 1px solid var(--border-strong); border-radius: 16px; box-shadow: 0 32px 90px rgba(0,0,0,.5); backdrop-filter: blur(20px);
 }
 .card-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
 .card-top span { color: var(--muted-light); font-size: 18px; }
 .login-card label { display: flex; flex-direction: column; gap: 7px; color: var(--muted); font-size: 11px; letter-spacing: .08em; }
 .btn { margin-top: 8px; padding: 14px 16px; color: #11140f; background: var(--accent); border: 1px solid var(--accent); border-radius: var(--radius); cursor: pointer; font-size: 13px; letter-spacing: .08em; transition: background .25s var(--ease), transform .25s var(--ease), box-shadow .25s var(--ease); }
-.btn:hover:not(:disabled) { background: #d8df8b; box-shadow: 0 10px 26px rgba(203, 210, 118, .16); transform: translateY(-2px); }
+.btn:hover:not(:disabled) { background: #fff; box-shadow: 0 10px 26px rgba(239, 239, 235, .16); transform: translateY(-2px); }
 .btn:disabled { cursor: not-allowed; opacity: .55; }
 .login-card footer { display: flex; justify-content: space-between; margin-top: 10px; color: var(--muted-light); font-size: 9px; letter-spacing: .16em; }
 @media (max-width: 700px) {

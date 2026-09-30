@@ -1,11 +1,13 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { gsap } from 'gsap'
 import PageShell from '../components/PageShell.vue'
 import api from '../api'
 
 const router = useRouter()
+const root = ref(null)
 const list = ref([])
 const workSummary = ref([])
 const completionSummary = ref([])
@@ -14,6 +16,10 @@ const loading = ref(false)
 const dialog = ref(false)
 const editing = ref(false)
 const form = ref({ code: '', name: '', description: '', techStack: '', deliveryType: 'SaaS' })
+const activeIndex = ref(0)
+const viewportWidth = ref(window.innerWidth)
+let context
+let hasEntered = false
 
 async function load() {
   loading.value = true
@@ -36,6 +42,60 @@ const filteredList = computed(() => {
   if (!value) return list.value
   return list.value.filter((project) => `${project.code} ${project.name} ${project.description || ''}`.toLowerCase().includes(value))
 })
+
+watch(filteredList, () => { activeIndex.value = 0 })
+
+watch(loading, async (isLoading) => {
+  if (isLoading || hasEntered) return
+  await nextTick()
+  const cards = root.value?.querySelectorAll('.project-card')
+  if (!cards?.length) return
+  hasEntered = true
+  context = gsap.context(() => {
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    gsap.fromTo(cards,
+      { autoAlpha: 0, y: reduced ? 0 : 24, rotateX: reduced ? 0 : 2 },
+      { autoAlpha: 1, y: 0, rotateX: 0, duration: reduced ? 0 : .85, stagger: reduced ? 0 : .09, ease: 'power3.out' },
+    )
+  }, root.value)
+})
+
+function cardStyle(index) {
+  const delta = index - activeIndex.value
+  const mobile = viewportWidth.value < 700
+  const mobileWidth = viewportWidth.value < 421 ? .82 : .8
+  const cardWidth = mobile
+    ? Math.min(viewportWidth.value * mobileWidth, 540)
+    : Math.min(viewportWidth.value * (viewportWidth.value <= 900 ? .6 : .43), 650)
+  const gap = mobile ? 18 : 34
+  const angle = delta === 0 ? 0 : -Math.sign(delta) * Math.min(Math.abs(delta) * 5, 13)
+  const scale = delta === 0 ? 1 : Math.max(.78, 1 - Math.abs(delta) * .075)
+  const depth = delta === 0 ? 0 : -Math.min(Math.abs(delta) * 82, 220)
+  return {
+    transform: 'translate3d(calc(-50% + ' + delta * (cardWidth + gap) + 'px), -50%, ' + depth + 'px) rotateY(' + angle + 'deg) scale(' + scale + ')',
+    opacity: Math.abs(delta) > 2 ? 0 : Math.max(.35, 1 - Math.abs(delta) * .28),
+    zIndex: 10 - Math.abs(delta),
+    pointerEvents: Math.abs(delta) > 2 ? 'none' : 'auto',
+  }
+}
+
+function moveTo(index) {
+  const count = filteredList.value.length
+  if (!count) return
+  activeIndex.value = (index + count) % count
+}
+
+function activateCard(index, id) {
+  if (index !== activeIndex.value) moveTo(index)
+  else router.push('/projects/' + id)
+}
+
+function handleGalleryKey(event) {
+  if (event.key === 'ArrowLeft') { event.preventDefault(); moveTo(activeIndex.value - 1) }
+  if (event.key === 'ArrowRight') { event.preventDefault(); moveTo(activeIndex.value + 1) }
+}
+
+function syncViewport() { viewportWidth.value = window.innerWidth }
 
 function workFor(project) {
   return workSummary.value.find((item) => Number(item.projectId) === Number(project.id)) || {}
@@ -92,46 +152,74 @@ async function remove(id) {
   }
 }
 
-onMounted(load)
+onMounted(() => {
+  window.addEventListener('resize', syncViewport, { passive: true })
+  load()
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', syncViewport)
+  context?.revert()
+})
 </script>
 
 <template>
   <PageShell tag="02 / PROJECTS" title="项目">
     <template #action>
-      <el-button type="primary" @click="openAdd">+ 新建</el-button>
+      <div class="project-tools">
+        <label class="search-wrap">
+          <span aria-hidden="true">⌕</span>
+          <input v-model="keyword" type="search" placeholder="搜索项目" aria-label="搜索项目" />
+        </label>
+        <button class="create-button" type="button" @click="openAdd">＋ 新建</button>
+      </div>
     </template>
-    <div class="toolbar">
-      <el-input v-model="keyword" clearable placeholder="搜索项目" class="search" />
-      <span class="result-tip">{{ filteredList.length }} 项</span>
-    </div>
-    <div v-loading="loading" class="grid">
-      <article v-for="p in filteredList" :key="p.id" class="card" @click="router.push(`/projects/${p.id}`)">
-        <div class="card-top">
-          <div class="card-context">
-            <span class="code">{{ p.code }}</span>
-            <span class="hint">{{ deliveryHint(p) }}</span>
+    <div ref="root" v-loading="loading" class="gallery-layout">
+      <div v-if="filteredList.length" class="gallery-stage" tabindex="0" aria-label="项目画廊，使用左右方向键切换" @keydown="handleGalleryKey">
+        <span class="stage-note">PROJECTS / {{ String(filteredList.length).padStart(2, '0') }}</span>
+        <article
+          v-for="(p, index) in filteredList"
+          :key="p.id"
+          class="project-card"
+          :class="{ selected: index === activeIndex }"
+          :style="cardStyle(index)"
+          :aria-current="index === activeIndex ? 'true' : undefined"
+          @click="activateCard(index, p.id)"
+        >
+          <div class="project-cover" :class="'cover-' + (index % 4)">
+            <div class="cover-topline"><span>{{ p.code }}</span><span>{{ p.deliveryType || 'DELIVERY' }}</span></div>
+            <div class="cover-art" aria-hidden="true"><i /><i /><i /></div>
+            <button type="button" class="cover-title" @click.stop="router.push('/projects/' + p.id)">{{ p.name }}</button>
+            <div class="cover-bottom"><span>{{ p.techStack || 'PRODUCT DEVELOPMENT' }}</span><span>{{ String(index + 1).padStart(2, '0') }}</span></div>
           </div>
-          <div class="actions" @click.stop>
-            <el-button size="default" @click="openEdit(p)">编辑</el-button>
-            <el-button size="default" type="danger" @click="remove(p.id)">删除</el-button>
+          <div class="project-info">
+            <div class="project-heading">
+              <div><span class="project-code">{{ p.code }}</span><span class="project-hint">{{ deliveryHint(p) }}</span></div>
+              <div v-if="index === activeIndex" class="card-actions" @click.stop>
+                <button type="button" aria-label="编辑项目" @click="openEdit(p)">编辑</button>
+                <button type="button" aria-label="删除项目" @click="remove(p.id)">删除</button>
+              </div>
+            </div>
+            <p class="project-description">{{ p.description || '暂无描述' }}</p>
+            <div class="project-stats">
+              <span>需求 <b>{{ workFor(p).reqCnt || 0 }}</b></span>
+              <span>任务 <b>{{ workFor(p).taskCnt || 0 }}</b></span>
+              <span>缺陷 <b>{{ workFor(p).bugCnt || 0 }}</b></span>
+              <span class="project-progress">{{ completionRate(p) }}%</span>
+            </div>
+            <div class="progress-track"><i :style="{ width: completionRate(p) + '%' }" /></div>
           </div>
+        </article>
+      </div>
+      <p v-if="!loading && !filteredList.length" class="empty">{{ list.length ? '没有匹配的项目' : '还没有项目' }}</p>
+      <div v-if="filteredList.length" class="gallery-controls">
+        <span>{{ String(activeIndex + 1).padStart(2, '0') }} <i /> {{ String(filteredList.length).padStart(2, '0') }}</span>
+        <div class="gallery-arrows">
+          <button type="button" aria-label="上一个项目" @click="moveTo(activeIndex - 1)">←</button>
+          <button type="button" aria-label="下一个项目" @click="moveTo(activeIndex + 1)">→</button>
         </div>
-        <h2>{{ p.name }}</h2>
-        <p class="desc">{{ p.description || '暂无描述' }}</p>
-        <p class="meta">{{ p.techStack }} · {{ p.deliveryType }}</p>
-        <div class="metrics">
-          <span>需求 <b>{{ workFor(p).reqCnt || 0 }}</b></span>
-          <span>任务 <b>{{ workFor(p).taskCnt || 0 }}</b></span>
-          <span>缺陷 <b>{{ workFor(p).bugCnt || 0 }}</b></span>
-        </div>
-        <div class="progress-row">
-          <span>需求完成率</span>
-          <el-progress :percentage="completionRate(p)" :stroke-width="7" :show-text="false" />
-          <b>{{ completionRate(p) }}%</b>
-        </div>
-        <span class="enter">打开驾驶舱 ↗</span>
-      </article>
-      <p v-if="!loading && !filteredList.length" class="empty">{{ list.length ? '无匹配' : '暂无项目' }}</p>
+        <span class="gallery-hint">选择项目以打开交付驾驶舱</span>
+      </div>
     </div>
 
     <el-dialog v-model="dialog" :title="editing ? '编辑项目' : '新建项目'" width="520px">
@@ -151,46 +239,80 @@ onMounted(load)
 </template>
 
 <style scoped>
-.toolbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin: 0 0 16px; }
-.search { width: min(100%, 360px); max-width: 360px; }
-.result-tip { color: var(--muted); font-size: 13px; }
-.grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; padding: 0; }
-.card {
-  position: relative;
-  display: flex;
-  min-width: 0;
-  min-height: 326px;
-  flex-direction: column;
-  padding: 21px;
-  background: rgba(23, 27, 25, .9);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  cursor: pointer;
-  transition: border-color .3s var(--ease), transform .3s var(--ease), background .3s var(--ease);
+:deep(.page) { padding-top: clamp(78px, 11vh, 110px); }
+.gallery-layout { margin-top: -44px; }
+.project-tools { display: flex; align-items: center; gap: 12px; }
+.search-wrap { display: flex; width: min(24vw, 250px); align-items: center; gap: 10px; padding: 9px 12px; border-bottom: 1px solid rgba(239,239,235,.3); color: var(--muted); }
+.search-wrap > span { font-size: 18px; line-height: 1; }
+.search-wrap input { width: 100%; border: 0; outline: 0; color: var(--text); background: transparent; font: inherit; font-size: 11px; }
+.search-wrap input::placeholder { color: var(--muted-light); }
+.create-button { padding: 10px 14px; border: 1px solid rgba(239,239,235,.6); border-radius: 999px; color: #080808; background: var(--text); cursor: pointer; font-size: 10px; transition: color .25s ease, background .25s ease, transform .35s var(--ease); }
+.create-button:hover { color: var(--text); background: transparent; transform: translateY(-2px); }
+.gallery-layout { min-height: 57vh; }
+.gallery-stage { position: relative; height: clamp(360px, 47vh, 520px); overflow: visible; outline: none; perspective: 1500px; transform-style: preserve-3d; }
+.stage-note { position: absolute; top: -19px; left: 0; color: var(--muted-light); font-size: 8px; letter-spacing: .18em; }
+.project-card { position: absolute; top: 50%; left: 50%; display: flex; width: min(43vw, 650px); height: clamp(300px, 43.5vh, 500px); flex-direction: column; overflow: hidden; border: 1px solid rgba(239,239,235,.16); border-radius: 17px; background: #0d0d0d; box-shadow: 0 28px 80px rgba(0,0,0,.55); cursor: pointer; transform-origin: center center; transition: transform .85s cubic-bezier(.2,.75,.2,1), opacity .55s ease, border-color .5s ease, box-shadow .5s ease; will-change: transform, opacity; }
+.project-card.selected { border-color: rgba(239,239,235,.54); box-shadow: 0 34px 100px rgba(0,0,0,.62); }
+.project-cover { position: relative; display: flex; flex: 1 1 58%; min-height: 54%; flex-direction: column; justify-content: space-between; overflow: hidden; padding: 18px 21px 17px; background: linear-gradient(135deg, #262726, #111212 72%); }
+.project-cover::before { position: absolute; inset: 0; content: ""; opacity: .5; background-image: linear-gradient(rgba(255,255,255,.055) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.055) 1px, transparent 1px); background-size: 35px 35px; mask-image: linear-gradient(135deg, #000, transparent 78%); }
+.cover-1 { background: linear-gradient(135deg, #30302e, #161717 70%); }
+.cover-2 { background: linear-gradient(135deg, #202121, #343331 60%, #151515); }
+.cover-3 { background: linear-gradient(135deg, #333330, #171818 65%); }
+.cover-topline, .cover-bottom { position: relative; z-index: 2; display: flex; justify-content: space-between; color: rgba(245,245,240,.7); font-size: 8px; letter-spacing: .15em; }
+.cover-art { position: absolute; inset: 10% 20%; display: grid; place-items: center; opacity: .86; }
+.cover-art::before, .cover-art::after, .cover-art i { position: absolute; display: block; border: 1px solid rgba(238,238,234,.45); border-radius: 50%; content: ""; }
+.cover-art::before { width: min(26vw, 310px); aspect-ratio: 1; box-shadow: 0 0 90px rgba(238,238,234,.06), inset 0 0 50px rgba(238,238,234,.06); }
+.cover-art::after { width: min(17vw, 210px); aspect-ratio: 1; border-color: rgba(238,238,234,.32); }
+.cover-art i:nth-child(1) { width: 74%; height: 25%; transform: rotate(-24deg); }
+.cover-art i:nth-child(2) { width: 34%; height: 85%; transform: rotate(38deg); }
+.cover-art i:nth-child(3) { width: 6px; height: 6px; top: 24%; right: 24%; background: #e4e4df; box-shadow: 0 0 24px rgba(255,255,255,.5); }
+.cover-1 .cover-art { transform: rotate(26deg) scale(.8); }
+.cover-1 .cover-art::before { border-radius: 43% 57% 50% 50%; }
+.cover-2 .cover-art { transform: rotate(-18deg) scale(1.15); }
+.cover-2 .cover-art::before { width: 70%; height: 56%; border-radius: 2px; }
+.cover-2 .cover-art::after { width: 45%; height: 80%; border-radius: 2px; }
+.cover-3 .cover-art { transform: rotate(50deg) scale(.9); }
+.cover-title { position: relative; z-index: 2; max-width: 75%; padding: 0; border: 0; color: rgba(245,245,240,.88); background: transparent; text-align: left; font-family: var(--font-display); font-size: clamp(21px, 3vw, 42px); letter-spacing: -.06em; cursor: pointer; }
+.project-info { display: flex; min-height: 42%; flex-direction: column; padding: 14px 20px 13px; }
+.project-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.project-code { color: var(--muted); font-size: 8px; letter-spacing: .13em; }
+.project-hint { margin-left: 10px; color: var(--muted-light); font-size: 8px; }
+.card-actions { display: flex; gap: 8px; }
+.card-actions button { padding: 5px 8px; border: 1px solid rgba(239,239,235,.18); border-radius: 5px; color: var(--muted); background: transparent; cursor: pointer; font-size: 9px; }
+.card-actions button:hover { border-color: rgba(239,239,235,.65); color: var(--text); }
+.project-description { display: -webkit-box; overflow: hidden; margin-top: 7px; color: var(--muted); font-size: 10px; line-height: 1.5; -webkit-box-orient: vertical; -webkit-line-clamp: 1; }
+.project-stats { display: flex; align-items: center; gap: 15px; margin-top: auto; padding-top: 12px; color: var(--muted-light); font-size: 9px; }
+.project-stats b { margin-left: 4px; color: var(--text); font-size: 11px; font-weight: 500; }
+.project-progress { margin-left: auto; color: var(--text); }
+.progress-track { height: 1px; margin-top: 8px; background: rgba(239,239,235,.13); }
+.progress-track i { display: block; height: 100%; background: rgba(239,239,235,.78); }
+.gallery-controls { display: grid; grid-template-columns: 100px 100px 1fr; align-items: center; gap: 20px; margin-top: 13px; color: var(--muted); font-size: 8px; letter-spacing: .12em; }
+.gallery-controls > span:first-child { display: inline-flex; align-items: center; gap: 9px; }
+.gallery-controls > span:first-child i { width: 28px; height: 1px; background: rgba(239,239,235,.3); }
+.gallery-arrows { display: flex; gap: 8px; }
+.gallery-arrows button { display: grid; width: 30px; height: 30px; place-items: center; border: 1px solid rgba(239,239,235,.27); border-radius: 50%; color: var(--text); background: transparent; cursor: pointer; transition: color .25s ease, background .25s ease, transform .3s ease; }
+.gallery-arrows button:hover { color: #000; background: var(--text); transform: scale(1.06); }
+.gallery-hint { justify-self: end; color: var(--muted-light); letter-spacing: .08em; }
+.empty { grid-column: 1 / -1; text-align: center; color: var(--muted); padding: 46px 0; font-size: 12px; }
+@media (max-width: 900px) { .project-card { width: min(60vw, 650px); } }
+@media (max-width: 700px) {
+  :deep(.page) { padding-top: 96px; }
+  .gallery-layout { margin-top: -24px; }
+  .project-tools { width: 100%; }
+  .search-wrap { flex: 1; width: auto; }
+  .gallery-layout { min-height: 55vh; }
+  .gallery-stage { height: 47vh; min-height: 350px; }
+  .project-card { width: min(80vw, 540px); height: clamp(330px, 43vh, 430px); }
+  .cover-art::before { width: 48vw; }
+  .cover-art::after { width: 31vw; }
+  .project-info { padding: 13px 15px; }
+  .gallery-controls { grid-template-columns: 72px 75px 1fr; gap: 10px; }
+  .gallery-hint { max-width: 140px; text-align: right; line-height: 1.5; }
 }
-.card::before { position: absolute; top: 0; left: 21px; width: 26px; height: 1px; background: var(--accent); content: ""; opacity: .65; }
-.card:hover { z-index: 1; border-color: var(--accent); background: rgba(39, 44, 36, .95); transform: translateY(-4px); }
-.card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 14px; min-height: 52px; margin-bottom: 13px; }
-.card-context { display: flex; min-width: 0; flex-wrap: wrap; align-items: flex-start; gap: 8px; }
-.code { font-size: 14px; color: var(--cyan); font-weight: 600; letter-spacing: 0.05em; }
-.hint { padding: 3px 8px; border: 1px solid rgba(203, 210, 118, .28); color: var(--accent); background: rgba(203, 210, 118, .06); font-size: 10px; letter-spacing: .04em; white-space: nowrap; }
-.actions { display: flex; flex: 0 0 auto; gap: 6px; }
-.actions :deep(.el-button) { margin-left: 0; padding: 6px 10px; font-size: 12px; }
-h2 { font-family: var(--font-display); font-size: 1.7rem; font-weight: 400; letter-spacing: -.03em; margin-bottom: 8px; }
-.desc { display: -webkit-box; overflow: hidden; min-height: 42px; margin-bottom: 10px; color: var(--muted); font-size: 13px; line-height: 1.6; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
-.meta { font-size: 11px; color: var(--muted-light); letter-spacing: .04em; margin-bottom: 14px; }
-.metrics { display: flex; gap: 14px; padding: 10px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); color: var(--muted); font-size: 12px; }
-.metrics b { color: var(--text); font-size: 14px; margin-left: 3px; }
-.progress-row { display: grid; grid-template-columns: auto 1fr auto; gap: 8px; align-items: center; margin: 12px 0 14px; color: var(--muted); font-size: 12px; }
-.progress-row b { color: var(--accent); font-size: 12px; }
-.progress-row :deep(.el-progress) { min-width: 60px; }
-.enter { margin-top: auto; padding-top: 16px; font-size: 12px; color: var(--accent); letter-spacing: .06em; }
-.empty { grid-column: 1 / -1; text-align: center; color: var(--muted); padding: 40px; font-size: 13px; }
-@media (max-width: 1100px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (max-width: 640px) {
-  .toolbar { align-items: stretch; flex-direction: column; gap: 10px; }
-  .search { max-width: none; }
-  .grid { grid-template-columns: 1fr; }
-  .card { min-height: 0; }
+@media (max-width: 420px) {
+  .project-card { width: 82vw; height: 340px; }
+  .project-stats { gap: 9px; }
+  .project-stats span { font-size: 8px; }
+  .gallery-controls { grid-template-columns: 58px 70px 1fr; gap: 8px; }
 }
 </style>

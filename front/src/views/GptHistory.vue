@@ -463,43 +463,44 @@ onUnmounted(() => {
 
 <style scoped>
 :global(html) { scroll-behavior: auto; }
-:global(body) { background: #07090d; }
+:global(body) { background: #000; }
 
 .gpt-atlas {
-  --ink: #07090d;
-  --ink-soft: #0d1119;
-  --paper: #f3f0ea;
-  --muted: rgba(243, 240, 234, 0.56);
-  --muted-soft: rgba(243, 240, 234, 0.32);
-  --hairline: rgba(243, 240, 234, 0.14);
-  --cyan: #8bf6f1;
-  --violet: #ad9aff;
-  --pink: #ff7db6;
-  --orange: #ffbb75;
-  --lime: #c3ef86;
+  --ink: #000;
+  --ink-soft: #0b0b0b;
+  --paper: #efefeb;
+  --muted: rgba(239, 239, 235, 0.56);
+  --muted-soft: rgba(239, 239, 235, 0.32);
+  --hairline: rgba(239, 239, 235, 0.14);
+  --cyan: #d5d5d0;
+  --violet: #aaa9a5;
+  --pink: #b9b8b3;
+  --orange: #c1bdb6;
+  --lime: #d9d9d3;
   position: relative;
   overflow: clip;
   min-height: 100vh;
   color: var(--paper);
-  background:
-    radial-gradient(circle at 65% 8%, rgba(88, 65, 180, 0.16), transparent 25rem),
-    radial-gradient(circle at 10% 42%, rgba(0, 190, 180, 0.08), transparent 32rem),
-    var(--ink);
+  background: var(--ink);
   font-family: var(--font-body);
   isolation: isolate;
 }
 
 .gpt-atlas::before {
-  position: fixed; inset: 0; z-index: -2; content: '';
-  opacity: 0.16; pointer-events: none;
-  background-image: linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px);
-  background-size: 72px 72px;
-  mask-image: linear-gradient(to bottom, black, transparent 74%);
+  position: fixed; top: auto; right: -12vw; bottom: -8vh; left: -12vw; z-index: -2;
+  width: 124vw; height: 58vh; content: '';
+  opacity: .32; pointer-events: none;
+  background-image: linear-gradient(rgba(239,239,235,.09) 1px, transparent 1px), linear-gradient(90deg, rgba(239,239,235,.09) 1px, transparent 1px);
+  background-size: 100% 42px, 64px 100%;
+  transform: perspective(520px) rotateX(59deg);
+  transform-origin: center top;
+  mask-image: linear-gradient(to bottom, transparent 0%, black 26%, transparent 93%);
 }
 
 .noise { position: fixed; inset: 0; z-index: 10; pointer-events: none; opacity: .034; mix-blend-mode: screen; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E"); }
 .cursor-aura { position: absolute; z-index: 0; width: 180px; height: 180px; border-radius: 50%; pointer-events: none; opacity: 0; background: radial-gradient(circle, rgba(139,246,241,.12), transparent 68%); filter: blur(6px); transform: translate(-180px, -180px); transition: opacity .4s ease; }
 .cursor-active .cursor-aura { opacity: 1; }
+.hero-visual, .chapter-visual { filter: grayscale(1); }
 
 .atlas-nav { position: absolute; top: 0; left: 0; right: 0; z-index: 20; display: flex; align-items: center; justify-content: space-between; padding: 28px clamp(20px, 6vw, 90px); }
 .atlas-brand, .nav-action { color: var(--paper); text-decoration: none; }

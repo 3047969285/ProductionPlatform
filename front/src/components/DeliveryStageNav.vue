@@ -124,9 +124,9 @@ h2 { font-family: var(--font-display); font-size: clamp(1.45rem, 2vw, 2rem); fon
 .stage-text strong { font-size: 14px; color: var(--text); transition: color .25s var(--ease); }
 .stage-text small { margin-top: 2px; color: var(--muted); font-size: 11px; white-space: nowrap; }
 .stage:hover .stage-dot { border-color: var(--accent); color: var(--accent); transform: translateY(-1px); }
-.stage.is-active .stage-dot { border-color: var(--accent); background: var(--accent); color: #11140f; box-shadow: 0 0 0 6px rgba(203, 210, 118, .1); }
+.stage.is-active .stage-dot { border-color: var(--accent); background: var(--accent); color: #11140f; box-shadow: 0 0 0 6px rgba(239, 239, 235, .1); }
 .stage.is-active .stage-text strong { color: var(--accent); }
-.stage.is-complete .stage-dot { border-color: var(--accent); color: var(--accent); background: rgba(203, 210, 118, .08); }
+.stage.is-complete .stage-dot { border-color: var(--accent); color: var(--accent); background: rgba(239, 239, 235, .08); }
 @media (max-width: 700px) {
   .stage-nav { padding: 16px 12px 14px; }
   .stage-heading { margin-bottom: 18px; }

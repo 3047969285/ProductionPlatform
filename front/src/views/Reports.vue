@@ -500,8 +500,8 @@ onMounted(load)
 .reports { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
 .span-full { grid-column: 1 / -1; }
 .span-2 { grid-column: span 2; }
-.card { min-width: 0; padding: 20px; background: rgba(23, 27, 25, .86); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); }
-.hero-card { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; min-height: 168px; background: linear-gradient(135deg, rgba(39, 44, 36, .95), rgba(23, 27, 25, .86)); }
+.card { min-width: 0; padding: 20px; background: rgba(12, 12, 12, .78); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: none; }
+.hero-card { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; min-height: 168px; background: linear-gradient(135deg, rgba(255,255,255,.07), rgba(12,12,12,.72)); }
 .eyebrow { margin-bottom: 8px; color: var(--accent); font-size: 10px; letter-spacing: .16em; text-transform: uppercase; }
 .hero-card h2 { max-width: 820px; font-family: var(--font-display); font-size: clamp(2rem, 4vw, 4.2rem); font-weight: 400; letter-spacing: -.06em; line-height: .98; }
 .hero-copy { max-width: 680px; margin-top: 14px; color: var(--muted); font-size: 13px; }
@@ -509,7 +509,7 @@ onMounted(load)
 .hero-signal strong { color: var(--accent); font-family: var(--font-display); font-size: 4rem; font-weight: 400; line-height: .9; }
 .hero-signal span { margin-top: 10px; font-size: 11px; letter-spacing: .12em; }
 .metric-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1px; border: 1px solid var(--border); background: var(--border); }
-.metric-card { min-height: 120px; padding: 18px; background: rgba(23, 27, 25, .82); }
+.metric-card { min-height: 120px; padding: 18px; background: rgba(10, 10, 10, .88); }
 .metric-value { display: block; color: var(--text); font-family: var(--font-display); font-size: 2.2rem; line-height: 1; }
 .metric-label { display: block; margin-top: 18px; color: var(--muted); font-size: 12px; letter-spacing: .08em; }
 .metric-card small { display: block; margin-top: 7px; color: var(--muted-light); font-size: 11px; }
@@ -544,7 +544,7 @@ onMounted(load)
 .activity-meta, .activity-time, .risk-list small { overflow: hidden; color: var(--muted); font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
 .risk-list li { grid-template-columns: 8px minmax(0, 1fr) auto 70px; }
 .risk-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); }
-.risk-dot.pink { background: var(--pink); box-shadow: 0 0 12px rgba(215, 139, 125, .5); }
+.risk-dot.pink { background: var(--pink); box-shadow: 0 0 12px rgba(239, 239, 235, .3); }
 .risk-dot.cyan { background: var(--cyan); }
 .delivery-list { display: flex; flex-direction: column; gap: 0; }
 .delivery-row { display: grid; grid-template-columns: 70px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 14px 0; border-bottom: 1px solid var(--border); font-size: 12px; }

@@ -366,16 +366,16 @@ onUnmounted(() => animationContext?.revert())
 .cockpit-section { padding: 18px; border: 1px solid var(--border); border-radius: var(--radius-lg); background: rgba(23, 27, 25, .78); box-shadow: var(--shadow-sm); }
 .section-heading { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 14px; }
 .section-heading h3 { font-size: 17px; font-weight: 700; }
-.section-count { display: inline-grid; place-items: center; min-width: 26px; height: 26px; padding: 0 8px; border: 1px solid var(--border-strong); border-radius: 999px; color: var(--accent); background: rgba(203, 210, 118, .08); font-size: 13px; font-weight: 700; }
+.section-count { display: inline-grid; place-items: center; min-width: 26px; height: 26px; padding: 0 8px; border: 1px solid var(--border-strong); border-radius: 999px; color: var(--accent); background: rgba(239, 239, 235, .08); font-size: 13px; font-weight: 700; }
 .action-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
 .action-card, .next-item { width: 100%; border: 1px solid var(--border); background: var(--surface); text-align: left; cursor: pointer; font: inherit; transition: transform .25s var(--ease), border-color .25s var(--ease), box-shadow .25s var(--ease); }
 .action-card { display: grid; grid-template-columns: 34px 1fr 18px; gap: 10px; align-items: center; padding: 13px; border-radius: 14px; }
-.action-card:hover, .next-item:hover { transform: translateY(-2px); border-color: rgba(203, 210, 118, .5); box-shadow: var(--shadow-md); }
+.action-card:hover, .next-item:hover { transform: translateY(-2px); border-color: rgba(239, 239, 235, .5); box-shadow: var(--shadow-md); }
 .action-card strong, .action-card small, .next-copy strong, .next-copy small { display: block; }
 .action-card strong { font-size: 14px; margin-bottom: 3px; }
 .action-card small, .next-copy small { color: var(--muted); font-size: 12px; line-height: 1.45; }
 .action-icon { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 10px; font-size: 20px; font-weight: 700; }
-.action-icon.blue { color: var(--accent); background: rgba(203, 210, 118, .1); }
+.action-icon.blue { color: var(--accent); background: rgba(239, 239, 235, .1); }
 .action-icon.purple { color: var(--purple); background: rgba(94,92,230,.1); }
 .action-icon.green { color: #248a3d; background: rgba(52,199,89,.12); }
 .action-icon.orange { color: #a86500; background: rgba(255,159,10,.14); }
@@ -384,7 +384,7 @@ onUnmounted(() => animationContext?.revert())
 .cockpit-columns { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(300px, .85fr); gap: 16px; }
 .next-list { display: flex; flex-direction: column; gap: 8px; }
 .next-item { display: grid; grid-template-columns: 10px 1fr 18px; gap: 10px; align-items: center; padding: 12px; border-radius: 12px; }
-.next-marker { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 4px rgba(203, 210, 118, .1); }
+.next-marker { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 4px rgba(239, 239, 235, .1); }
 .next-item.warning .next-marker { background: var(--orange); box-shadow: 0 0 0 4px rgba(255,159,10,.13); }
 .next-item.danger .next-marker { background: var(--pink); box-shadow: 0 0 0 4px rgba(255,55,95,.12); }
 .next-copy strong { font-size: 14px; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -402,7 +402,7 @@ onUnmounted(() => animationContext?.revert())
 .dangerText { color: var(--pink); }
 .timeline { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
 .timeline-item { position: relative; min-height: 84px; padding: 10px 10px 8px 15px; border-left: 1px solid var(--border-strong); }
-.timeline-dot { position: absolute; left: -5px; top: 12px; width: 9px; height: 9px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 4px rgba(203, 210, 118, .1); }
+.timeline-dot { position: absolute; left: -5px; top: 12px; width: 9px; height: 9px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 4px rgba(239, 239, 235, .1); }
 .timeline-dot.good { background: var(--lime); box-shadow: 0 0 0 4px rgba(52,199,89,.12); }
 .timeline-dot.danger { background: var(--pink); box-shadow: 0 0 0 4px rgba(255,55,95,.12); }
 .timeline-item small, .timeline-item strong { display: block; }

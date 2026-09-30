@@ -125,7 +125,7 @@ watch(model, (v) => {
   padding: 4px 12px;
   margin: 8px 0;
   color: var(--muted);
-  background: rgba(203, 210, 118, .06);
+  background: rgba(239, 239, 235, .06);
 }
 .body :deep(pre) {
   background: rgba(255, 255, 255, .045);
