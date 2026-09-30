@@ -12,12 +12,13 @@ const introVisible = ref(true)
 const loginReady = ref(false)
 const focusLoginAfterIntro = ref(false)
 const loading = ref(false)
-const form = ref({ username: 'admin', password: 'admin123' })
+const form = ref({ username: '', password: '' })
 let introContext
 let revealContext
 let introTimeline
 let revealTween
 let reducedMotion = false
+const prefersReducedMotion = ref(false)
 
 async function submit() {
   loading.value = true
@@ -79,17 +80,9 @@ function handleIntroKeydown(event) {
   if (event.key === 'Escape' && introVisible.value) skipIntro()
 }
 
-onMounted(() => {
-  window.addEventListener('keydown', handleIntroKeydown)
-  if (!root.value) return
-
-  reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  if (reducedMotion) {
-    showLogin()
-    introVisible.value = false
-    return
-  }
-
+function startIntroAnimation() {
+  if (!root.value || introTimeline) return
+  introVisible.value = true
   introContext = gsap.context(() => {
     gsap.set('.intro-ring, .intro-orbit, .intro-core, .intro-copy > *', { autoAlpha: 0 })
     gsap.set('.intro-work', { autoAlpha: 0, scale: 0.96 })
@@ -113,6 +106,26 @@ onMounted(() => {
       .call(showLogin, [], 1.72)
       .to('.intro-screen', { autoAlpha: 0, duration: 0.56, ease: 'power2.inOut' }, 1.94)
   }, root.value)
+}
+
+function playIntroAnimation() {
+  prefersReducedMotion.value = false
+  reducedMotion = false
+  startIntroAnimation()
+}
+
+onMounted(() => {
+  window.addEventListener('keydown', handleIntroKeydown)
+  if (!root.value) return
+
+  reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  prefersReducedMotion.value = reducedMotion
+  if (reducedMotion) {
+    showLogin()
+    return
+  }
+
+  startIntroAnimation()
 })
 
 onUnmounted(() => {
@@ -149,7 +162,10 @@ onUnmounted(() => {
           <span class="intro-brand-mark">D</span>
           <span>DEVFLOW<small>PRODUCTION / DELIVERY</small></span>
         </div>
-        <button class="intro-skip" type="button" @click="skipIntro">跳过动画 <span aria-hidden="true">↗</span></button>
+        <div class="intro-actions">
+          <button v-if="prefersReducedMotion" class="intro-play" type="button" @click="playIntroAnimation">播放开场 <span aria-hidden="true">↗</span></button>
+          <button class="intro-skip" type="button" @click="skipIntro">{{ prefersReducedMotion ? '进入登录' : '跳过动画' }} <span aria-hidden="true">↗</span></button>
+        </div>
       </header>
 
       <div class="intro-grid" aria-hidden="true" />
@@ -252,6 +268,7 @@ onUnmounted(() => {
 .intro-screen::before { position: absolute; z-index: -1; inset: 0; background: radial-gradient(ellipse at 50% 50%, transparent 25%, rgba(0,0,0,.52) 100%); content: ""; }
 .intro-header, .intro-footer { position: absolute; z-index: 2; right: clamp(22px, 4.4vw, 64px); left: clamp(22px, 4.4vw, 64px); display: flex; align-items: center; justify-content: space-between; }
 .intro-header { top: clamp(22px, 4vh, 38px); }
+.intro-actions { display: flex; align-items: center; gap: clamp(16px, 2vw, 28px); }
 .intro-brand { display: flex; align-items: center; gap: 12px; color: var(--text); font-size: 11px; font-weight: 600; letter-spacing: .14em; }
 .intro-brand-mark { display: grid; width: 34px; height: 34px; place-items: center; border: 1px solid rgba(203,210,118,.68); color: var(--accent); font-family: var(--font-display); font-size: 19px; font-weight: 400; }
 .intro-brand small { display: block; margin-top: 3px; color: var(--muted-light); font-size: 7px; font-weight: 400; letter-spacing: .16em; }
@@ -259,6 +276,10 @@ onUnmounted(() => {
 .intro-skip:hover, .intro-skip:focus-visible { color: var(--text); }
 .intro-skip:focus-visible { outline: 1px solid var(--accent); outline-offset: 4px; }
 .intro-skip span { color: var(--accent); font-size: 15px; }
+.intro-play { display: inline-flex; align-items: center; gap: 10px; padding: 10px 0; color: var(--accent); background: transparent; border: 0; cursor: pointer; font-size: 11px; letter-spacing: .08em; transition: color .2s ease; }
+.intro-play:hover, .intro-play:focus-visible { color: var(--text); }
+.intro-play:focus-visible { outline: 1px solid var(--accent); outline-offset: 4px; }
+.intro-play span { font-size: 15px; }
 .intro-grid { position: absolute; z-index: -1; inset: 0; opacity: .2; background-image: linear-gradient(rgba(234,238,222,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(234,238,222,.05) 1px, transparent 1px); background-size: 72px 72px; mask-image: radial-gradient(ellipse at center, black, transparent 75%); }
 .intro-floor { position: absolute; z-index: 0; right: -22%; bottom: -34%; left: -22%; height: 82%; opacity: .27; transform: perspective(780px) rotateX(64deg); transform-origin: center top; background-image: linear-gradient(rgba(234,238,222,.12) 1px, transparent 1px), linear-gradient(90deg, rgba(234,238,222,.12) 1px, transparent 1px); background-size: 58px 58px; mask-image: linear-gradient(to bottom, transparent, black 24%, black 78%, transparent); }
 .intro-work { position: absolute; z-index: 1; top: 52%; display: flex; width: clamp(300px, 36vw, 520px); height: clamp(250px, 42vh, 390px); flex-direction: column; justify-content: space-between; padding: clamp(18px, 2vw, 28px); border: 1px solid rgba(237,240,228,.14); border-radius: 14px; color: var(--text); background: linear-gradient(132deg, rgba(37,40,37,.88), rgba(13,15,14,.92) 70%); box-shadow: 0 28px 80px rgba(0,0,0,.3); opacity: .74; transform-origin: center; }
@@ -313,6 +334,6 @@ onUnmounted(() => {
   .intro-copy h2 { font-size: clamp(32px, 5vh, 48px); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .intro-skip, .btn { transition: none; }
+  .intro-skip, .intro-play, .btn { transition: none; }
 }
 </style>

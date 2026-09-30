@@ -195,6 +195,15 @@ ul, ol { margin: 0; padding: 0; list-style: none; }
 .el-input__inner, .el-textarea__inner, .el-select__selected-item { color: var(--text); }
 .el-input__inner::placeholder, .el-textarea__inner::placeholder { color: var(--muted-light); }
 .el-input-group__prepend, .el-input-group__append { color: var(--muted); background: rgba(255, 255, 255, .04); border-color: var(--border); }
+body .el-input, body .el-textarea {
+  --el-input-bg-color: rgba(255, 255, 255, .045);
+  --el-input-text-color: var(--text);
+  --el-input-placeholder-color: var(--muted-light);
+  --el-input-border-color: var(--border);
+  --el-input-hover-border-color: var(--border-strong);
+  --el-input-focus-border-color: var(--accent);
+  --el-input-icon-color: var(--muted-light);
+}
 .el-button { border-color: var(--border); color: var(--text); background: rgba(255, 255, 255, .035); }
 .el-button:hover, .el-button:focus { color: var(--accent); border-color: var(--accent); background: var(--accent-soft); }
 .el-button--primary { color: #11140f; border-color: var(--accent); background: var(--accent); }
