@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, onUnmounted, ref } from 'vue'
+import { nextTick, onMounted, onUnmounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { gsap } from 'gsap'
@@ -8,9 +8,14 @@ import { setAuth } from '../auth'
 
 const router = useRouter()
 const root = ref(null)
+const introVisible = ref(true)
+const loginReady = ref(false)
 const loading = ref(false)
 const form = ref({ username: 'admin', password: 'admin123' })
-let context
+let introContext
+let revealContext
+let introTimeline
+let reducedMotion = false
 
 async function submit() {
   loading.value = true
@@ -26,80 +31,220 @@ async function submit() {
   }
 }
 
+function showLogin() {
+  if (loginReady.value) return
+  loginReady.value = true
+  if (reducedMotion) return
+  nextTick(() => {
+    if (!root.value) return
+    revealContext = gsap.context(() => {
+      gsap.fromTo('.login-intro, .login-card',
+        { autoAlpha: 0, y: 14 },
+        { autoAlpha: 1, y: 0, duration: 0.72, stagger: 0.12, ease: 'power3.out', clearProps: 'all' },
+      )
+    }, root.value)
+  })
+}
+
+function skipIntro() {
+  if (introTimeline) {
+    introTimeline.progress(1)
+    return
+  }
+  showLogin()
+  introVisible.value = false
+}
+
+function handleIntroKeydown(event) {
+  if (event.key === 'Escape' && introVisible.value) skipIntro()
+}
+
 onMounted(() => {
+  window.addEventListener('keydown', handleIntroKeydown)
   if (!root.value) return
-  context = gsap.context(() => {
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    gsap.from('.login-intro, .login-card', {
-      autoAlpha: 0,
-      y: reduced ? 0 : 18,
-      duration: reduced ? 0 : .7,
-      stagger: reduced ? 0 : .12,
-      ease: 'power3.out',
-      clearProps: 'all',
+
+  reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  if (reducedMotion) {
+    showLogin()
+    introVisible.value = false
+    return
+  }
+
+  introContext = gsap.context(() => {
+    gsap.set('.intro-ring, .intro-orbit, .intro-core, .intro-copy > *', { autoAlpha: 0 })
+    gsap.set('.intro-ring--outer', { scale: 0.82, transformOrigin: '50% 50%' })
+    gsap.set('.intro-ring--inner', { scale: 1.12, transformOrigin: '50% 50%' })
+    gsap.set('.intro-core', { scale: 0.82, y: 8, transformOrigin: '50% 50%' })
+    gsap.set('.intro-copy > *', { y: 12 })
+
+    introTimeline = gsap.timeline({
+      defaults: { ease: 'power3.out' },
+      onComplete: () => { introVisible.value = false },
     })
-    if (!reduced) {
-      gsap.to('.login-orbit', { rotation: 360, duration: 36, repeat: -1, ease: 'none' })
-      gsap.to('.login-beam', { xPercent: 100, duration: 5, repeat: -1, ease: 'none' })
-    }
+      .to('.intro-ring--outer', { autoAlpha: 0.64, scale: 1, duration: 1.05 }, 0)
+      .to('.intro-ring--inner', { autoAlpha: 1, scale: 1, duration: 1.18 }, 0.08)
+      .to('.intro-orbit', { autoAlpha: 0.82, duration: 0.75 }, 0.28)
+      .to('.intro-core', { autoAlpha: 1, scale: 1, y: 0, duration: 0.7 }, 0.42)
+      .to('.intro-copy > *', { autoAlpha: 1, y: 0, duration: 0.64, stagger: 0.12 }, 0.64)
+      .to('.intro-orbit--slow', { rotation: 22, duration: 2.35, ease: 'none', transformOrigin: '50% 50%' }, 0.2)
+      .call(showLogin, [], 1.72)
+      .to('.intro-screen', { autoAlpha: 0, duration: 0.56, ease: 'power2.inOut' }, 1.94)
   }, root.value)
 })
 
-onUnmounted(() => context?.revert())
+onUnmounted(() => {
+  window.removeEventListener('keydown', handleIntroKeydown)
+  introContext?.revert()
+  revealContext?.revert()
+})
 </script>
 
 <template>
   <div ref="root" class="login">
-    <div class="login-grid" aria-hidden="true"><span class="login-orbit" /><span class="login-beam" /></div>
-    <section class="login-intro">
-      <p class="login-index">00 / ACCESS</p>
-      <h1>DevFlow<span>.</span></h1>
-      <p>研发交付系统</p>
+    <main v-if="loginReady" class="login-content">
+      <div class="login-grid" aria-hidden="true">
+        <span class="login-orbit" />
+        <span class="login-beam" />
+      </div>
+      <section class="login-intro">
+        <p class="login-index">00 / ACCESS</p>
+        <h1>DevFlow<span>.</span></h1>
+        <p>研发交付系统</p>
+      </section>
+      <form class="login-card" @submit.prevent="submit">
+        <header class="card-top"><p>01 / IDENTITY</p><span aria-hidden="true">↗</span></header>
+        <label>账号<el-input v-model="form.username" placeholder="输入账号" size="large" autocomplete="username" /></label>
+        <label>密码<el-input v-model="form.password" type="password" placeholder="输入密码" size="large" show-password autocomplete="current-password" /></label>
+        <button type="submit" class="btn" :disabled="loading">{{ loading ? '验证中…' : '进入系统 ↗' }}</button>
+        <footer><span>DEVFLOW</span><span>SECURE ENTRY</span></footer>
+      </form>
+    </main>
+
+    <section v-if="introVisible" class="intro-screen" aria-label="DevFlow 开场动画">
+      <header class="intro-header">
+        <div class="intro-brand" aria-label="DevFlow">
+          <span class="intro-brand-mark">D</span>
+          <span>DEVFLOW<small>PRODUCTION / DELIVERY</small></span>
+        </div>
+        <button class="intro-skip" type="button" @click="skipIntro">跳过动画 <span aria-hidden="true">↗</span></button>
+      </header>
+
+      <div class="intro-grid" aria-hidden="true" />
+      <div class="intro-composition" aria-hidden="true">
+        <svg class="intro-orbits" viewBox="0 0 1000 1000" fill="none">
+          <defs>
+            <radialGradient id="intro-glow">
+              <stop stop-color="#cbd276" stop-opacity=".14" />
+              <stop offset="1" stop-color="#cbd276" stop-opacity="0" />
+            </radialGradient>
+            <linearGradient id="intro-ring-light" x1="130" y1="190" x2="850" y2="760" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#cbd276" stop-opacity=".08" />
+              <stop offset=".48" stop-color="#e8ecd1" stop-opacity=".76" />
+              <stop offset="1" stop-color="#cbd276" stop-opacity=".08" />
+            </linearGradient>
+            <linearGradient id="intro-metal" x1="120" y1="220" x2="880" y2="760" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#171a17" />
+              <stop offset=".2" stop-color="#676a60" />
+              <stop offset=".34" stop-color="#292c28" />
+              <stop offset=".52" stop-color="#c1c3b6" />
+              <stop offset=".64" stop-color="#41443e" />
+              <stop offset=".82" stop-color="#858878" />
+              <stop offset="1" stop-color="#171a17" />
+            </linearGradient>
+          </defs>
+          <circle cx="500" cy="500" r="430" fill="url(#intro-glow)" />
+          <circle class="intro-ring intro-ring--outer" cx="500" cy="500" r="424" stroke="url(#intro-metal)" stroke-width="52" />
+          <circle class="intro-ring intro-ring--inner" cx="500" cy="500" r="399" stroke="url(#intro-ring-light)" stroke-opacity=".68" />
+          <circle class="intro-ring intro-ring--inner" cx="500" cy="500" r="385" stroke="#edf0e4" stroke-opacity=".16" />
+          <circle class="intro-ring intro-ring--inner" cx="500" cy="500" r="374" stroke="#cbd276" stroke-opacity=".28" stroke-dasharray="1 10" />
+          <g class="intro-orbit intro-orbit--slow">
+            <ellipse cx="500" cy="500" rx="452" ry="320" transform="rotate(-32 500 500)" stroke="#edf0e4" stroke-opacity=".24" />
+            <circle cx="886" cy="252" r="4" fill="#cbd276" />
+          </g>
+          <g class="intro-orbit">
+            <ellipse cx="500" cy="500" rx="443" ry="295" transform="rotate(28 500 500)" stroke="#cbd276" stroke-opacity=".28" stroke-dasharray="2 13" />
+            <circle cx="166" cy="283" r="2.5" fill="#edf0e4" />
+          </g>
+        </svg>
+        <div class="intro-core"><span>DF</span><i /></div>
+      </div>
+
+      <div class="intro-copy">
+        <p class="intro-kicker">PRODUCTION / DELIVERY / LIVE</p>
+        <h2>从想法，<span>到交付。</span></h2>
+        <p class="intro-caption">让每一步，都清晰向前。</p>
+      </div>
+
+      <footer class="intro-footer"><span>DEVFLOW / 01</span><span>研发交付平台</span></footer>
     </section>
-    <form class="login-card" @submit.prevent="submit">
-      <header class="card-top"><p>01 / IDENTITY</p><span>↗</span></header>
-      <label>账号<el-input v-model="form.username" placeholder="输入账号" size="large" /></label>
-      <label>密码<el-input v-model="form.password" type="password" placeholder="输入密码" size="large" show-password /></label>
-      <button type="submit" class="btn" :disabled="loading">{{ loading ? '验证中…' : '进入系统 ↗' }}</button>
-      <footer><span>DEVFLOW</span><span>SECURE ENTRY</span></footer>
-    </form>
   </div>
 </template>
 
 <style scoped>
-.login {
-  position: relative; display: grid; grid-template-columns: minmax(220px, .8fr) minmax(320px, 430px); align-items: center; gap: clamp(48px, 10vw, 160px);
-  min-height: 100svh; max-width: 1320px; margin: 0 auto; padding: 80px clamp(24px, 6vw, 84px); overflow: hidden;
+.login { position: relative; min-height: 100svh; overflow: hidden; background: var(--bg-deep); }
+.login-content {
+  position: relative; z-index: 1; display: grid; grid-template-columns: minmax(220px, .8fr) minmax(320px, 430px); align-items: center;
+  gap: clamp(48px, 10vw, 160px); width: min(100%, 1320px); min-height: 100svh; margin: 0 auto; padding: 80px clamp(24px, 6vw, 84px);
 }
-.login-grid { position: fixed; inset: 0; pointer-events: none; overflow: hidden; }
-.login-grid::before {
-  position: absolute; top: -18vw; right: -7vw; width: 58vw; height: 58vw; max-width: 760px; max-height: 760px; border: 1px solid rgba(203, 210, 118, .14); border-radius: 50%; content: "";
-  box-shadow: 0 0 0 62px rgba(203, 210, 118, .025), 0 0 0 124px rgba(203, 210, 118, .018);
-}
-.login-grid::before, .login-orbit, .login-beam { display: none; }
-.login-orbit { position: absolute; top: 12vh; right: 15vw; width: 10px; height: 10px; border: 1px solid var(--accent); border-radius: 50%; box-shadow: 0 0 0 5px rgba(203, 210, 118, .12); }
+.login-grid { position: absolute; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
+.login-grid::before { position: absolute; top: -18vw; right: -7vw; width: 58vw; height: 58vw; max-width: 760px; max-height: 760px; border: 1px solid rgba(203,210,118,.14); border-radius: 50%; content: ""; box-shadow: 0 0 0 62px rgba(203,210,118,.025), 0 0 0 124px rgba(203,210,118,.018); }
+.login-orbit { position: absolute; top: 12vh; right: 15vw; width: 10px; height: 10px; border: 1px solid var(--accent); border-radius: 50%; box-shadow: 0 0 0 5px rgba(203,210,118,.12); }
 .login-beam { position: absolute; top: 34%; left: -20%; width: 40%; height: 1px; background: linear-gradient(90deg, transparent, var(--accent), transparent); opacity: .35; }
 .login-intro { align-self: center; }
 .login-index, .card-top p { color: var(--accent); font-size: 10px; letter-spacing: .2em; }
 .login-index { margin-bottom: 28px; }
 .login-intro h1 { font-family: var(--font-display); font-size: clamp(3.8rem, 8vw, 7.5rem); font-weight: 400; letter-spacing: -.08em; line-height: .86; }
-.login-intro h1 span { color: var(--accent); }
+.login-intro h1 span, .intro-copy h2 span { color: var(--accent); }
 .login-intro > p:last-child { margin-top: 28px; color: var(--muted); font-size: 13px; letter-spacing: .18em; }
-.login-card {
-  display: flex; flex-direction: column; gap: 18px; padding: clamp(24px, 4vw, 42px);
-  background: rgba(12, 12, 12, .9); border: 1px solid var(--border-strong); border-radius: 16px; box-shadow: 0 32px 90px rgba(0,0,0,.5); backdrop-filter: blur(20px);
-}
+.login-card { display: flex; flex-direction: column; gap: 18px; padding: clamp(24px, 4vw, 42px); background: rgba(12,15,14,.9); border: 1px solid var(--border-strong); border-radius: 12px; box-shadow: 0 32px 90px rgba(0,0,0,.42); backdrop-filter: blur(20px); }
 .card-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
 .card-top span { color: var(--muted-light); font-size: 18px; }
 .login-card label { display: flex; flex-direction: column; gap: 7px; color: var(--muted); font-size: 11px; letter-spacing: .08em; }
 .btn { margin-top: 8px; padding: 14px 16px; color: #11140f; background: var(--accent); border: 1px solid var(--accent); border-radius: var(--radius); cursor: pointer; font-size: 13px; letter-spacing: .08em; transition: background .25s var(--ease), transform .25s var(--ease), box-shadow .25s var(--ease); }
-.btn:hover:not(:disabled) { background: #fff; box-shadow: 0 10px 26px rgba(239, 239, 235, .16); transform: translateY(-2px); }
+.btn:hover:not(:disabled) { background: #fff; box-shadow: 0 10px 26px rgba(239,239,235,.16); transform: translateY(-2px); }
 .btn:disabled { cursor: not-allowed; opacity: .55; }
 .login-card footer { display: flex; justify-content: space-between; margin-top: 10px; color: var(--muted-light); font-size: 9px; letter-spacing: .16em; }
+
+.intro-screen { position: fixed; z-index: 5; inset: 0; overflow: hidden; isolation: isolate; background: radial-gradient(ellipse at 50% 48%, rgba(25,29,25,.9), transparent 50%), var(--bg-deep); }
+.intro-screen::before { position: absolute; z-index: -1; inset: 0; background: radial-gradient(ellipse at 50% 50%, transparent 25%, rgba(0,0,0,.52) 100%); content: ""; }
+.intro-header, .intro-footer { position: absolute; z-index: 2; right: clamp(22px, 4.4vw, 64px); left: clamp(22px, 4.4vw, 64px); display: flex; align-items: center; justify-content: space-between; }
+.intro-header { top: clamp(22px, 4vh, 38px); }
+.intro-brand { display: flex; align-items: center; gap: 12px; color: var(--text); font-size: 11px; font-weight: 600; letter-spacing: .14em; }
+.intro-brand-mark { display: grid; width: 34px; height: 34px; place-items: center; border: 1px solid rgba(203,210,118,.68); color: var(--accent); font-family: var(--font-display); font-size: 19px; font-weight: 400; }
+.intro-brand small { display: block; margin-top: 3px; color: var(--muted-light); font-size: 7px; font-weight: 400; letter-spacing: .16em; }
+.intro-skip { display: inline-flex; align-items: center; gap: 12px; padding: 10px 0 10px 12px; color: var(--muted); background: transparent; border: 0; cursor: pointer; font-size: 11px; letter-spacing: .08em; transition: color .2s ease; }
+.intro-skip:hover, .intro-skip:focus-visible { color: var(--text); }
+.intro-skip:focus-visible { outline: 1px solid var(--accent); outline-offset: 4px; }
+.intro-skip span { color: var(--accent); font-size: 15px; }
+.intro-grid { position: absolute; z-index: -1; inset: 0; opacity: .2; background-image: linear-gradient(rgba(234,238,222,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(234,238,222,.05) 1px, transparent 1px); background-size: 72px 72px; mask-image: radial-gradient(ellipse at center, black, transparent 75%); }
+.intro-composition { position: absolute; top: 48%; left: 50%; width: min(92vmin, 1040px); aspect-ratio: 1; transform: translate(-50%, -50%); }
+.intro-orbits { display: block; width: 100%; height: 100%; overflow: visible; }
+.intro-ring, .intro-orbit { vector-effect: non-scaling-stroke; }
+.intro-core { position: absolute; top: 23%; left: 50%; display: grid; width: clamp(48px, 7vmin, 72px); aspect-ratio: 1; place-items: center; border: 1px solid rgba(237,240,228,.36); border-radius: 50%; color: var(--text); background: radial-gradient(circle at 32% 28%, rgba(203,210,118,.19), rgba(18,21,18,.94) 70%); box-shadow: 0 0 45px rgba(203,210,118,.09), inset 0 0 24px rgba(203,210,118,.06); transform: translate(-50%, -50%); }
+.intro-core span { font-family: var(--font-display); font-size: clamp(26px, 4vmin, 40px); letter-spacing: -.08em; }
+.intro-core i { position: absolute; right: 12%; bottom: 16%; width: 5px; height: 5px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 12px var(--accent); }
+.intro-copy { position: absolute; z-index: 1; top: 48%; left: 50%; width: min(88vw, 620px); text-align: center; transform: translate(-50%, -50%); }
+.intro-kicker { color: var(--accent); font-size: 9px; font-weight: 600; letter-spacing: .24em; }
+.intro-copy h2 { margin-top: 20px; color: var(--text); font-family: var(--font-display); font-size: clamp(34px, 5vw, 64px); font-weight: 400; letter-spacing: -.045em; line-height: 1.2; }
+.intro-caption { margin-top: 16px; color: var(--muted); font-size: 12px; letter-spacing: .14em; }
+.intro-footer { bottom: clamp(22px, 4vh, 38px); color: var(--muted-light); font-size: 9px; letter-spacing: .16em; }
+
 @media (max-width: 700px) {
-  .login { grid-template-columns: 1fr; gap: 42px; align-content: center; padding-top: 40px; padding-bottom: 40px; }
+  .login-content { grid-template-columns: 1fr; gap: 42px; align-content: center; padding-top: 40px; padding-bottom: 40px; }
   .login-intro h1 { font-size: clamp(3.4rem, 17vw, 5rem); }
   .login-index { margin-bottom: 18px; }
   .login-intro > p:last-child { margin-top: 17px; }
+  .intro-composition { top: 45%; width: min(112vw, 680px); }
+  .intro-copy { top: 45%; }
+  .intro-copy h2 { margin-top: 16px; font-size: clamp(32px, 9vw, 48px); }
+  .intro-caption { margin-top: 12px; font-size: 11px; }
+  .intro-grid { background-size: 48px 48px; }
+}
+@media (max-height: 620px) and (min-width: 701px) {
+  .intro-composition { width: min(72vmin, 620px); }
+  .intro-copy h2 { font-size: clamp(32px, 5vh, 48px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .intro-skip, .btn { transition: none; }
 }
 </style>
