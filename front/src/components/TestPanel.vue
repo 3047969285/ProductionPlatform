@@ -24,8 +24,10 @@ const planEditing = ref(false)
 const planSaving = ref(false)
 const planForm = ref({})
 const planCases = ref([])
+const planCasesLoading = ref(false)
 const planCasesDialog = ref(false)
 const activePlan = ref(null)
+let planCasesRequest = 0
 
 async function loadCases() {
   caseLoading.value = true
@@ -113,10 +115,26 @@ async function removePlan(id) {
 }
 
 // 计划内用例
+async function loadActivePlanCases() {
+  const planId = activePlan.value?.id
+  if (!planId) return
+  const request = ++planCasesRequest
+  planCasesLoading.value = true
+  try {
+    const result = await api.get(`/test-plans/${planId}/cases`)
+    if (request === planCasesRequest && activePlan.value?.id === planId) planCases.value = result.data
+  } catch (e) {
+    if (request === planCasesRequest) ElMessage.error(e.message || '计划用例加载失败')
+  } finally {
+    if (request === planCasesRequest) planCasesLoading.value = false
+  }
+}
+
 async function showPlanCases(plan) {
   activePlan.value = plan
+  planCases.value = []
   planCasesDialog.value = true
-  planCases.value = (await api.get(`/test-plans/${plan.id}/cases`)).data
+  await loadActivePlanCases()
 }
 async function addCasesToPlan() {
   if (!cases.value.length) return ElMessage.warning('用例库为空')
@@ -126,21 +144,23 @@ async function addCasesToPlan() {
     const ids = value.split(/[,，\s]+/).map(Number).filter(Boolean)
     await api.post(`/test-plans/${activePlan.value.id}/cases`, ids)
     ElMessage.success('已加入')
-    planCases.value = (await api.get(`/test-plans/${activePlan.value.id}/cases`)).data
-  } catch { /* cancel */ }
+    await loadActivePlanCases()
+  } catch (e) {
+    if (e !== 'cancel') ElMessage.error(e.message || '加入失败')
+  }
 }
 async function execCase(row, status) {
   try {
     await api.put(`/test-plans/${activePlan.value.id}/cases`, {
       planId: activePlan.value.id, caseId: row.caseId, status, executor: '当前用户',
     })
-    planCases.value = (await api.get(`/test-plans/${activePlan.value.id}/cases`)).data
+    await loadActivePlanCases()
   } catch (e) { ElMessage.error(e.message) }
 }
 async function removePlanCase(row) {
   try {
     await api.delete(`/test-plans/${activePlan.value.id}/cases/${row.caseId}`)
-    planCases.value = (await api.get(`/test-plans/${activePlan.value.id}/cases`)).data
+    await loadActivePlanCases()
   } catch (e) { ElMessage.error(e.message) }
 }
 
@@ -264,7 +284,7 @@ watch(() => props.projectId, () => { loadCases(); if (sub.value === 'plans') loa
         <el-button size="small" @click="addCasesToPlan">+ 从用例库加入</el-button>
       </div>
       <div class="table-frame">
-        <el-table :data="planCases" v-loading="caseLoading" stripe>
+        <el-table :data="planCases" v-loading="planCasesLoading" stripe>
         <el-table-column prop="caseId" label="#" width="60" />
         <el-table-column prop="caseTitle" label="用例" min-width="160" show-overflow-tooltip />
         <el-table-column prop="steps" label="步骤" min-width="140" show-overflow-tooltip />
