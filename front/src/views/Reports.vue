@@ -28,6 +28,7 @@ const globalData = ref({
   completion: [],
 })
 const projectData = ref(null)
+let loadSequence = 0
 
 const isAllProjects = computed(() => selectedProjectId.value === 'all')
 const selectedProject = computed(() => projects.value.find((item) => String(item.id) === String(selectedProjectId.value)))
@@ -65,7 +66,7 @@ function sortRecent(list) {
 }
 
 async function loadProjects() {
-  projects.value = (await api.get('/projects')).data
+  return (await api.get('/projects')).data
 }
 
 async function loadGlobalBoard() {
@@ -78,7 +79,7 @@ async function loadGlobalBoard() {
     api.get('/reports/trend'),
     api.get('/reports/completion'),
   ])
-  globalData.value = {
+  return {
     status: status.data,
     severity: severity.data,
     projects: projectRows.data,
@@ -87,11 +88,10 @@ async function loadGlobalBoard() {
     trend: trend.data,
     completion: completion.data,
   }
-  projectData.value = null
 }
 
-async function loadProjectBoard() {
-  const projectId = Number(selectedProjectId.value)
+async function loadProjectBoard(selectedId) {
+  const projectId = Number(selectedId)
   const [requirements, tasks, bugs, sprints, testPlans, milestones, releases, members] = await Promise.all([
     api.get('/requirements', { params: { projectId } }),
     api.get('/tasks', { params: { projectId } }),
@@ -102,7 +102,7 @@ async function loadProjectBoard() {
     api.get('/releases', { params: { projectId } }),
     api.get(`/projects/${projectId}/members`),
   ])
-  projectData.value = {
+  return {
     requirements: requirements.data,
     tasks: tasks.data,
     bugs: bugs.data,
@@ -115,16 +115,32 @@ async function loadProjectBoard() {
 }
 
 async function load() {
+  const sequence = ++loadSequence
   loading.value = true
   loadError.value = false
   try {
-    if (!projects.value.length) await loadProjects()
-    if (isAllProjects.value) await loadGlobalBoard()
-    else await loadProjectBoard()
+    if (!projects.value.length) {
+      const nextProjects = await loadProjects()
+      if (sequence !== loadSequence) return
+      projects.value = nextProjects
+    }
+
+    const allProjects = isAllProjects.value
+    const nextData = allProjects
+      ? await loadGlobalBoard()
+      : await loadProjectBoard(selectedProjectId.value)
+    if (sequence !== loadSequence) return
+
+    if (allProjects) {
+      globalData.value = nextData
+      projectData.value = null
+    } else {
+      projectData.value = nextData
+    }
   } catch {
-    loadError.value = true
+    if (sequence === loadSequence) loadError.value = true
   } finally {
-    loading.value = false
+    if (sequence === loadSequence) loading.value = false
   }
 }
 
@@ -188,6 +204,11 @@ const globalProjectRows = computed(() => {
     completion: completionMap.get(String(row.projectId)) || { total: 0, doneCnt: 0 },
   }))
 })
+
+const globalSprintRows = computed(() => (globalData.value.sprints || []).slice(0, 6).map((row) => ({
+  ...row,
+  total: number(row.taskCnt) + number(row.bugCnt),
+})))
 
 const globalRiskRows = computed(() => [...(globalData.value.severity || [])]
   .sort((a, b) => number(b.cnt) - number(a.cnt))
@@ -273,6 +294,7 @@ const memberLoad = computed(() => {
 const maxMemberLoad = computed(() => Math.max(1, ...memberLoad.value.map((row) => row.count)))
 const maxRisk = computed(() => Math.max(1, ...globalRiskRows.value.map((row) => number(row.cnt))))
 const maxTrend = computed(() => Math.max(1, ...trendRows.value.map((row) => row.total)))
+const maxSprintLoad = computed(() => Math.max(1, ...globalSprintRows.value.map((row) => row.total)))
 
 watch(selectedProjectId, () => {
   if (projects.value.length) load()
@@ -374,6 +396,27 @@ onMounted(load)
             </el-table>
           </div>
           <p v-if="!globalProjectRows.length" class="empty">还没有项目数据</p>
+        </section>
+
+        <section class="card">
+          <div class="section-head">
+            <div><p class="eyebrow">全项目 · 迭代</p><h3>迭代工作量</h3></div>
+            <span class="section-note">最近 6 个 · 任务 + 缺陷</span>
+          </div>
+          <div v-if="globalSprintRows.length" class="sprint-load-list">
+            <div v-for="row in globalSprintRows" :key="row.sprintId" class="sprint-load-row">
+              <div class="sprint-load-heading">
+                <span :title="row.sprintName">{{ row.sprintName }}</span>
+                <strong>{{ row.total }}</strong>
+              </div>
+              <div class="sprint-load-track" aria-hidden="true">
+                <span class="sprint-task-fill" :style="{ width: (number(row.taskCnt) / maxSprintLoad * 100) + '%' }" />
+                <span class="sprint-bug-fill" :style="{ width: (number(row.bugCnt) / maxSprintLoad * 100) + '%' }" />
+              </div>
+              <small>{{ row.taskCnt }} 任务 <span>·</span> {{ row.bugCnt }} 缺陷</small>
+            </div>
+          </div>
+          <p v-else class="empty">还没有迭代工作项</p>
         </section>
 
         <section class="card span-2">
@@ -535,6 +578,16 @@ onMounted(load)
 .bar-fill.cyan { background: var(--cyan); }
 .bar-fill.muted { background: var(--muted); }
 .bar-val { color: var(--text); text-align: right; }
+.sprint-load-list { display: flex; flex-direction: column; gap: 13px; }
+.sprint-load-heading { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 5px; font-size: 12px; }
+.sprint-load-heading span { overflow: hidden; color: var(--text); text-overflow: ellipsis; white-space: nowrap; }
+.sprint-load-heading strong { color: var(--text); font-weight: 500; }
+.sprint-load-track { display: flex; height: 5px; overflow: hidden; border-radius: 999px; background: rgba(234, 238, 222, .1); }
+.sprint-load-track span { height: 100%; }
+.sprint-task-fill { background: var(--cyan); }
+.sprint-bug-fill { background: var(--pink); }
+.sprint-load-row small { display: block; margin-top: 4px; color: var(--muted); font-size: 10px; }
+.sprint-load-row small span { padding: 0 3px; color: var(--muted-light); }
 .table-frame { margin-top: 4px; }
 .trend-bars { display: flex; align-items: flex-end; gap: 3px; height: 140px; padding-top: 10px; }
 .trend-col { display: flex; align-items: flex-end; flex: 1; height: 100%; min-width: 2px; }

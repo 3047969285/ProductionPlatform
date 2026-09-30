@@ -363,4 +363,8 @@ body::after { display: none; }
     height: 42vh;
     background-size: 100% 32px, 42px 100%;
   }
+  .layout .page .table-frame {
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
 }
