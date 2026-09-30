@@ -15,6 +15,7 @@ const filter = ref('all')
 const sprints = ref([])
 const dialog = ref(false)
 const editing = ref(false)
+const saving = ref(false)
 const form = ref({})
 
 async function loadSprints() {
@@ -54,14 +55,18 @@ function openEdit(row) {
 }
 
 async function save() {
+  if (saving.value) return
   if (!form.value.title?.trim()) return ElMessage.warning('请填写标题')
+  form.value.title = form.value.title.trim()
+  saving.value = true
   try {
     if (editing.value) await api.put('/bugs', form.value)
     else await api.post('/bugs', form.value)
     ElMessage.success('保存成功')
     dialog.value = false
-    load()
+    await load()
   } catch (e) { ElMessage.error(e.message) }
+  finally { saving.value = false }
 }
 
 async function changeStatus(row, status) {
@@ -131,8 +136,8 @@ watch(() => props.projectId, () => { load(); loadSprints() })
       </el-table>
     </div>
 
-    <el-dialog v-model="dialog" :title="editing ? '编辑缺陷' : '登记缺陷'" width="640px" destroy-on-close>
-      <el-form label-width="90px" size="default">
+    <el-dialog v-model="dialog" :title="editing ? '编辑缺陷' : '登记缺陷'" width="640px" destroy-on-close :close-on-click-modal="!saving" :close-on-press-escape="!saving" :show-close="!saving">
+      <el-form label-width="90px" size="default" :disabled="saving">
         <el-form-item label="标题"><el-input v-model="form.title" /></el-form-item>
         <el-form-item label="迭代">
           <el-select v-model="form.sprintId" clearable style="width: 100%" placeholder="不选则无迭代">
@@ -163,8 +168,8 @@ watch(() => props.projectId, () => { load(); loadSprints() })
         <el-form-item label="详情"><RichEditor v-model="form.content" /></el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="dialog = false">取消</el-button>
-        <el-button type="primary" @click="save">保存</el-button>
+        <el-button :disabled="saving" @click="dialog = false">取消</el-button>
+        <el-button type="primary" :loading="saving" @click="save">保存</el-button>
       </template>
     </el-dialog>
 
