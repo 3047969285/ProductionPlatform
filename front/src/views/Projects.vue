@@ -13,6 +13,7 @@ const workSummary = ref([])
 const completionSummary = ref([])
 const keyword = ref('')
 const loading = ref(false)
+const saving = ref(false)
 const loadError = ref(false)
 const dialog = ref(false)
 const editing = ref(false)
@@ -161,7 +162,9 @@ function openEdit(p) {
 }
 
 async function save() {
+  if (saving.value) return
   if (!form.value.code || !form.value.name) return ElMessage.warning('请填写编码和名称')
+  saving.value = true
   try {
     if (editing.value) await api.put('/projects', form.value)
     else await api.post('/projects', form.value)
@@ -169,6 +172,7 @@ async function save() {
     dialog.value = false
     load()
   } catch (e) { ElMessage.error(e.message) }
+  finally { saving.value = false }
 }
 
 async function remove(id) {
@@ -258,7 +262,7 @@ onUnmounted(() => {
     </div>
 
     <el-dialog v-model="dialog" :title="editing ? '编辑项目' : '新建项目'" width="520px">
-      <el-form label-width="80px" size="default">
+      <el-form label-width="80px" size="default" :disabled="saving">
         <el-form-item label="编码"><el-input v-model="form.code" :disabled="editing" /></el-form-item>
         <el-form-item label="名称"><el-input v-model="form.name" /></el-form-item>
         <el-form-item label="描述"><el-input v-model="form.description" type="textarea" :rows="2" /></el-form-item>
@@ -266,8 +270,8 @@ onUnmounted(() => {
         <el-form-item label="形态"><el-input v-model="form.deliveryType" placeholder="SaaS / App / 定制" /></el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="dialog = false">取消</el-button>
-        <el-button type="primary" @click="save">保存</el-button>
+        <el-button :disabled="saving" @click="dialog = false">取消</el-button>
+        <el-button type="primary" :loading="saving" @click="save">保存</el-button>
       </template>
     </el-dialog>
   </PageShell>
