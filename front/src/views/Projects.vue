@@ -13,6 +13,7 @@ const workSummary = ref([])
 const completionSummary = ref([])
 const keyword = ref('')
 const loading = ref(false)
+const loadError = ref(false)
 const dialog = ref(false)
 const editing = ref(false)
 const openingProject = ref(false)
@@ -25,6 +26,7 @@ let hasEntered = false
 
 async function load() {
   loading.value = true
+  loadError.value = false
   try {
     const [projects, work, completion] = await Promise.all([
       api.get('/projects'),
@@ -35,7 +37,7 @@ async function load() {
     workSummary.value = work.data
     completionSummary.value = completion.data
   }
-  catch (e) { ElMessage.error(e.message) }
+  catch { loadError.value = true }
   finally { loading.value = false }
 }
 
@@ -204,6 +206,10 @@ onUnmounted(() => {
       </div>
     </template>
     <div ref="root" v-loading="loading" class="gallery-layout" :class="{ opening: openingProject }">
+      <div v-if="loadError" class="list-error" role="alert">
+        <span>项目列表读取失败</span>
+        <el-button link @click="load">重新加载</el-button>
+      </div>
       <div v-if="filteredList.length" class="gallery-stage" tabindex="0" aria-label="项目画廊，使用左右方向键切换，按回车打开当前项目" :aria-busy="openingProject" @keydown="handleGalleryKey">
         <span class="stage-note">PROJECTS / {{ String(filteredList.length).padStart(2, '0') }}</span>
         <article
@@ -240,7 +246,7 @@ onUnmounted(() => {
           </div>
         </article>
       </div>
-      <p v-if="!loading && !filteredList.length" class="empty">{{ list.length ? '没有匹配的项目' : '还没有项目' }}</p>
+      <p v-if="!loadError && !loading && !filteredList.length" class="empty">{{ list.length ? '没有匹配的项目' : '还没有项目' }}</p>
       <div v-if="filteredList.length" class="gallery-controls">
         <span>{{ String(activeIndex + 1).padStart(2, '0') }} <i /> {{ String(filteredList.length).padStart(2, '0') }}</span>
         <div class="gallery-arrows">
@@ -323,6 +329,7 @@ onUnmounted(() => {
 .gallery-arrows button { display: grid; width: 30px; height: 30px; place-items: center; border: 1px solid rgba(239,239,235,.27); border-radius: 50%; color: var(--text); background: transparent; cursor: pointer; transition: color .25s ease, background .25s ease, transform .3s ease; }
 .gallery-arrows button:hover { color: #000; background: var(--text); transform: scale(1.06); }
 .gallery-hint { justify-self: end; color: var(--muted-light); letter-spacing: .08em; }
+.list-error { display: flex; min-height: 76px; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 20px; border: 1px solid var(--border); color: var(--muted); font-size: 11px; }
 .empty { grid-column: 1 / -1; text-align: center; color: var(--muted); padding: 46px 0; font-size: 12px; }
 @media (max-width: 900px) { .project-card { width: min(60vw, 650px); } }
 @media (max-width: 700px) {
