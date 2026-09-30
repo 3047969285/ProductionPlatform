@@ -112,6 +112,7 @@ function openProject(id) {
 }
 
 function handleGalleryKey(event) {
+  if (event.target !== event.currentTarget && event.target.closest('button, a, input, textarea, select, [contenteditable="true"]')) return
   if (openingProject.value) { event.preventDefault(); return }
   if (event.key === 'ArrowLeft') { event.preventDefault(); moveTo(activeIndex.value - 1) }
   if (event.key === 'ArrowRight') { event.preventDefault(); moveTo(activeIndex.value + 1) }
