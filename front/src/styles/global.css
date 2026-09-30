@@ -104,6 +104,13 @@ body::after {
 a { color: inherit; }
 button, input, textarea, select { font: inherit; }
 button { color: inherit; }
+a:focus-visible,
+button:focus-visible,
+[role="button"]:focus-visible,
+[tabindex="0"]:focus-visible {
+  outline: 1px solid var(--accent);
+  outline-offset: 4px;
+}
 h1, h2, h3, h4, p { margin: 0; }
 ul, ol { margin: 0; padding: 0; list-style: none; }
 
