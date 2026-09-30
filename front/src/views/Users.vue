@@ -79,7 +79,7 @@ async function save() {
 
 async function resetPwd(row) {
   try {
-    const { value } = await ElMessageBox.prompt('输入新密码', '重置密码')
+    const { value } = await ElMessageBox.prompt('输入新密码', '重置密码', { inputType: 'password' })
     if (!value) return
     await api.put('/users/password', { id: row.id, password: value })
     ElMessage.success('密码已重置')
