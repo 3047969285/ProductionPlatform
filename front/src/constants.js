@@ -35,8 +35,9 @@ export function badgeClass(type, value) {
   const exec = { pending: 'muted', pass: 'lime', fail: 'pink', blocked: 'pink' }
   const ms = { pending: 'muted', in_progress: 'cyan', done: 'lime', overdue: 'pink' }
   const rel = { planned: 'muted', deploying: 'cyan', done: 'lime', rollback: 'pink' }
+  const env = { dev: 'muted', test: 'cyan', staging: 'purple', prod: 'lime' }
   const map = {
-    task, bug, sprint, member, tcase, tplan, exec, ms, rel,
+    task, bug, sprint, member, tcase, tplan, exec, ms, rel, env,
     team: { active: 'lime', inactive: 'muted' },
     req: { draft: 'muted', review: 'cyan', approved: 'purple', developing: 'cyan', done: 'lime', rejected: 'pink' },
     api: { draft: 'muted', review: 'cyan', published: 'lime', deprecated: 'pink' },

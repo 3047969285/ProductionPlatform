@@ -142,7 +142,7 @@ watch(() => props.projectId, () => { loadMilestones(); if (sub.value === 'releas
           <el-table-column prop="version" label="版本" width="120" />
           <el-table-column label="环境" width="90">
             <template #default="{ row }">
-              <span class="badge" :class="badgeClass('rel', row.status)">{{ releaseEnv[row.environment] }}</span>
+              <span class="badge" :class="badgeClass('env', row.environment)">{{ releaseEnv[row.environment] }}</span>
             </template>
           </el-table-column>
           <el-table-column prop="description" label="说明" min-width="200" show-overflow-tooltip />
