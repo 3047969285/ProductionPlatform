@@ -11,12 +11,14 @@ const milestones = ref([])
 const msLoading = ref(false)
 const msDialog = ref(false)
 const msEditing = ref(false)
+const msSaving = ref(false)
 const msForm = ref({})
 
 const releases = ref([])
 const relLoading = ref(false)
 const relDialog = ref(false)
 const relEditing = ref(false)
+const relSaving = ref(false)
 const relForm = ref({})
 
 async function loadMilestones() {
@@ -49,12 +51,18 @@ function openMsEdit(row) {
   msDialog.value = true
 }
 async function saveMs() {
+  if (msSaving.value) return
   if (!msForm.value.name?.trim()) return ElMessage.warning('请填写名称')
+  msForm.value.name = msForm.value.name.trim()
+  msSaving.value = true
   try {
     if (msEditing.value) await api.put('/milestones', msForm.value)
     else await api.post('/milestones', msForm.value)
-    ElMessage.success('保存成功'); msDialog.value = false; loadMilestones()
+    ElMessage.success('保存成功')
+    msDialog.value = false
+    await loadMilestones()
   } catch (e) { ElMessage.error(e.message) }
+  finally { msSaving.value = false }
 }
 async function removeMs(id) {
   try {
@@ -74,12 +82,18 @@ function openRelEdit(row) {
   relDialog.value = true
 }
 async function saveRel() {
+  if (relSaving.value) return
   if (!relForm.value.version?.trim()) return ElMessage.warning('请填写版本号')
+  relForm.value.version = relForm.value.version.trim()
+  relSaving.value = true
   try {
     if (relEditing.value) await api.put('/releases', relForm.value)
     else await api.post('/releases', relForm.value)
-    ElMessage.success('保存成功'); relDialog.value = false; loadReleases()
+    ElMessage.success('保存成功')
+    relDialog.value = false
+    await loadReleases()
   } catch (e) { ElMessage.error(e.message) }
+  finally { relSaving.value = false }
 }
 async function removeRel(id) {
   try {
@@ -152,8 +166,8 @@ watch(() => props.projectId, () => { loadMilestones(); if (sub.value === 'releas
       </el-tab-pane>
     </el-tabs>
 
-    <el-dialog v-model="msDialog" :title="msEditing ? '编辑里程碑' : '新建里程碑'" width="480px" destroy-on-close>
-      <el-form label-width="80px" size="default">
+    <el-dialog v-model="msDialog" :title="msEditing ? '编辑里程碑' : '新建里程碑'" width="480px" destroy-on-close :close-on-click-modal="!msSaving" :close-on-press-escape="!msSaving" :show-close="!msSaving">
+      <el-form label-width="80px" size="default" :disabled="msSaving">
         <el-form-item label="名称"><el-input v-model="msForm.name" /></el-form-item>
         <el-form-item label="描述"><el-input v-model="msForm.description" type="textarea" :rows="2" /></el-form-item>
         <el-form-item label="计划日期"><el-date-picker v-model="msForm.dueDate" type="date" value-format="YYYY-MM-DD" style="width: 100%" /></el-form-item>
@@ -164,13 +178,13 @@ watch(() => props.projectId, () => { loadMilestones(); if (sub.value === 'releas
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="msDialog = false">取消</el-button>
-        <el-button type="primary" @click="saveMs">保存</el-button>
+        <el-button :disabled="msSaving" @click="msDialog = false">取消</el-button>
+        <el-button type="primary" :loading="msSaving" @click="saveMs">保存</el-button>
       </template>
     </el-dialog>
 
-    <el-dialog v-model="relDialog" :title="relEditing ? '编辑发布' : '登记发布'" width="520px" destroy-on-close>
-      <el-form label-width="80px" size="default">
+    <el-dialog v-model="relDialog" :title="relEditing ? '编辑发布' : '登记发布'" width="520px" destroy-on-close :close-on-click-modal="!relSaving" :close-on-press-escape="!relSaving" :show-close="!relSaving">
+      <el-form label-width="80px" size="default" :disabled="relSaving">
         <el-form-item label="版本号"><el-input v-model="relForm.version" placeholder="如 v1.0.0" /></el-form-item>
         <el-form-item label="环境">
           <el-select v-model="relForm.environment" style="width: 100%">
@@ -186,8 +200,8 @@ watch(() => props.projectId, () => { loadMilestones(); if (sub.value === 'releas
         <el-form-item label="说明"><el-input v-model="relForm.description" type="textarea" :rows="2" /></el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="relDialog = false">取消</el-button>
-        <el-button type="primary" @click="saveRel">保存</el-button>
+        <el-button :disabled="relSaving" @click="relDialog = false">取消</el-button>
+        <el-button type="primary" :loading="relSaving" @click="saveRel">保存</el-button>
       </template>
     </el-dialog>
   </div>
