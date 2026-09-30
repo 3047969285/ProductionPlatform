@@ -1,6 +1,6 @@
 <template>
   <PageShell tag="05 / USERS" title="用户">
-    <template #action><el-button type="primary" @click="openForm()">+ 新增</el-button></template>
+    <template #action><el-button type="primary" :disabled="saving" @click="openForm()">+ 新增</el-button></template>
     <div v-if="loadError" class="list-error" role="alert">
       <span>暂时无法读取用户列表</span>
       <el-button link @click="load">重新加载</el-button>
@@ -23,8 +23,15 @@
       </el-table-column>
       </el-table>
     </div>
-    <el-dialog :title="form.id ? '编辑用户' : '新增用户'" v-model="visible" width="420px">
-      <el-form :model="form" label-width="70px">
+    <el-dialog
+      :title="form.id ? '编辑用户' : '新增用户'"
+      v-model="visible"
+      width="420px"
+      :close-on-click-modal="!saving"
+      :close-on-press-escape="!saving"
+      :show-close="!saving"
+    >
+      <el-form :model="form" label-width="70px" :disabled="saving">
         <el-form-item label="用户名" required><el-input v-model="form.username" :disabled="!!form.id" /></el-form-item>
         <el-form-item v-if="!form.id" label="密码" required><el-input v-model="form.password" type="password" show-password /></el-form-item>
         <el-form-item label="昵称"><el-input v-model="form.nickname" /></el-form-item>
@@ -35,8 +42,8 @@
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="visible = false">取消</el-button>
-        <el-button type="primary" @click="save">保存</el-button>
+        <el-button :disabled="saving" @click="visible = false">取消</el-button>
+        <el-button type="primary" :loading="saving" @click="save">保存</el-button>
       </template>
     </el-dialog>
   </PageShell>
@@ -52,18 +59,22 @@ import api from '../api'
 
 const { list, loading, load, remove, loadError } = useCrud('/users')
 const visible = ref(false)
+const saving = ref(false)
 const form = ref({})
 
 function openForm(row) { form.value = row ? { ...row } : { role: 'developer', password: '' }; visible.value = true }
 
 async function save() {
+  if (saving.value) return
   if (!form.value.username) return ElMessage.warning('用户名必填')
   if (!form.value.id && !form.value.password) return ElMessage.warning('密码必填')
+  saving.value = true
   try {
     if (form.value.id) await api.put('/users', form.value)
     else await api.post('/users', form.value)
     ElMessage.success('保存成功'); visible.value = false; await load()
   } catch (e) { ElMessage.error(e.message) }
+  finally { saving.value = false }
 }
 
 async function resetPwd(row) {
