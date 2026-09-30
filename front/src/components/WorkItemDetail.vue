@@ -71,6 +71,7 @@ async function loadActivities() {
 }
 
 async function submitComment() {
+  if (commentLoading.value) return
   const text = newComment.value.trim()
   if (!text) return
   commentLoading.value = true
@@ -184,7 +185,7 @@ watch(() => props.visible, (v) => {
           <p v-if="!comments.length" class="empty">暂无评论</p>
         </div>
         <div class="comment-input">
-          <el-input v-model="newComment" type="textarea" :rows="2" placeholder="写下评论..." />
+          <el-input v-model="newComment" type="textarea" :rows="2" placeholder="写下评论..." :disabled="commentLoading" />
           <el-button type="primary" size="small" :loading="commentLoading" @click="submitComment">发送</el-button>
         </div>
       </div>
