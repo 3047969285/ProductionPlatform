@@ -72,6 +72,7 @@ onMounted(() => {
 
   introContext = gsap.context(() => {
     gsap.set('.intro-ring, .intro-orbit, .intro-core, .intro-copy > *', { autoAlpha: 0 })
+    gsap.set('.intro-work', { autoAlpha: 0, scale: 0.96 })
     gsap.set('.intro-ring--outer', { scale: 0.82, transformOrigin: '50% 50%' })
     gsap.set('.intro-ring--inner', { scale: 1.12, transformOrigin: '50% 50%' })
     gsap.set('.intro-core', { scale: 0.82, y: 8, transformOrigin: '50% 50%' })
@@ -83,7 +84,9 @@ onMounted(() => {
     })
       .to('.intro-ring--outer', { autoAlpha: 0.64, scale: 1, duration: 1.05 }, 0)
       .to('.intro-ring--inner', { autoAlpha: 1, scale: 1, duration: 1.18 }, 0.08)
+      .to('.intro-ring--chromatic', { autoAlpha: 0.72, duration: 0.9 }, 0.12)
       .to('.intro-orbit', { autoAlpha: 0.82, duration: 0.75 }, 0.28)
+      .to('.intro-work--left, .intro-work--right', { autoAlpha: 0.74, scale: 1, duration: 0.95, stagger: 0.08 }, 0.16)
       .to('.intro-core', { autoAlpha: 1, scale: 1, y: 0, duration: 0.7 }, 0.42)
       .to('.intro-copy > *', { autoAlpha: 1, y: 0, duration: 0.64, stagger: 0.12 }, 0.64)
       .to('.intro-orbit--slow', { rotation: 22, duration: 2.35, ease: 'none', transformOrigin: '50% 50%' }, 0.2)
@@ -130,6 +133,17 @@ onUnmounted(() => {
       </header>
 
       <div class="intro-grid" aria-hidden="true" />
+      <div class="intro-floor" aria-hidden="true" />
+      <article class="intro-work intro-work--left" aria-hidden="true">
+        <header><span>01 / DISCOVERY</span><span>PDE / FLOW</span></header>
+        <div class="work-visual work-visual--left"><i /><i /><i /></div>
+        <footer><strong>需求定义</strong><span>目标 · 范围 · 验收</span></footer>
+      </article>
+      <article class="intro-work intro-work--right" aria-hidden="true">
+        <header><span>04 / DELIVERY</span><span>BUILD / QA</span></header>
+        <div class="work-visual work-visual--right"><i /><i /><i /></div>
+        <footer><strong>稳定交付</strong><span>构建 · 测试 · 部署</span></footer>
+      </article>
       <div class="intro-composition" aria-hidden="true">
         <svg class="intro-orbits" viewBox="0 0 1000 1000" fill="none">
           <defs>
@@ -151,9 +165,18 @@ onUnmounted(() => {
               <stop offset=".82" stop-color="#858878" />
               <stop offset="1" stop-color="#171a17" />
             </linearGradient>
+            <linearGradient id="intro-chroma" x1="75" y1="210" x2="920" y2="790" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#bd796d" stop-opacity=".22" />
+              <stop offset=".24" stop-color="#a59bc2" stop-opacity=".34" />
+              <stop offset=".49" stop-color="#d2c99d" stop-opacity=".48" />
+              <stop offset=".72" stop-color="#8fa9a0" stop-opacity=".32" />
+              <stop offset="1" stop-color="#bd796d" stop-opacity=".22" />
+            </linearGradient>
           </defs>
           <circle cx="500" cy="500" r="430" fill="url(#intro-glow)" />
+          <circle class="intro-ring intro-ring--chromatic" cx="500" cy="500" r="451" stroke="url(#intro-chroma)" stroke-width="6" />
           <circle class="intro-ring intro-ring--outer" cx="500" cy="500" r="424" stroke="url(#intro-metal)" stroke-width="52" />
+          <circle class="intro-ring intro-ring--chromatic" cx="500" cy="500" r="397" stroke="url(#intro-chroma)" stroke-width="3" />
           <circle class="intro-ring intro-ring--inner" cx="500" cy="500" r="399" stroke="url(#intro-ring-light)" stroke-opacity=".68" />
           <circle class="intro-ring intro-ring--inner" cx="500" cy="500" r="385" stroke="#edf0e4" stroke-opacity=".16" />
           <circle class="intro-ring intro-ring--inner" cx="500" cy="500" r="374" stroke="#cbd276" stroke-opacity=".28" stroke-dasharray="1 10" />
@@ -217,13 +240,35 @@ onUnmounted(() => {
 .intro-skip:focus-visible { outline: 1px solid var(--accent); outline-offset: 4px; }
 .intro-skip span { color: var(--accent); font-size: 15px; }
 .intro-grid { position: absolute; z-index: -1; inset: 0; opacity: .2; background-image: linear-gradient(rgba(234,238,222,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(234,238,222,.05) 1px, transparent 1px); background-size: 72px 72px; mask-image: radial-gradient(ellipse at center, black, transparent 75%); }
-.intro-composition { position: absolute; top: 48%; left: 50%; width: min(92vmin, 1040px); aspect-ratio: 1; transform: translate(-50%, -50%); }
+.intro-floor { position: absolute; z-index: 0; right: -22%; bottom: -34%; left: -22%; height: 82%; opacity: .27; transform: perspective(780px) rotateX(64deg); transform-origin: center top; background-image: linear-gradient(rgba(234,238,222,.12) 1px, transparent 1px), linear-gradient(90deg, rgba(234,238,222,.12) 1px, transparent 1px); background-size: 58px 58px; mask-image: linear-gradient(to bottom, transparent, black 24%, black 78%, transparent); }
+.intro-work { position: absolute; z-index: 1; top: 52%; display: flex; width: clamp(300px, 36vw, 520px); height: clamp(250px, 42vh, 390px); flex-direction: column; justify-content: space-between; padding: clamp(18px, 2vw, 28px); border: 1px solid rgba(237,240,228,.14); border-radius: 14px; color: var(--text); background: linear-gradient(132deg, rgba(37,40,37,.88), rgba(13,15,14,.92) 70%); box-shadow: 0 28px 80px rgba(0,0,0,.3); opacity: .74; transform-origin: center; }
+.intro-work--left { left: -5vw; transform: translateY(-50%) perspective(1200px) rotateY(17deg) rotateZ(-1.5deg); }
+.intro-work--right { right: -5vw; transform: translateY(-50%) perspective(1200px) rotateY(-17deg) rotateZ(1.5deg); }
+.intro-work > header, .intro-work > footer { position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.intro-work--left > header { justify-content: flex-end; padding-right: 94px; }
+.intro-work--left > footer { flex-direction: column; align-items: flex-end; justify-content: flex-end; padding-right: 94px; text-align: right; }
+.intro-work--right > header { justify-content: flex-start; padding-left: 94px; }
+.intro-work--right > footer { flex-direction: column; align-items: flex-start; justify-content: flex-end; padding-left: 94px; text-align: left; }
+.intro-work > header { color: var(--muted-light); font-size: 8px; letter-spacing: .18em; }
+.intro-work > footer strong { font-family: var(--font-display); font-size: clamp(20px, 2.2vw, 30px); font-weight: 400; letter-spacing: -.04em; }
+.intro-work > footer span { color: var(--muted); font-size: 9px; letter-spacing: .08em; }
+.work-visual { position: absolute; inset: 54px 20px 58px; overflow: hidden; border: 1px solid rgba(237,240,228,.1); background: linear-gradient(140deg, rgba(90,94,84,.28), rgba(9,11,10,.32)); }
+.work-visual::before, .work-visual::after { position: absolute; border: 1px solid rgba(237,240,228,.2); border-radius: 50%; content: ""; }
+.work-visual::before { top: 10%; right: 8%; width: 54%; aspect-ratio: 1; box-shadow: 0 0 0 14px rgba(237,240,228,.025), inset 0 0 42px rgba(203,210,118,.08); }
+.work-visual::after { right: 19%; bottom: 7%; width: 66%; height: 22%; border-radius: 50%; transform: rotate(-14deg); }
+.work-visual--left { background: linear-gradient(135deg, rgba(73,78,69,.36), rgba(17,19,17,.72)); }
+.work-visual--right { background: linear-gradient(135deg, rgba(73,77,70,.24), rgba(21,23,21,.76)); }
+.work-visual i { position: absolute; z-index: 1; left: 9%; width: 28%; height: 1px; background: rgba(237,240,228,.22); }
+.work-visual i:first-child { top: 26%; }
+.work-visual i:nth-child(2) { top: 33%; width: 19%; }
+.work-visual i:last-child { top: 40%; width: 24%; }
+.intro-composition { position: absolute; z-index: 2; top: 48%; left: 50%; width: min(92vmin, 1040px); aspect-ratio: 1; transform: translate(-50%, -50%); }
 .intro-orbits { display: block; width: 100%; height: 100%; overflow: visible; }
 .intro-ring, .intro-orbit { vector-effect: non-scaling-stroke; }
 .intro-core { position: absolute; top: 23%; left: 50%; display: grid; width: clamp(48px, 7vmin, 72px); aspect-ratio: 1; place-items: center; border: 1px solid rgba(237,240,228,.36); border-radius: 50%; color: var(--text); background: radial-gradient(circle at 32% 28%, rgba(203,210,118,.19), rgba(18,21,18,.94) 70%); box-shadow: 0 0 45px rgba(203,210,118,.09), inset 0 0 24px rgba(203,210,118,.06); transform: translate(-50%, -50%); }
 .intro-core span { font-family: var(--font-display); font-size: clamp(26px, 4vmin, 40px); letter-spacing: -.08em; }
 .intro-core i { position: absolute; right: 12%; bottom: 16%; width: 5px; height: 5px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 12px var(--accent); }
-.intro-copy { position: absolute; z-index: 1; top: 48%; left: 50%; width: min(88vw, 620px); text-align: center; transform: translate(-50%, -50%); }
+.intro-copy { position: absolute; z-index: 3; top: 48%; left: 50%; width: min(88vw, 620px); text-align: center; transform: translate(-50%, -50%); }
 .intro-kicker { color: var(--accent); font-size: 9px; font-weight: 600; letter-spacing: .24em; }
 .intro-copy h2 { margin-top: 20px; color: var(--text); font-family: var(--font-display); font-size: clamp(34px, 5vw, 64px); font-weight: 400; letter-spacing: -.045em; line-height: 1.2; }
 .intro-caption { margin-top: 16px; color: var(--muted); font-size: 12px; letter-spacing: .14em; }
@@ -234,12 +279,15 @@ onUnmounted(() => {
   .login-intro h1 { font-size: clamp(3.4rem, 17vw, 5rem); }
   .login-index { margin-bottom: 18px; }
   .login-intro > p:last-child { margin-top: 17px; }
+  .intro-work { display: none; }
+  .intro-floor { opacity: .14; background-size: 46px 46px; }
   .intro-composition { top: 45%; width: min(112vw, 680px); }
   .intro-copy { top: 45%; }
   .intro-copy h2 { margin-top: 16px; font-size: clamp(32px, 9vw, 48px); }
   .intro-caption { margin-top: 12px; font-size: 11px; }
   .intro-grid { background-size: 48px 48px; }
 }
+@media (max-width: 1000px) { .intro-work { display: none; } }
 @media (max-height: 620px) and (min-width: 701px) {
   .intro-composition { width: min(72vmin, 620px); }
   .intro-copy h2 { font-size: clamp(32px, 5vh, 48px); }
