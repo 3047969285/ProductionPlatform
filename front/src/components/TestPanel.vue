@@ -13,6 +13,7 @@ const cases = ref([])
 const caseLoading = ref(false)
 const caseDialog = ref(false)
 const caseEditing = ref(false)
+const caseSaving = ref(false)
 const caseForm = ref({})
 
 // 测试计划
@@ -20,6 +21,7 @@ const plans = ref([])
 const planLoading = ref(false)
 const planDialog = ref(false)
 const planEditing = ref(false)
+const planSaving = ref(false)
 const planForm = ref({})
 const planCases = ref([])
 const planCasesDialog = ref(false)
@@ -56,14 +58,18 @@ function openCaseEdit(row) {
   caseDialog.value = true
 }
 async function saveCase() {
+  if (caseSaving.value) return
   if (!caseForm.value.title?.trim()) return ElMessage.warning('请填写用例标题')
+  caseForm.value.title = caseForm.value.title.trim()
+  caseSaving.value = true
   try {
     if (caseEditing.value) await api.put('/test-cases', caseForm.value)
     else await api.post('/test-cases', caseForm.value)
     ElMessage.success('保存成功')
     caseDialog.value = false
-    loadCases()
+    await loadCases()
   } catch (e) { ElMessage.error(e.message) }
+  finally { caseSaving.value = false }
 }
 async function removeCase(id) {
   try {
@@ -85,14 +91,18 @@ function openPlanEdit(row) {
   planDialog.value = true
 }
 async function savePlan() {
+  if (planSaving.value) return
   if (!planForm.value.name?.trim()) return ElMessage.warning('请填写计划名称')
+  planForm.value.name = planForm.value.name.trim()
+  planSaving.value = true
   try {
     if (planEditing.value) await api.put('/test-plans', planForm.value)
     else await api.post('/test-plans', planForm.value)
     ElMessage.success('保存成功')
     planDialog.value = false
-    loadPlans()
+    await loadPlans()
   } catch (e) { ElMessage.error(e.message) }
+  finally { planSaving.value = false }
 }
 async function removePlan(id) {
   try {
@@ -204,8 +214,8 @@ watch(() => props.projectId, () => { loadCases(); if (sub.value === 'plans') loa
     </el-tabs>
 
     <!-- 用例弹窗 -->
-    <el-dialog v-model="caseDialog" :title="caseEditing ? '编辑用例' : '新增用例'" width="620px" destroy-on-close>
-      <el-form label-width="90px" size="default">
+    <el-dialog v-model="caseDialog" :title="caseEditing ? '编辑用例' : '新增用例'" width="620px" destroy-on-close :close-on-click-modal="!caseSaving" :close-on-press-escape="!caseSaving" :show-close="!caseSaving">
+      <el-form label-width="90px" size="default" :disabled="caseSaving">
         <el-form-item label="标题"><el-input v-model="caseForm.title" /></el-form-item>
         <el-form-item label="优先级">
           <el-select v-model="caseForm.priority" style="width: 100%">
@@ -218,14 +228,14 @@ watch(() => props.projectId, () => { loadCases(); if (sub.value === 'plans') loa
         <el-form-item label="维护人"><el-input v-model="caseForm.owner" /></el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="caseDialog = false">取消</el-button>
-        <el-button type="primary" @click="saveCase">保存</el-button>
+        <el-button :disabled="caseSaving" @click="caseDialog = false">取消</el-button>
+        <el-button type="primary" :loading="caseSaving" @click="saveCase">保存</el-button>
       </template>
     </el-dialog>
 
     <!-- 计划弹窗 -->
-    <el-dialog v-model="planDialog" :title="planEditing ? '编辑计划' : '新建计划'" width="560px" destroy-on-close>
-      <el-form label-width="80px" size="default">
+    <el-dialog v-model="planDialog" :title="planEditing ? '编辑计划' : '新建计划'" width="560px" destroy-on-close :close-on-click-modal="!planSaving" :close-on-press-escape="!planSaving" :show-close="!planSaving">
+      <el-form label-width="80px" size="default" :disabled="planSaving">
         <el-form-item label="名称"><el-input v-model="planForm.name" /></el-form-item>
         <el-form-item label="描述"><el-input v-model="planForm.description" type="textarea" :rows="2" /></el-form-item>
         <el-form-item label="起止">
@@ -243,8 +253,8 @@ watch(() => props.projectId, () => { loadCases(); if (sub.value === 'plans') loa
         <el-form-item label="负责人"><el-input v-model="planForm.owner" /></el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="planDialog = false">取消</el-button>
-        <el-button type="primary" @click="savePlan">保存</el-button>
+        <el-button :disabled="planSaving" @click="planDialog = false">取消</el-button>
+        <el-button type="primary" :loading="planSaving" @click="savePlan">保存</el-button>
       </template>
     </el-dialog>
 
