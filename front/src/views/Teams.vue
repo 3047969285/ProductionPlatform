@@ -1,7 +1,11 @@
 <template>
   <PageShell tag="03 / TEAMS" title="团队">
     <template #action><el-button type="primary" @click="openForm()">+ 新增</el-button></template>
-    <div class="table-frame">
+    <div v-if="loadError" class="list-error" role="alert">
+      <span>暂时无法读取团队列表</span>
+      <el-button link @click="load">重新加载</el-button>
+    </div>
+    <div v-else class="table-frame">
       <el-table :data="list" v-loading="loading" stripe>
       <el-table-column prop="code" label="编码" min-width="150" />
       <el-table-column prop="name" label="名称" min-width="240" />
@@ -11,10 +15,12 @@
           <span class="badge" :class="badgeClass('team', row.status)">{{ teamStatus[row.status] }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="操作" min-width="220" fixed="right">
+      <el-table-column label="操作" width="190" fixed="right">
         <template #default="{ row }">
-          <el-button size="small" @click="openForm(row)">编辑</el-button>
-          <el-button size="small" type="danger" @click="remove(row.id)">删除</el-button>
+          <div class="team-actions">
+            <el-button size="small" @click="openForm(row)">编辑</el-button>
+            <el-button size="small" type="danger" @click="remove(row.id)">删除</el-button>
+          </div>
         </template>
       </el-table-column>
       </el-table>
@@ -46,7 +52,7 @@ import { useCrud } from '../composables/useCrud'
 import { teamStatus, badgeClass } from '../constants'
 import api from '../api'
 
-const { list, loading, load, remove } = useCrud('/teams')
+const { list, loading, load, remove, loadError } = useCrud('/teams')
 const visible = ref(false)
 const form = ref({})
 
@@ -67,7 +73,11 @@ onMounted(load)
 <style scoped>
 .table-frame :deep(.el-table__cell) { padding: 14px 16px; }
 .table-frame :deep(.el-table__row) { transition: background .25s var(--ease); }
+.list-error { display: flex; min-height: 110px; align-items: center; justify-content: space-between; gap: 12px; padding: 20px; border: 1px solid var(--border); border-radius: var(--radius-lg); color: var(--muted); }
+.team-actions { display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+.team-actions :deep(.el-button + .el-button) { margin-left: 0; }
 @media (max-width: 720px) {
+  .list-error { align-items: flex-start; flex-direction: column; }
   .table-frame { overflow-x: auto; }
   .table-frame :deep(.el-table) { min-width: 760px !important; }
 }

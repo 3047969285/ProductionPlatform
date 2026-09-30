@@ -6,13 +6,16 @@ import api from '../api'
 export function useCrud(path) {
   const list = ref([])
   const loading = ref(false)
+  const loadError = ref(false)
 
   async function load() {
     loading.value = true
+    loadError.value = false
     try {
-      list.value = (await api.get(path)).data
-    } catch (e) {
-      ElMessage.error(e.message)
+      const response = await api.get(path)
+      list.value = Array.isArray(response.data) ? response.data : []
+    } catch {
+      loadError.value = true
     } finally {
       loading.value = false
     }
@@ -25,9 +28,9 @@ export function useCrud(path) {
       ElMessage.success('已删除')
       await load()
     } catch (e) {
-      if (e !== 'cancel') ElMessage.error(e.message)
+      if (e !== 'cancel' && e !== 'close') ElMessage.error(e?.message || '删除失败')
     }
   }
 
-  return { list, loading, load, remove }
+  return { list, loading, load, remove, loadError }
 }

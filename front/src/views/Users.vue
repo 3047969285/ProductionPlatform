@@ -1,18 +1,24 @@
 <template>
   <PageShell tag="05 / USERS" title="用户">
     <template #action><el-button type="primary" @click="openForm()">+ 新增</el-button></template>
-    <div class="table-frame">
+    <div v-if="loadError" class="list-error" role="alert">
+      <span>暂时无法读取用户列表</span>
+      <el-button link @click="load">重新加载</el-button>
+    </div>
+    <div v-else class="table-frame">
       <el-table :data="list" v-loading="loading" stripe>
       <el-table-column prop="username" label="用户名" min-width="180" />
       <el-table-column prop="nickname" label="昵称" min-width="180" />
       <el-table-column label="角色" min-width="160">
         <template #default="{ row }">{{ roles[row.role] }}</template>
       </el-table-column>
-      <el-table-column label="操作" min-width="260" fixed="right">
+      <el-table-column label="操作" width="290" fixed="right">
         <template #default="{ row }">
-          <el-button size="small" @click="openForm(row)">编辑</el-button>
-          <el-button size="small" @click="resetPwd(row)">重置密码</el-button>
-          <el-button size="small" type="danger" @click="remove(row.id)">删除</el-button>
+          <div class="user-actions">
+            <el-button size="small" @click="openForm(row)">编辑</el-button>
+            <el-button size="small" @click="resetPwd(row)">重置密码</el-button>
+            <el-button size="small" type="danger" @click="remove(row.id)">删除</el-button>
+          </div>
         </template>
       </el-table-column>
       </el-table>
@@ -44,11 +50,11 @@ import { useCrud } from '../composables/useCrud'
 import { roles } from '../constants'
 import api from '../api'
 
-const { list, loading, load, remove } = useCrud('/users')
+const { list, loading, load, remove, loadError } = useCrud('/users')
 const visible = ref(false)
 const form = ref({})
 
-function openForm(row) { form.value = row ? { ...row } : { role: 'developer', password: '123456' }; visible.value = true }
+function openForm(row) { form.value = row ? { ...row } : { role: 'developer', password: '' }; visible.value = true }
 
 async function save() {
   if (!form.value.username) return ElMessage.warning('用户名必填')
@@ -75,7 +81,11 @@ onMounted(load)
 <style scoped>
 .table-frame :deep(.el-table__cell) { padding: 14px 16px; }
 .table-frame :deep(.el-table__row) { transition: background .25s var(--ease); }
+.list-error { display: flex; min-height: 110px; align-items: center; justify-content: space-between; gap: 12px; padding: 20px; border: 1px solid var(--border); border-radius: var(--radius-lg); color: var(--muted); }
+.user-actions { display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+.user-actions :deep(.el-button + .el-button) { margin-left: 0; }
 @media (max-width: 720px) {
+  .list-error { align-items: flex-start; flex-direction: column; }
   .table-frame { overflow-x: auto; }
   .table-frame :deep(.el-table) { min-width: 680px !important; }
 }

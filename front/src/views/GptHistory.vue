@@ -122,6 +122,20 @@ const eras = [
     source: 'GPT-5 model documentation',
     href: 'https://developers.openai.com/api/docs/models/gpt-5',
   },
+  {
+    year: '2026',
+    index: '09',
+    model: 'GPT-6',
+    label: '从推理，走向可协作的行动',
+    title: '模型开始把复杂目标拆解成真正完成的工作。',
+    body: 'GPT-6 Astra 将推理、计算机操作与专业任务带入新一代模型；随后推出的 Sol 与 Luna 扩展了能力、速度与成本选择。9 月 29 日，GPT-6.1 Sol 又推动这一代继续迭代。',
+    signal: 'GPT-6.1 Sol · Sep 2026',
+    stat: 'Reason · use tools · deliver',
+    accent: 'cyan',
+    visual: 'frontier',
+    source: 'GPT-6 Astra · OpenAI',
+    href: 'https://openai.com/index/gpt-6-astra/',
+  },
 ]
 
 const currentEra = computed(() => eras[Math.max(activeIndex.value, 0)])
@@ -341,7 +355,7 @@ onUnmounted(() => {
         <p class="hero-copy">从预测下一个词，到帮助人类完成下一个目标。<br />一场关于规模、推理与交互方式的长时间实验。</p>
         <div class="hero-meta">
           <span>2017 — NOW</span>
-          <span>08 个关键节点</span>
+          <span>{{ String(eras.length).padStart(2, '0') }} 个关键节点</span>
           <span>滚动开始穿越</span>
         </div>
         <button class="start-button" type="button" @click="scrollToChapter(0)">
@@ -422,6 +436,22 @@ onUnmounted(() => {
                   <div class="agent-path path-one" /><div class="agent-path path-two" /><div class="agent-path path-three" />
                   <span class="agent-node node-one">THINK</span><span class="agent-node node-two">USE</span><span class="agent-node node-three">SHIP</span>
                 </template>
+                <template v-else-if="era.visual === 'frontier'">
+                  <div class="frontier-map">
+                    <svg class="frontier-lines" viewBox="0 0 420 320" aria-hidden="true">
+                      <path d="M74 86 C135 98 135 126 194 151 S286 190 342 224" />
+                      <path d="M80 237 C135 220 144 189 194 163 S283 112 346 82" />
+                      <path d="M204 54 C191 103 193 123 206 157 S220 229 206 272" />
+                      <circle cx="74" cy="86" r="4" /><circle cx="80" cy="237" r="4" />
+                      <circle cx="346" cy="82" r="4" /><circle cx="342" cy="224" r="4" />
+                    </svg>
+                    <div class="frontier-core"><span>GPT</span><strong>6</strong></div>
+                    <span class="frontier-node frontier-node-a">REASON</span>
+                    <span class="frontier-node frontier-node-b">COMPUTER USE</span>
+                    <span class="frontier-node frontier-node-c">CREATE</span>
+                    <span class="frontier-node frontier-node-d">DELIVER</span>
+                  </div>
+                </template>
               </div>
               <span class="visual-coord">{{ era.signal }}</span>
             </div>
@@ -429,7 +459,7 @@ onUnmounted(() => {
 
           <div class="chapter-copy">
             <div class="chapter-heading">
-              <span class="chapter-number">{{ era.index }} / 08</span>
+              <span class="chapter-number">{{ era.index }} / {{ String(eras.length).padStart(2, '0') }}</span>
               <span class="chapter-year">{{ era.year }}</span>
             </div>
             <p class="chapter-label">{{ era.label }}</p>
@@ -576,6 +606,8 @@ onUnmounted(() => {
 .visual-vision { --accent: var(--cyan); }.vision-lens { position: relative; display: grid; width: 196px; height: 196px; place-items: center; border: 1px solid var(--accent); border-radius: 50%; box-shadow: 0 0 0 26px rgba(139,246,241,.025), 0 0 0 27px rgba(139,246,241,.18), 0 0 50px rgba(139,246,241,.2); }.vision-lens::before, .vision-lens::after { position: absolute; content: ''; border: 1px solid rgba(139,246,241,.34); border-radius: 50%; }.vision-lens::before { inset: 18%; }.vision-lens::after { inset: 37%; }.vision-lens span { position: absolute; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }.vision-lens span:nth-child(1) { top: 17%; left: 31%; }.vision-lens span:nth-child(2) { right: 17%; bottom: 35%; }.vision-lens span:nth-child(3) { bottom: 18%; left: 35%; }.vision-scan { position: absolute; width: 78%; height: 1px; background: linear-gradient(90deg, transparent, var(--accent), transparent); box-shadow: 0 0 18px var(--accent); transform: rotate(-24deg); }.vision-label { position: absolute; right: 0; bottom: 13%; color: var(--muted); font-size: 9px; letter-spacing: .16em; line-height: 1.7; }
 .visual-omni { --accent: var(--violet); }.omni-core { position: relative; z-index: 2; display: grid; width: 122px; height: 122px; place-items: center; border: 1px solid var(--accent); border-radius: 50%; color: var(--paper); background: var(--ink-soft); font-family: Georgia, serif; font-size: 6rem; font-weight: 400; line-height: 1; box-shadow: 0 0 45px rgba(173,154,255,.25); }.omni-wave { position: absolute; width: 73%; height: 42%; border: 1px solid rgba(173,154,255,.62); border-radius: 50%; transform: rotate(-25deg); }.wave-two { width: 50%; height: 80%; transform: rotate(27deg); }.wave-three { width: 100%; height: 20%; opacity: .45; transform: rotate(5deg); }.omni-label { position: absolute; bottom: 6%; color: var(--muted); font-size: 9px; letter-spacing: .2em; }
 .visual-agent { --accent: var(--pink); }.agent-core { position: relative; z-index: 2; color: var(--paper); font-family: var(--font-display); font-size: clamp(4rem, 9vw, 7.6rem); font-weight: 600; letter-spacing: -.12em; }.agent-core span { color: var(--accent); }.agent-path { position: absolute; width: 42%; height: 27%; border-top: 1px solid rgba(255,125,182,.55); border-right: 1px solid rgba(255,125,182,.55); border-radius: 0 80px 0 0; transform: rotate(-22deg); }.path-two { width: 28%; height: 43%; border-top: 0; border-right: 1px solid rgba(255,125,182,.55); border-bottom: 1px solid rgba(255,125,182,.55); transform: rotate(21deg); }.path-three { width: 70%; height: 63%; border-top: 0; border-right: 0; border-bottom: 1px solid rgba(255,125,182,.4); border-left: 1px solid rgba(255,125,182,.4); transform: rotate(-12deg); }.agent-node { position: absolute; padding: 6px 9px; border: 1px solid rgba(255,125,182,.55); color: var(--muted); background: var(--ink-soft); font-size: 8px; letter-spacing: .14em; }.node-one { top: 12%; right: 7%; }.node-two { right: 11%; bottom: 18%; }.node-three { bottom: 7%; left: 9%; }
+
+.visual-frontier { --accent: var(--cyan); }.frontier-map { position: relative; width: min(100%, 410px); height: 290px; }.frontier-lines { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }.frontier-lines path { fill: none; stroke: rgba(139,246,241,.46); stroke-width: 1; }.frontier-lines circle { fill: var(--accent); filter: drop-shadow(0 0 7px var(--accent)); }.frontier-core { position: absolute; top: 50%; left: 50%; display: flex; width: 116px; height: 116px; align-items: center; justify-content: center; gap: 5px; border: 1px solid rgba(139,246,241,.72); border-radius: 50%; color: var(--paper); background: rgba(0,0,0,.8); box-shadow: 0 0 0 12px rgba(139,246,241,.035), 0 0 48px rgba(139,246,241,.14); transform: translate(-50%, -50%); }.frontier-core span { font-family: var(--font-display); font-size: 17px; letter-spacing: -.08em; }.frontier-core strong { color: var(--accent); font-family: var(--font-display); font-size: 48px; font-weight: 500; letter-spacing: -.1em; }.frontier-node { position: absolute; padding: 7px 10px; border: 1px solid rgba(139,246,241,.32); color: var(--muted); background: rgba(0,0,0,.78); font-size: 8px; letter-spacing: .14em; }.frontier-node-a { top: 12%; left: 7%; }.frontier-node-b { top: 16%; right: 3%; }.frontier-node-c { right: 6%; bottom: 12%; }.frontier-node-d { bottom: 8%; left: 9%; }
 
 .closing { padding-top: 13vh; padding-bottom: 10vh; }.closing-card { position: relative; padding: clamp(36px, 7vw, 90px); border: 1px solid rgba(243,240,234,.2); background: radial-gradient(circle at 86% 24%, rgba(173,154,255,.18), transparent 30%), linear-gradient(135deg, rgba(243,240,234,.07), rgba(243,240,234,.015)); }.closing-card::after { position: absolute; top: -1px; right: 8%; width: 80px; height: 1px; content: ''; background: var(--cyan); }.closing-kicker { margin-bottom: 22px; color: var(--cyan); font-size: 10px; letter-spacing: .2em; }.closing h2 { max-width: 900px; color: var(--paper); font-family: var(--font-display); font-size: clamp(2.4rem, 6vw, 6rem); font-weight: 600; letter-spacing: -.09em; line-height: .99; }.closing h2 em { color: transparent; font-style: normal; -webkit-text-stroke: 1px rgba(243,240,234,.58); }.closing-foot { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin-top: 80px; padding-top: 17px; border-top: 1px solid var(--hairline); color: var(--muted); font-size: 10px; letter-spacing: .15em; }.closing-foot a { color: var(--paper); text-decoration: none; }.closing-foot a:hover { color: var(--cyan); }.sources { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; padding: 24px 0 0; color: var(--muted-soft); font-size: 10px; letter-spacing: .08em; }.sources a { color: var(--muted); text-underline-offset: 3px; }.sources a:hover { color: var(--cyan); }.sources-note { flex-basis: 100%; color: rgba(243,240,234,.27); letter-spacing: .02em; }
 

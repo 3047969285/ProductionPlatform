@@ -6,13 +6,21 @@
       <h1>交付总览</h1>
       <p class="desc">需求 / 开发 / 测试 / 部署</p>
     </section>
-    <section v-if="!loading" class="grid">
+    <section v-if="!loading && !loadError" class="grid">
       <article v-for="c in cards" :key="c.label" class="card">
         <span class="num" :style="{ color: c.color }">{{ c.value }}</span>
         <span class="label">{{ c.label }}</span>
       </article>
     </section>
-    <p v-else class="empty">加载中…</p>
+    <section v-else-if="loading" class="status-panel" aria-live="polite">
+      <span class="status-mark" aria-hidden="true">···</span>
+      <p>正在读取交付数据</p>
+    </section>
+    <section v-else class="status-panel status-error" role="alert">
+      <span class="status-mark" aria-hidden="true">!</span>
+      <div><h2>暂时无法读取总览</h2><p>检查网络或服务状态后重试；现有项目数据不会被修改。</p></div>
+      <button type="button" class="retry-button" @click="loadDashboard">重新加载 <span aria-hidden="true">↗</span></button>
+    </section>
 
     <section v-if="recentReqs.length" class="recent">
       <div class="recent-head"><h2>最近</h2><RouterLink to="/projects">查看全部 ↗</RouterLink></div>
@@ -30,7 +38,6 @@
 <script setup>
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { RouterLink } from 'vue-router'
-import { ElMessage } from 'element-plus'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import api from '../api'
@@ -38,6 +45,7 @@ import { reqStatus, badgeClass } from '../constants'
 
 const root = ref(null)
 const loading = ref(true)
+const loadError = ref(false)
 const data = ref(null)
 const recentReqs = computed(() => data.value?.recentRequirements || [])
 let animationContext
@@ -110,11 +118,17 @@ watch(loading, (isLoading) => {
   if (!isLoading) animateDashboardContent()
 })
 
-onMounted(async () => {
-  setupAnimations()
+async function loadDashboard() {
+  loading.value = true
+  loadError.value = false
   try { data.value = (await api.get('/dashboard')).data }
-  catch (e) { ElMessage.error(e.message) }
+  catch { loadError.value = true }
   finally { loading.value = false }
+}
+
+onMounted(() => {
+  setupAnimations()
+  loadDashboard()
 })
 
 onUnmounted(() => {
@@ -154,7 +168,12 @@ h1 { font-family: var(--font-display); font-size: clamp(3.4rem, 8.2vw, 8.1rem); 
 .list li { display: grid; grid-template-columns: minmax(120px, .65fr) minmax(180px, 1.7fr) auto; gap: 18px; align-items: center; padding: 14px 0; border-bottom: 1px solid rgba(239,239,235,.12); font-size: 11px; }
 .no { color: var(--muted-light); font-size: 8px; letter-spacing: .14em; }
 .name { color: var(--text); }
-.empty { color: var(--muted); text-align: center; padding: 40px; font-size: 12px; }
+.status-panel { display: flex; min-height: 150px; align-items: center; gap: 18px; padding: 26px 0; border-top: 1px solid rgba(239,239,235,.18); border-bottom: 1px solid rgba(239,239,235,.12); color: var(--muted-light); }
+.status-mark { display: grid; width: 42px; height: 42px; flex: 0 0 auto; place-items: center; border: 1px solid rgba(239,239,235,.25); border-radius: 50%; color: var(--text); font-family: var(--font-display); font-size: 18px; }
+.status-panel h2 { margin: 0 0 8px; color: var(--text); font-size: 15px; font-weight: 500; }
+.status-panel p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.7; }
+.retry-button { display: inline-flex; align-items: center; gap: 16px; margin-left: auto; padding: 11px 14px; border: 1px solid rgba(239,239,235,.28); border-radius: 999px; color: var(--text); background: transparent; cursor: pointer; font: inherit; font-size: 11px; transition: background .25s ease, border-color .25s ease; }
+.retry-button:hover { border-color: rgba(239,239,235,.62); background: rgba(255,255,255,.05); }
 @media (max-width: 900px) { .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 @media (max-width: 540px) {
   .home { padding-top: 145px; }
@@ -165,5 +184,7 @@ h1 { font-family: var(--font-display); font-size: clamp(3.4rem, 8.2vw, 8.1rem); 
   .card:nth-child(even) { padding-left: 18px; border-right: 0; }
   .list li { grid-template-columns: 1fr auto; }
   .list .no { display: none; }
+  .status-panel { align-items: flex-start; flex-wrap: wrap; }
+  .retry-button { margin-left: 60px; }
 }
 </style>

@@ -1,6 +1,5 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
-import { ElMessage } from 'element-plus'
 import PageShell from '../components/PageShell.vue'
 import api from '../api'
 import {
@@ -16,6 +15,7 @@ import {
 } from '../constants'
 
 const loading = ref(false)
+const loadError = ref(false)
 const projects = ref([])
 const selectedProjectId = ref('all')
 const globalData = ref({
@@ -116,12 +116,13 @@ async function loadProjectBoard() {
 
 async function load() {
   loading.value = true
+  loadError.value = false
   try {
     if (!projects.value.length) await loadProjects()
     if (isAllProjects.value) await loadGlobalBoard()
     else await loadProjectBoard()
-  } catch (e) {
-    ElMessage.error(e.message)
+  } catch {
+    loadError.value = true
   } finally {
     loading.value = false
   }
@@ -292,7 +293,13 @@ onMounted(load)
       </div>
     </template>
 
-    <div v-loading="loading" class="reports">
+    <section v-if="loadError" class="load-error" role="alert">
+      <span class="error-mark" aria-hidden="true">!</span>
+      <div><h2>报表数据暂不可用</h2><p>本次统计没有完整加载，因此不展示可能误导的零值。请检查服务状态后重试。</p></div>
+      <el-button @click="load">重新加载</el-button>
+    </section>
+
+    <div v-else v-loading="loading" class="reports">
       <section class="card hero-card span-full">
         <div>
           <p class="eyebrow">实际数据看板</p>
@@ -559,11 +566,18 @@ onMounted(load)
 .empty { padding: 24px 0; color: var(--muted); text-align: center; font-size: 12px; }
 .report-actions { display: flex; align-items: center; gap: 8px; }
 .project-select { width: 180px; }
+.load-error { display: flex; min-height: 180px; align-items: center; gap: 18px; padding: 28px; border: 1px solid var(--border); border-radius: var(--radius-lg); background: rgba(255,255,255,.018); }
+.error-mark { display: grid; width: 42px; height: 42px; flex: 0 0 auto; place-items: center; border: 1px solid var(--border); border-radius: 50%; color: var(--accent); font-family: var(--font-display); font-size: 18px; }
+.load-error h2 { margin: 0 0 8px; font-size: 15px; font-weight: 500; }
+.load-error p { max-width: 560px; margin: 0; color: var(--muted); font-size: 12px; line-height: 1.7; }
+.load-error :deep(.el-button) { flex: 0 0 auto; margin-left: auto; }
 @media (max-width: 1080px) {
   .reports { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .span-2 { grid-column: 1 / -1; }
 }
 @media (max-width: 720px) {
+  .load-error { align-items: flex-start; flex-wrap: wrap; padding: 20px; }
+  .load-error :deep(.el-button) { margin-left: 60px; }
   .hero-card { align-items: flex-start; flex-direction: column; }
   .hero-signal { align-items: flex-start; }
   .metric-grid, .status-grid, .member-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
