@@ -32,6 +32,7 @@ const testError = ref(false)
 const testDialog = ref(false)
 const testEditing = ref(false)
 const testForm = ref({})
+const testSaving = ref(false)
 
 const opsList = ref([])
 const opsLoading = ref(false)
@@ -39,6 +40,7 @@ const opsError = ref(false)
 const opsDialog = ref(false)
 const opsEditing = ref(false)
 const opsForm = ref({})
+const opsSaving = ref(false)
 
 // 详情弹窗状态（test/ops 两种）
 const detailVisible = ref(false)
@@ -164,8 +166,10 @@ function openTestEdit(row) {
 }
 
 async function saveTest() {
+  if (testSaving.value) return
   if (!testForm.value.title?.trim()) return ElMessage.warning('请填写标题')
   testForm.value.title = testForm.value.title.trim()
+  testSaving.value = true
   try {
     if (testEditing.value) await api.put('/tests', testForm.value)
     else await api.post('/tests', testForm.value)
@@ -173,6 +177,7 @@ async function saveTest() {
     testDialog.value = false
     await loadTests()
   } catch (e) { ElMessage.error(e.message) }
+  finally { testSaving.value = false }
 }
 
 async function removeTest(id) {
@@ -202,8 +207,10 @@ function openOpsEdit(row) {
 }
 
 async function saveOps() {
+  if (opsSaving.value) return
   if (!opsForm.value.title?.trim()) return ElMessage.warning('请填写标题')
   opsForm.value.title = opsForm.value.title.trim()
+  opsSaving.value = true
   try {
     if (opsEditing.value) await api.put('/ops', opsForm.value)
     else await api.post('/ops', opsForm.value)
@@ -211,6 +218,7 @@ async function saveOps() {
     opsDialog.value = false
     await loadOps()
   } catch (e) { ElMessage.error(e.message) }
+  finally { opsSaving.value = false }
 }
 
 async function removeOps(id) {
@@ -443,8 +451,8 @@ onMounted(() => {
     </div>
 
     <!-- 测试弹窗（保留旧 test_item 编辑入口，与详情并存） -->
-    <el-dialog v-model="testDialog" :title="testEditing ? '编辑测试' : '新增测试'" width="520px" destroy-on-close>
-      <el-form label-width="80px" size="default">
+    <el-dialog v-model="testDialog" :title="testEditing ? '编辑测试' : '新增测试'" width="520px" destroy-on-close :close-on-click-modal="!testSaving" :close-on-press-escape="!testSaving" :show-close="!testSaving">
+      <el-form label-width="80px" size="default" :disabled="testSaving">
         <el-form-item label="标题"><el-input v-model="testForm.title" /></el-form-item>
         <el-form-item label="说明"><el-input v-model="testForm.description" type="textarea" :rows="2" /></el-form-item>
         <el-form-item label="进度"><el-slider v-model="testForm.progress" :max="100" show-input /></el-form-item>
@@ -457,13 +465,13 @@ onMounted(() => {
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="testDialog = false">取消</el-button>
-        <el-button type="primary" @click="saveTest">保存</el-button>
+        <el-button :disabled="testSaving" @click="testDialog = false">取消</el-button>
+        <el-button type="primary" :loading="testSaving" @click="saveTest">保存</el-button>
       </template>
     </el-dialog>
 
-    <el-dialog v-model="opsDialog" :title="opsEditing ? '编辑问题' : '登记问题'" width="600px" destroy-on-close>
-      <el-form label-width="80px" size="default">
+    <el-dialog v-model="opsDialog" :title="opsEditing ? '编辑问题' : '登记问题'" width="600px" destroy-on-close :close-on-click-modal="!opsSaving" :close-on-press-escape="!opsSaving" :show-close="!opsSaving">
+      <el-form label-width="80px" size="default" :disabled="opsSaving">
         <el-form-item label="标题"><el-input v-model="opsForm.title" /></el-form-item>
         <el-form-item label="严重程度">
           <el-select v-model="opsForm.severity" style="width: 100%">
@@ -480,8 +488,8 @@ onMounted(() => {
         <el-form-item label="详情"><RichEditor v-model="opsForm.content" /></el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="opsDialog = false">取消</el-button>
-        <el-button type="primary" @click="saveOps">保存</el-button>
+        <el-button :disabled="opsSaving" @click="opsDialog = false">取消</el-button>
+        <el-button type="primary" :loading="opsSaving" @click="saveOps">保存</el-button>
       </template>
     </el-dialog>
 
