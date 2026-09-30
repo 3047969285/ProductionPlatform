@@ -1,6 +1,6 @@
 <template>
   <PageShell tag="03 / TEAMS" title="团队">
-    <template #action><el-button type="primary" @click="openForm()">+ 新增</el-button></template>
+    <template #action><el-button type="primary" :disabled="saving" @click="openForm()">+ 新增</el-button></template>
     <div v-if="loadError" class="list-error" role="alert">
       <span>暂时无法读取团队列表</span>
       <el-button link @click="load">重新加载</el-button>
@@ -25,8 +25,15 @@
       </el-table-column>
       </el-table>
     </div>
-    <el-dialog :title="form.id ? '编辑团队' : '新增团队'" v-model="visible" width="420px">
-      <el-form :model="form" label-width="90px">
+    <el-dialog
+      :title="form.id ? '编辑团队' : '新增团队'"
+      v-model="visible"
+      width="420px"
+      :close-on-click-modal="!saving"
+      :close-on-press-escape="!saving"
+      :show-close="!saving"
+    >
+      <el-form :model="form" label-width="90px" :disabled="saving">
         <el-form-item label="编码" required><el-input v-model="form.code" /></el-form-item>
         <el-form-item label="名称" required><el-input v-model="form.name" /></el-form-item>
         <el-form-item label="并发上限"><el-input v-model.number="form.capacity" type="number" /></el-form-item>
@@ -37,8 +44,8 @@
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="visible = false">取消</el-button>
-        <el-button type="primary" @click="save">保存</el-button>
+        <el-button :disabled="saving" @click="visible = false">取消</el-button>
+        <el-button type="primary" :loading="saving" @click="save">保存</el-button>
       </template>
     </el-dialog>
   </PageShell>
@@ -54,17 +61,21 @@ import api from '../api'
 
 const { list, loading, load, remove, loadError } = useCrud('/teams')
 const visible = ref(false)
+const saving = ref(false)
 const form = ref({})
 
 function openForm(row) { form.value = row ? { ...row } : { status: 'active', capacity: 5 }; visible.value = true }
 
 async function save() {
+  if (saving.value) return
   if (!form.value.code || !form.value.name) return ElMessage.warning('编码和名称必填')
+  saving.value = true
   try {
     if (form.value.id) await api.put('/teams', form.value)
     else await api.post('/teams', form.value)
     ElMessage.success('保存成功'); visible.value = false; await load()
   } catch (e) { ElMessage.error(e.message) }
+  finally { saving.value = false }
 }
 
 onMounted(load)
