@@ -3,6 +3,8 @@ import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
+gsap.registerPlugin(ScrollTrigger)
+
 const filters = ['全部', '影像', '物件', '空间', '数字']
 const activeFilter = ref('全部')
 const selectedWork = ref(null)

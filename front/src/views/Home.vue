@@ -43,6 +43,8 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import api from '../api'
 import { reqStatus, badgeClass } from '../constants'
 
+gsap.registerPlugin(ScrollTrigger)
+
 const root = ref(null)
 const loading = ref(true)
 const loadError = ref(false)
