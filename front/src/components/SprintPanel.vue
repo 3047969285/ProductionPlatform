@@ -10,6 +10,7 @@ const list = ref([])
 const loading = ref(false)
 const dialog = ref(false)
 const editing = ref(false)
+const saving = ref(false)
 const form = ref({})
 const burn = ref(null)
 const burnDialog = ref(false)
@@ -35,14 +36,18 @@ function openEdit(row) {
 }
 
 async function save() {
+  if (saving.value) return
   if (!form.value.name?.trim()) return ElMessage.warning('请填写迭代名称')
+  form.value.name = form.value.name.trim()
+  saving.value = true
   try {
     if (editing.value) await api.put('/sprints', form.value)
     else await api.post('/sprints', form.value)
     ElMessage.success('保存成功')
     dialog.value = false
-    load()
+    await load()
   } catch (e) { ElMessage.error(e.message) }
+  finally { saving.value = false }
 }
 
 async function remove(id) {
@@ -112,8 +117,8 @@ watch(() => props.projectId, load)
       </el-table>
     </div>
 
-    <el-dialog v-model="dialog" :title="editing ? '编辑迭代' : '新建迭代'" width="520px" destroy-on-close>
-      <el-form label-width="80px" size="default">
+    <el-dialog v-model="dialog" :title="editing ? '编辑迭代' : '新建迭代'" width="520px" destroy-on-close :close-on-click-modal="!saving" :close-on-press-escape="!saving" :show-close="!saving">
+      <el-form label-width="80px" size="default" :disabled="saving">
         <el-form-item label="名称"><el-input v-model="form.name" placeholder="如 Sprint 2" /></el-form-item>
         <el-form-item label="目标"><el-input v-model="form.goal" type="textarea" :rows="2" /></el-form-item>
         <el-form-item label="开始日期"><el-date-picker v-model="form.startDate" type="date" value-format="YYYY-MM-DD" style="width: 100%" /></el-form-item>
@@ -125,8 +130,8 @@ watch(() => props.projectId, load)
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="dialog = false">取消</el-button>
-        <el-button type="primary" @click="save">保存</el-button>
+        <el-button :disabled="saving" @click="dialog = false">取消</el-button>
+        <el-button type="primary" :loading="saving" @click="save">保存</el-button>
       </template>
     </el-dialog>
 
@@ -139,8 +144,8 @@ watch(() => props.projectId, load)
                   :y1="burnSvg().H - burnSvg().pad - (i / 5) * (burnSvg().H - burnSvg().pad * 2)"
                   :y2="burnSvg().H - burnSvg().pad - (i / 5) * (burnSvg().H - burnSvg().pad * 2)"
                   stroke="rgba(255,255,255,0.08)" stroke-width="1" />
-            <polyline :points="'M' + burnSvg().idealPath" fill="none" stroke="var(--purple)" stroke-width="2" stroke-dasharray="4 4" />
-            <polyline :points="'M' + burnSvg().actualPath" fill="none" stroke="var(--cyan)" stroke-width="2.5" />
+            <path :d="'M' + burnSvg().idealPath" fill="none" stroke="var(--purple)" stroke-width="2" stroke-dasharray="4 4" />
+            <path :d="'M' + burnSvg().actualPath" fill="none" stroke="var(--cyan)" stroke-width="2.5" />
             <text v-for="(l, i) in burnSvg().labels" :key="i" :x="burnSvg().pad + i * burnSvg().stepX"
                   :y="burnSvg().H - 8" font-size="10" fill="rgba(255,255,255,0.4)" text-anchor="middle">{{ l.slice(5) }}</text>
           </svg>
