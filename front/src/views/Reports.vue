@@ -29,6 +29,7 @@ const globalData = ref({
 })
 const projectData = ref(null)
 let loadSequence = 0
+const completedRequirementStatuses = new Set(['approved', 'done'])
 
 const isAllProjects = computed(() => selectedProjectId.value === 'all')
 const selectedProject = computed(() => projects.value.find((item) => String(item.id) === String(selectedProjectId.value)))
@@ -168,7 +169,7 @@ function maxRows(rows) {
 const metrics = computed(() => {
   if (isAllProjects.value) {
     const reqTotal = sumStatus(globalData.value.status?.requirement)
-    const reqDone = number(globalData.value.status?.requirement?.done)
+    const reqDone = number(globalData.value.status?.requirement?.approved) + number(globalData.value.status?.requirement?.done)
     const taskTotal = sumStatus(globalData.value.status?.task)
     const taskDone = number(globalData.value.status?.task?.done)
     const bugTotal = sumStatus(globalData.value.status?.bug)
@@ -182,7 +183,7 @@ const metrics = computed(() => {
   }
 
   const data = projectData.value || {}
-  const requirementDone = countBy(data.requirements, 'status', 'done')
+  const requirementDone = (data.requirements || []).filter((item) => completedRequirementStatuses.has(item.status)).length
   const taskDone = countBy(data.tasks, 'status', 'done')
   const openBugs = (data.bugs || []).filter((bug) => !['resolved', 'closed'].includes(bug.status)).length
   const activeSprint = (data.sprints || []).filter((sprint) => sprint.status === 'active').length
