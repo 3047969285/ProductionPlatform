@@ -236,7 +236,11 @@ const selectedPlan = computed(() => {
 
 const selectedMilestone = computed(() => {
   const milestones = (projectData.value?.milestones || []).filter((item) => item.status !== 'done')
-  return [...milestones].sort((a, b) => String(a.dueDate || '').localeCompare(String(b.dueDate || '')))[0]
+  return [...milestones].sort((a, b) => {
+    if (!a.dueDate) return b.dueDate ? 1 : 0
+    if (!b.dueDate) return -1
+    return String(a.dueDate).localeCompare(String(b.dueDate))
+  })[0]
 })
 
 const selectedRelease = computed(() => sortRecent(projectData.value?.releases || [])[0])
@@ -523,7 +527,7 @@ onMounted(load)
           </div>
           <div class="delivery-list">
             <div class="delivery-row"><span>测试计划</span><strong>{{ selectedPlan?.name || '暂无计划' }}</strong><em v-if="selectedPlan">{{ testPlanStatus[selectedPlan.status] || selectedPlan.status }}</em></div>
-            <div class="delivery-row"><span>下一节点</span><strong>{{ selectedMilestone?.name || '暂无未完成里程碑' }}</strong><em v-if="selectedMilestone">{{ milestoneStatus[selectedMilestone.status] || selectedMilestone.status }}</em></div>
+            <div class="delivery-row"><span>下一节点</span><strong>{{ selectedMilestone?.name || '暂无未完成里程碑' }}</strong><em v-if="selectedMilestone">{{ milestoneStatus[selectedMilestone.status] || selectedMilestone.status }} · {{ selectedMilestone.dueDate ? formatDate(selectedMilestone.dueDate) : '未排期' }}</em></div>
             <div class="delivery-row"><span>最近发布</span><strong>{{ selectedRelease?.version || '暂无发布记录' }}</strong><em v-if="selectedRelease">{{ releaseStatus[selectedRelease.status] || selectedRelease.status }}</em></div>
           </div>
         </section>
