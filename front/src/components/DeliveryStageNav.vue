@@ -81,7 +81,7 @@ onUnmounted(() => {
       </div>
     </div>
 
-    <div class="stage-rail" role="tablist">
+    <div class="stage-rail" role="group" aria-label="选择交付阶段">
       <div class="stage-progress" aria-hidden="true"><span class="stage-progress-fill" /></div>
       <button
         v-for="(stage, index) in stages"
@@ -89,8 +89,7 @@ onUnmounted(() => {
         type="button"
         class="stage"
         :class="{ 'is-active': stage.key === modelValue, 'is-complete': index < activeIndex }"
-        role="tab"
-        :aria-selected="stage.key === modelValue"
+        :aria-pressed="stage.key === modelValue"
         @click="selectStage(stage)"
       >
         <span class="stage-dot">{{ index + 1 }}</span>
