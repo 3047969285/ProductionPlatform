@@ -32,8 +32,19 @@ const collections = [
   ['milestones', '/milestones'],
   ['releases', '/releases'],
 ]
+const collectionNames = {
+  requirements: '需求',
+  tasks: '任务',
+  bugs: '缺陷',
+  sprints: '迭代',
+  testPlans: '测试计划',
+  milestones: '里程碑',
+  releases: '发布记录',
+}
 
 const today = computed(() => new Date())
+const failedCollections = computed(() => errors.value.map(({ key }) => collectionNames[key] || key))
+let loadRequestId = 0
 
 function listOf(key) {
   return Array.isArray(data.value[key]) ? data.value[key] : []
@@ -83,6 +94,9 @@ const progress = computed(() => {
 })
 
 const health = computed(() => {
+  if (errors.value.length) {
+    return { tone: 'warning', label: '数据未完整', hint: '部分数据暂不可用' }
+  }
   if (overdueMilestones.value.length || seriousBugs.value.some((item) => item.severity === 'critical')) {
     return { tone: 'danger', label: '需要关注', hint: '逾期 / 紧急' }
   }
@@ -164,19 +178,26 @@ function formatDate(value) {
 }
 
 async function load(showLoading = true) {
+  const requestId = ++loadRequestId
   if (showLoading) loading.value = true
   else refreshing.value = true
   errors.value = []
-  const next = {}
-  await Promise.all(collections.map(async ([key, path]) => {
+  const results = await Promise.all(collections.map(async ([key, path]) => {
     try {
       const response = await api.get(path, { params: { projectId: props.projectId } })
-      next[key] = Array.isArray(response.data) ? response.data : []
-    } catch (error) {
-      next[key] = []
-      errors.value.push({ key, message: error?.message || '加载失败' })
+      return { key, value: Array.isArray(response.data) ? response.data : [] }
+    } catch {
+      return { key, error: true }
     }
   }))
+  if (requestId !== loadRequestId) return
+
+  const next = {}
+  errors.value = []
+  results.forEach(({ key, value, error }) => {
+    if (error) errors.value.push({ key })
+    else next[key] = value
+  })
   data.value = { ...data.value, ...next }
   loading.value = false
   refreshing.value = false
@@ -215,9 +236,24 @@ onMounted(() => {
   load()
 })
 
-watch(() => props.projectId, () => load())
+watch(() => props.projectId, () => {
+  data.value = {
+    requirements: [],
+    tasks: [],
+    bugs: [],
+    sprints: [],
+    testPlans: [],
+    milestones: [],
+    releases: [],
+  }
+  errors.value = []
+  load()
+})
 
-onUnmounted(() => animationContext?.revert())
+onUnmounted(() => {
+  loadRequestId += 1
+  animationContext?.revert()
+})
 </script>
 
 <template>
@@ -333,7 +369,8 @@ onUnmounted(() => animationContext?.revert())
     </section>
 
     <el-alert v-if="errors.length" class="load-alert" type="warning" :closable="false" show-icon>
-      部分数据未读，可继续操作。
+      <span>未读取：{{ failedCollections.join('、') }}。已保留这些数据上次成功读取的内容。</span>
+      <el-button link type="warning" :loading="refreshing" @click="load(false)">重新读取</el-button>
     </el-alert>
   </div>
 </template>
