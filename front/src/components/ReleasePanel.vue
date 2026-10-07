@@ -67,8 +67,16 @@ async function saveMs() {
 async function removeMs(id) {
   try {
     await ElMessageBox.confirm('确定删除？', '提示', { type: 'warning' })
-    await api.delete(`/milestones/${id}`); loadMilestones()
-  } catch { /* cancel */ }
+  } catch {
+    return
+  }
+  try {
+    await api.delete(`/milestones/${id}`)
+    ElMessage.success('已删除')
+    await loadMilestones()
+  } catch (e) {
+    ElMessage.error(e.message || '删除失败')
+  }
 }
 
 function openRelAdd() {
@@ -98,8 +106,16 @@ async function saveRel() {
 async function removeRel(id) {
   try {
     await ElMessageBox.confirm('确定删除？', '提示', { type: 'warning' })
-    await api.delete(`/releases/${id}`); loadReleases()
-  } catch { /* cancel */ }
+  } catch {
+    return
+  }
+  try {
+    await api.delete(`/releases/${id}`)
+    ElMessage.success('已删除')
+    await loadReleases()
+  } catch (e) {
+    ElMessage.error(e.message || '删除失败')
+  }
 }
 
 onMounted(loadMilestones)
