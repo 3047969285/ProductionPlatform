@@ -53,9 +53,16 @@ async function save() {
 async function remove(id) {
   try {
     await ElMessageBox.confirm('删除后任务/缺陷将脱离该迭代，确定？', '提示', { type: 'warning' })
+  } catch {
+    return
+  }
+  try {
     await api.delete(`/sprints/${id}`)
-    load()
-  } catch { /* cancel */ }
+    ElMessage.success('已删除')
+    await load()
+  } catch (e) {
+    ElMessage.error(e.message || '删除失败')
+  }
 }
 
 async function showBurndown(row) {

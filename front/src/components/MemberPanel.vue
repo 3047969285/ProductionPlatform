@@ -54,9 +54,16 @@ async function save() {
 async function remove(row) {
   try {
     await ElMessageBox.confirm(`确定将 ${row.nickname || row.username} 移出项目？`, '提示', { type: 'warning' })
+  } catch {
+    return
+  }
+  try {
     await api.delete(`/projects/${props.projectId}/members/${row.id}`)
-    load()
-  } catch { /* cancel */ }
+    ElMessage.success('成员已移除')
+    await load()
+  } catch (e) {
+    ElMessage.error(e.message || '移除失败')
+  }
 }
 
 onMounted(() => { load(); loadUsers() })

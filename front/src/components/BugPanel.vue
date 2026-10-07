@@ -95,9 +95,16 @@ function openDetail(row) {
 async function remove(id) {
   try {
     await ElMessageBox.confirm('确定删除？', '提示', { type: 'warning' })
+  } catch {
+    return
+  }
+  try {
     await api.delete(`/bugs/${id}`)
-    load()
-  } catch { /* cancel */ }
+    ElMessage.success('已删除')
+    await load()
+  } catch (e) {
+    ElMessage.error(e.message || '删除失败')
+  }
 }
 
 onMounted(() => { load(); loadSprints() })

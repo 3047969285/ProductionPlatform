@@ -76,9 +76,16 @@ async function saveCase() {
 async function removeCase(id) {
   try {
     await ElMessageBox.confirm('确定删除？', '提示', { type: 'warning' })
+  } catch {
+    return
+  }
+  try {
     await api.delete(`/test-cases/${id}`)
-    loadCases()
-  } catch { /* cancel */ }
+    ElMessage.success('已删除')
+    await loadCases()
+  } catch (e) {
+    ElMessage.error(e.message || '删除失败')
+  }
 }
 
 // 计划 CRUD
@@ -109,9 +116,16 @@ async function savePlan() {
 async function removePlan(id) {
   try {
     await ElMessageBox.confirm('删除计划将同时移除其用例关联，确定？', '提示', { type: 'warning' })
+  } catch {
+    return
+  }
+  try {
     await api.delete(`/test-plans/${id}`)
-    loadPlans()
-  } catch { /* cancel */ }
+    ElMessage.success('计划已删除')
+    await loadPlans()
+  } catch (e) {
+    ElMessage.error(e.message || '删除失败')
+  }
 }
 
 // 计划内用例
