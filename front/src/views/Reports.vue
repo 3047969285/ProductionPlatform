@@ -218,11 +218,20 @@ const globalRiskRows = computed(() => [...(globalData.value.severity || [])]
 const trendRows = computed(() => {
   const requirementMap = new Map((globalData.value.trend?.requirement || []).map((row) => [row.day, number(row.cnt)]))
   const bugMap = new Map((globalData.value.trend?.bug || []).map((row) => [row.day, number(row.cnt)]))
-  return [...new Set([...requirementMap.keys(), ...bugMap.keys()])].sort().map((day) => ({
-    day,
-    total: (requirementMap.get(day) || 0) + (bugMap.get(day) || 0),
-  }))
+  const today = new Date()
+  const rows = []
+  for (let offset = 29; offset >= 0; offset -= 1) {
+    const date = new Date(today.getFullYear(), today.getMonth(), today.getDate() - offset)
+    const day = [date.getFullYear(), String(date.getMonth() + 1).padStart(2, '0'), String(date.getDate()).padStart(2, '0')].join('-')
+    rows.push({ day, total: (requirementMap.get(day) || 0) + (bugMap.get(day) || 0) })
+  }
+  return rows
 })
+
+const trendTicks = computed(() => trendRows.value
+  .filter((_, index) => [0, 7, 14, 21, 29].includes(index))
+  .map((row) => ({ day: row.day, label: row.day.slice(5).replace('-', '/') })))
+const hasTrendData = computed(() => trendRows.value.some((row) => row.total > 0))
 
 const selectedSprint = computed(() => {
   const sprints = projectData.value?.sprints || []
@@ -429,12 +438,17 @@ onMounted(load)
             <div><p class="eyebrow">全项目 · 时间</p><h3>近 30 天新增内容</h3></div>
             <span class="section-note">需求 + 缺陷</span>
           </div>
-          <div class="trend-bars">
-            <div v-for="row in trendRows" :key="row.day" class="trend-col" :title="`${row.day}：${row.total} 条`">
-              <div class="trend-fill" :style="{ height: Math.max(4, row.total / maxTrend * 130) + 'px' }" />
+          <div class="trend-chart">
+            <div class="trend-bars" role="list" aria-label="近 30 天每天新增的需求与缺陷">
+              <div v-for="row in trendRows" :key="row.day" class="trend-col" role="listitem" :aria-label="`${row.day}，新增 ${row.total} 条`" :title="`${row.day}：${row.total} 条`">
+                <div class="trend-fill" :class="{ 'is-zero': row.total === 0 }" :style="{ height: (row.total ? Math.max(4, row.total / maxTrend * 130) : 2) + 'px' }" />
+              </div>
+            </div>
+            <div class="trend-axis" aria-hidden="true">
+              <span v-for="tick in trendTicks" :key="tick.day">{{ tick.label }}</span>
             </div>
           </div>
-          <p v-if="!trendRows.length" class="empty">当前没有新增记录</p>
+          <p v-if="!hasTrendData" class="empty">近 30 天没有新增需求或缺陷</p>
         </section>
 
         <section class="card">
@@ -594,9 +608,11 @@ onMounted(load)
 .sprint-load-row small { display: block; margin-top: 4px; color: var(--muted); font-size: 10px; }
 .sprint-load-row small span { padding: 0 3px; color: var(--muted-light); }
 .table-frame { margin-top: 4px; }
-.trend-bars { display: flex; align-items: flex-end; gap: 3px; height: 140px; padding-top: 10px; }
+.trend-bars { display: flex; align-items: flex-end; gap: 3px; height: 140px; padding-top: 10px; border-bottom: 1px solid var(--border); }
 .trend-col { display: flex; align-items: flex-end; flex: 1; height: 100%; min-width: 2px; }
 .trend-fill { width: 100%; min-height: 4px; border-radius: 3px 3px 0 0; background: linear-gradient(180deg, var(--cyan), var(--purple)); }
+.trend-fill.is-zero { min-height: 0; background: rgba(234, 238, 222, .18); }
+.trend-axis { display: flex; justify-content: space-between; margin-top: 7px; color: var(--muted-light); font-size: 10px; font-variant-numeric: tabular-nums; }
 .focus-block { padding: 16px; border: 1px solid var(--border); background: rgba(255, 255, 255, .025); }
 .focus-title { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .focus-block p { min-height: 36px; margin: 14px 0; color: var(--muted); font-size: 12px; }
