@@ -1,6 +1,18 @@
 export const roles = { admin: '管理员', developer: '开发者' }
 export const teamStatus = { active: '活跃', inactive: '休整' }
 
+/** 与后端 {@code ResultCode} 保持一致，避免 axios 拦截器硬编码魔术数字。 */
+export const apiResultCode = {
+  success: 200,
+  badRequest: 400,
+  unauthorized: 401,
+  forbidden: 403,
+  notFound: 404,
+  methodNotAllowed: 405,
+  businessError: 500,
+  systemError: 500,
+}
+
 export const reqStatus = {
   draft: '草稿', review: '评审中', approved: '已通过',
   developing: '开发中', done: '已实现', rejected: '已拒绝',
