@@ -340,7 +340,10 @@ onUnmounted(() => {
         <span class="brand-mark">◎</span>
         <span>GPT ATLAS</span>
       </a>
-      <div class="nav-status"><span class="status-dot" />一部仍在继续的历史</div>
+      <div class="nav-status">
+        <span class="status-dot" />
+        <span>{{ activeIndex < 0 ? '一部仍在继续的历史' : `${currentEra.year} · ${currentEra.model}` }}</span>
+      </div>
       <button class="nav-action" type="button" @click="scrollToChapter(eras.length - 1)">跳到现在 <span>↗</span></button>
     </header>
 
@@ -350,6 +353,7 @@ onUnmounted(() => {
         :key="era.index"
         class="rail-dot"
         :class="{ active: activeIndex === index }"
+        :aria-current="activeIndex === index ? 'step' : undefined"
         type="button"
         :aria-label="`跳到 ${era.year} ${era.model}`"
         @click="scrollToChapter(index)"
