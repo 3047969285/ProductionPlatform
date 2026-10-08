@@ -295,6 +295,16 @@ onUnmounted(() => {
 .card-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
 .card-top span { color: var(--muted-light); font-size: 18px; }
 .login-card label { display: flex; flex-direction: column; gap: 7px; color: var(--muted); font-size: 11px; letter-spacing: .08em; }
+.login-card :deep(.el-input__inner:autofill),
+.login-card :deep(.el-input__inner:-webkit-autofill),
+.login-card :deep(.el-input__inner:-webkit-autofill:hover),
+.login-card :deep(.el-input__inner:-webkit-autofill:focus),
+.login-card :deep(.el-input__inner:-webkit-autofill:active) {
+  -webkit-text-fill-color: var(--text) !important;
+  caret-color: var(--text);
+  -webkit-box-shadow: 0 0 0 1000px var(--surface) inset;
+  box-shadow: 0 0 0 1000px var(--surface) inset;
+}
 .btn { margin-top: 8px; padding: 14px 16px; color: #11140f; background: var(--accent); border: 1px solid var(--accent); border-radius: var(--radius); cursor: pointer; font-size: 13px; letter-spacing: .08em; transition: background .25s var(--ease), transform .25s var(--ease), box-shadow .25s var(--ease); }
 .btn:hover:not(:disabled) { background: #fff; box-shadow: 0 10px 26px rgba(239,239,235,.16); transform: translateY(-2px); }
 .btn:disabled { cursor: not-allowed; opacity: .55; }
