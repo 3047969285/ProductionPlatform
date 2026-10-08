@@ -13,6 +13,8 @@ let animationContext
 let mediaQuery
 let filterTween
 let modalTween
+let workTrigger
+let previousBodyOverflow
 const works = [
   { id: '01', title: '潮汐档案', creator: '林间 / 影像', category: '影像', year: '2026', visual: 'tide', note: '把海平面写进一封不会寄出的信。' },
   { id: '02', title: '可以呼吸的墙', creator: '周原 / 空间', category: '空间', year: '2026', visual: 'breath', note: '一面墙，如何记住风经过的方向。' },
@@ -40,14 +42,61 @@ watch(activeFilter, async () => {
 })
 
 watch(selectedWork, async (work) => {
-  if (!work) return
+  if (!work) {
+    document.body.style.overflow = previousBodyOverflow ?? ''
+    await nextTick()
+    workTrigger?.focus()
+    workTrigger = undefined
+    return
+  }
+
+  previousBodyOverflow = document.body.style.overflow
+  document.body.style.overflow = 'hidden'
   await nextTick()
   const modalCard = root.value?.querySelector('.modal-card')
+  root.value?.querySelector('.modal-close')?.focus()
   modalTween?.kill()
   if (modalCard && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     modalTween = gsap.fromTo(modalCard, { autoAlpha: 0, y: 26, scale: 0.97 }, { autoAlpha: 1, y: 0, scale: 1, duration: 0.55, ease: 'power3.out' })
   }
 })
+
+function openWork(work, event) {
+  workTrigger = event.currentTarget
+  selectedWork.value = work
+}
+
+function closeWork() {
+  selectedWork.value = null
+}
+
+function handleWorkDialogKeydown(event) {
+  if (!selectedWork.value) return
+  if (event.key === 'Escape') {
+    event.preventDefault()
+    closeWork()
+    return
+  }
+  if (event.key !== 'Tab') return
+
+  const dialog = root.value?.querySelector('[role="dialog"]')
+  const focusable = [...(dialog?.querySelectorAll('button:not(:disabled), [href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex="-1"])') || [])]
+  if (!focusable.length) {
+    event.preventDefault()
+    dialog?.focus()
+    return
+  }
+
+  const first = focusable[0]
+  const last = focusable[focusable.length - 1]
+  if (event.shiftKey && document.activeElement === first) {
+    event.preventDefault()
+    last.focus()
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault()
+    first.focus()
+  }
+}
 
 onMounted(() => {
   if (!root.value) return
@@ -74,6 +123,7 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
+  document.body.style.overflow = previousBodyOverflow ?? ''
   filterTween?.kill()
   modalTween?.kill()
   mediaQuery?.revert()
@@ -82,7 +132,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <main ref="root" class="works-page">
+  <main ref="root" class="works-page" @keydown="handleWorkDialogKeydown">
     <header class="works-heading">
       <div>
         <p class="works-kicker">THE EXHIBITION / 作品展厅</p>
@@ -94,13 +144,13 @@ onUnmounted(() => {
 
     <div class="works-toolbar">
       <div class="filter-row" aria-label="作品分类">
-        <button v-for="filter in filters" :key="filter" :class="{ active: activeFilter === filter }" @click="activeFilter = filter">{{ filter }}</button>
+        <button v-for="filter in filters" :key="filter" :class="{ active: activeFilter === filter }" :aria-pressed="activeFilter === filter" @click="activeFilter = filter">{{ filter }}</button>
       </div>
       <span class="sort-label">按时间 / 由新到旧 <span>⌄</span></span>
     </div>
 
     <section class="work-grid" aria-label="参赛作品">
-      <article v-for="(work, index) in filteredWorks" :key="work.id" class="work-card" :class="{ featured: index === 0 && activeFilter === '全部' }" @click="selectedWork = work" @keydown.enter="selectedWork = work" tabindex="0">
+      <article v-for="(work, index) in filteredWorks" :key="work.id" class="work-card" :class="{ featured: index === 0 && activeFilter === '全部' }" role="button" :aria-label="`查看作品：${work.title}`" @click="openWork(work, $event)" @keydown.enter.prevent="openWork(work, $event)" @keydown.space.prevent="openWork(work, $event)" tabindex="0">
         <div class="work-visual" :class="`visual-${work.visual}`">
           <div class="visual-grain"></div>
           <template v-if="work.visual === 'tide'"><div class="tide-sun"></div><div class="tide-line t1"></div><div class="tide-line t2"></div><div class="tide-line t3"></div><span class="visual-type">TIDAL<br />MEMORY</span></template>
@@ -119,9 +169,9 @@ onUnmounted(() => {
     <div class="works-end"><span>END OF SELECTION</span><span>— 留一处空白，给下一件作品。</span><span>2026</span></div>
 
     <Transition name="work-modal">
-      <div v-if="selectedWork" class="work-modal" @click.self="selectedWork = null" @keydown.esc="selectedWork = null">
+      <div v-if="selectedWork" class="work-modal" @click.self="closeWork">
         <section class="modal-card" role="dialog" aria-modal="true" :aria-label="selectedWork.title">
-          <button class="modal-close" aria-label="关闭详情" @click="selectedWork = null">×</button>
+          <button class="modal-close" aria-label="关闭详情" @click="closeWork">×</button>
           <div class="modal-art" :class="`visual-${selectedWork.visual}`"><span>{{ selectedWork.id }} / {{ selectedWork.category }}</span></div>
           <div class="modal-copy"><p class="works-kicker">{{ selectedWork.creator }} · {{ selectedWork.year }}</p><h2>{{ selectedWork.title }}</h2><p>{{ selectedWork.note }}</p><span class="modal-mark">未完成 · 2026</span></div>
         </section>
