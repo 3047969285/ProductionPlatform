@@ -141,13 +141,15 @@ const eras = [
 const currentEra = computed(() => eras[Math.max(activeIndex.value, 0)])
 
 let context
+let motionContext
 let mediaContext
 let pointerMove
 let pointerLeave
 
 function scrollToChapter(index) {
   const target = root.value?.querySelector(`[data-chapter="${index}"]`)
-  target?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  const behavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'
+  target?.scrollIntoView({ behavior, block: 'start' })
 }
 
 function handleKeydown(event) {
@@ -167,31 +169,57 @@ onMounted(async () => {
   const rootElement = root.value
 
   context = gsap.context(() => {
-    const intro = gsap.timeline({ defaults: { ease: 'power3.out' } })
-    intro
-      .from(select('.atlas-nav'), { y: -20, autoAlpha: 0, duration: 0.7 })
-      .from(select('.hero-kicker'), { y: 18, autoAlpha: 0, duration: 0.6 }, '-=0.35')
-      .from(select('.hero-word'), { yPercent: 110, rotateX: -70, autoAlpha: 0, duration: 1.1, stagger: 0.08 }, '-=0.25')
-      .from(select('.hero-copy'), { y: 22, autoAlpha: 0, duration: 0.7 }, '-=0.55')
-      .from(select('.hero-meta'), { y: 18, autoAlpha: 0, duration: 0.65 }, '-=0.45')
-      .from(select('.hero-visual'), { scale: 0.82, rotate: -8, autoAlpha: 0, duration: 1.2, ease: 'expo.out' }, '-=0.85')
-      .from(select('.scroll-cue'), { autoAlpha: 0, duration: 0.5 }, '-=0.25')
+    motionContext = gsap.matchMedia()
+    motionContext.add('(prefers-reduced-motion: no-preference)', () => {
+      const intro = gsap.timeline({ defaults: { ease: 'power3.out' } })
+      intro
+        .from(select('.atlas-nav'), { y: -20, autoAlpha: 0, duration: 0.7 })
+        .from(select('.hero-kicker'), { y: 18, autoAlpha: 0, duration: 0.6 }, '-=0.35')
+        .from(select('.hero-word'), { yPercent: 110, rotateX: -70, autoAlpha: 0, duration: 1.1, stagger: 0.08 }, '-=0.25')
+        .from(select('.hero-copy'), { y: 22, autoAlpha: 0, duration: 0.7 }, '-=0.55')
+        .from(select('.hero-meta'), { y: 18, autoAlpha: 0, duration: 0.65 }, '-=0.45')
+        .from(select('.hero-visual'), { scale: 0.82, rotate: -8, autoAlpha: 0, duration: 1.2, ease: 'expo.out' }, '-=0.85')
+        .from(select('.scroll-cue'), { autoAlpha: 0, duration: 0.5 }, '-=0.25')
 
-    gsap.to(select('.orbit-ring'), {
-      rotation: 360,
-      duration: 24,
-      repeat: -1,
-      ease: 'none',
-    })
+      gsap.to(select('.orbit-ring'), {
+        rotation: 360,
+        duration: 24,
+        repeat: -1,
+        ease: 'none',
+      })
 
-    gsap.to(select('.hero-orb'), {
-      y: -16,
-      scale: 1.04,
-      duration: 3.8,
-      repeat: -1,
-      yoyo: true,
-      ease: 'sine.inOut',
-    })
+      gsap.to(select('.hero-orb'), {
+        y: -16,
+        scale: 1.04,
+        duration: 3.8,
+        repeat: -1,
+        yoyo: true,
+        ease: 'sine.inOut',
+      })
+
+      const aura = select('.cursor-aura')[0]
+      if (!aura) return
+
+      const xTo = gsap.quickTo(aura, 'x', { duration: 0.45, ease: 'power3' })
+      const yTo = gsap.quickTo(aura, 'y', { duration: 0.45, ease: 'power3' })
+      pointerMove = (event) => {
+        const rect = rootElement.getBoundingClientRect()
+        xTo(event.clientX - rect.left - 90)
+        yTo(event.clientY - rect.top - 90)
+        cursorVisible.value = true
+      }
+      pointerLeave = () => { cursorVisible.value = false }
+      rootElement.addEventListener('pointermove', pointerMove)
+      rootElement.addEventListener('pointerleave', pointerLeave)
+
+      return () => {
+        if (pointerMove) rootElement.removeEventListener('pointermove', pointerMove)
+        if (pointerLeave) rootElement.removeEventListener('pointerleave', pointerLeave)
+        pointerMove = undefined
+        pointerLeave = undefined
+        cursorVisible.value = false
+      }
+    }, rootElement)
 
     mediaContext = gsap.matchMedia()
     mediaContext.add(
@@ -288,21 +316,6 @@ onMounted(async () => {
       }, rootElement)
   }, rootElement)
 
-  const aura = select('.cursor-aura')[0]
-  if (aura) {
-    const xTo = gsap.quickTo(aura, 'x', { duration: 0.45, ease: 'power3' })
-    const yTo = gsap.quickTo(aura, 'y', { duration: 0.45, ease: 'power3' })
-    pointerMove = (event) => {
-      const rect = rootElement.getBoundingClientRect()
-      xTo(event.clientX - rect.left - 90)
-      yTo(event.clientY - rect.top - 90)
-      cursorVisible.value = true
-    }
-    pointerLeave = () => { cursorVisible.value = false }
-    rootElement.addEventListener('pointermove', pointerMove)
-    rootElement.addEventListener('pointerleave', pointerLeave)
-  }
-
   window.addEventListener('keydown', handleKeydown)
   window.setTimeout(() => ScrollTrigger.refresh(), 60)
 })
@@ -311,6 +324,7 @@ onUnmounted(() => {
   if (pointerMove) root.value?.removeEventListener('pointermove', pointerMove)
   if (pointerLeave) root.value?.removeEventListener('pointerleave', pointerLeave)
   window.removeEventListener('keydown', handleKeydown)
+  motionContext?.revert()
   mediaContext?.revert()
   context?.revert()
 })
