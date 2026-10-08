@@ -145,6 +145,7 @@ let motionContext
 let mediaContext
 let pointerMove
 let pointerLeave
+let chapterObserver
 
 function scrollToChapter(index) {
   const target = root.value?.querySelector(`[data-chapter="${index}"]`)
@@ -167,6 +168,26 @@ onMounted(async () => {
 
   const select = gsap.utils.selector(root.value)
   const rootElement = root.value
+  const chapters = [...rootElement.querySelectorAll('.chapter')]
+  const chapterVisibility = new Map()
+
+  chapterObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      chapterVisibility.set(entry.target, entry.isIntersecting ? entry.intersectionRatio : 0)
+    })
+
+    const [mostVisibleChapter] = [...chapterVisibility.entries()]
+      .filter(([, ratio]) => ratio > 0)
+      .sort((left, right) => right[1] - left[1])
+
+    if (mostVisibleChapter) {
+      activeIndex.value = Number(mostVisibleChapter[0].dataset.chapter)
+    } else if (chapters[0]?.getBoundingClientRect().top >= window.innerHeight / 2) {
+      activeIndex.value = -1
+    }
+  }, { threshold: [0, 0.1, 0.25, 0.5, 0.75, 1] })
+
+  chapters.forEach((chapter) => chapterObserver.observe(chapter))
 
   context = gsap.context(() => {
     motionContext = gsap.matchMedia()
@@ -230,23 +251,10 @@ onMounted(async () => {
       ({ conditions }) => {
         const { desktop, reduceMotion } = conditions
 
-        const createActiveChapterMarkers = () => {
-          select('.chapter').forEach((chapter, index) => {
-            ScrollTrigger.create({
-              trigger: chapter,
-              start: 'top 55%',
-              end: 'bottom 45%',
-              onEnter: () => { activeIndex.value = index },
-              onEnterBack: () => { activeIndex.value = index },
-            })
-          })
-        }
-
         if (reduceMotion) {
           gsap.set(select('.hero-word, .hero-copy, .hero-meta, .hero-visual, .chapter-inner, .source-card'), {
             clearProps: 'all',
           })
-          createActiveChapterMarkers()
           return
         }
 
@@ -263,8 +271,6 @@ onMounted(async () => {
               start: 'top 72%',
               end: 'bottom 28%',
               toggleActions: 'play reverse play reverse',
-              onEnter: () => { activeIndex.value = index },
-              onEnterBack: () => { activeIndex.value = index },
             },
           })
 
@@ -321,6 +327,7 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
+  chapterObserver?.disconnect()
   if (pointerMove) root.value?.removeEventListener('pointermove', pointerMove)
   if (pointerLeave) root.value?.removeEventListener('pointerleave', pointerLeave)
   window.removeEventListener('keydown', handleKeydown)
