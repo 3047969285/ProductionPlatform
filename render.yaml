@@ -10,10 +10,17 @@ services:
     envVars:
       - key: SPRING_PROFILES_ACTIVE
         value: prod
+      # 新数据库首次初始化后，将此变量改为 never，避免重写种子数据。
       - key: SQL_INIT_MODE
-        value: always
+        sync: false
       - key: CORS_ALLOWED_ORIGINS
         value: https://3047969285.github.io
+      - key: DATABASE_URL
+        sync: false
+      - key: DATABASE_USERNAME
+        sync: false
+      - key: DATABASE_PASSWORD
+        sync: false
       - key: MYSQL_ROOT_PASSWORD
         generateValue: true
       - key: JAVA_OPTS

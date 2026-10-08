@@ -1,14 +1,19 @@
 #!/bin/bash
 set -e
 
+export SPRING_PROFILES_ACTIVE="${SPRING_PROFILES_ACTIVE:-prod}"
+# Render 注入 PORT；同时给 Spring Boot 标准变量
+export SERVER_PORT="${PORT:-8080}"
+
+if [ -n "${DATABASE_URL:-}" ] || [ -n "${DATABASE_USERNAME:-}" ] || [ -n "${DATABASE_PASSWORD:-}" ]; then
+  : "${DATABASE_URL:?Set DATABASE_URL for the external database}"
+  : "${DATABASE_USERNAME:?Set DATABASE_USERNAME for the external database}"
+  : "${DATABASE_PASSWORD:?Set DATABASE_PASSWORD for the external database}"
+else
 MYSQL_ROOT_PASSWORD="${MYSQL_ROOT_PASSWORD:-devflow123}"
 export DATABASE_USERNAME=root
 export DATABASE_PASSWORD="$MYSQL_ROOT_PASSWORD"
 export DATABASE_URL="jdbc:mysql://127.0.0.1:3306/devflow?useSSL=false&serverTimezone=Asia/Shanghai&characterEncoding=UTF-8&allowPublicKeyRetrieval=true"
-export SPRING_PROFILES_ACTIVE=prod
-export SQL_INIT_MODE=always
-# Render 注入 PORT；同时给 Spring Boot 标准变量
-export SERVER_PORT="${PORT:-8080}"
 
 BOOTSTRAP_MARKER=/var/lib/mysql/.devflow_bootstrapped
 NEED_BOOTSTRAP=0
@@ -59,6 +64,7 @@ CREATE DATABASE IF NOT EXISTS devflow DEFAULT CHARSET utf8mb4;
 FLUSH PRIVILEGES;
 "
   touch "$BOOTSTRAP_MARKER"
+fi
 fi
 
 # SerialGC 峰值更低，适合 512MB 小实例
