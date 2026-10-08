@@ -370,6 +370,9 @@ onUnmounted(() => {
   .intro-actions { gap: 8px; }
   .intro-play, .intro-skip { gap: 6px; font-size: 10px; letter-spacing: 0; white-space: nowrap; }
 }
+@media (max-width: 360px) and (max-height: 640px) {
+  .login-content { gap: 30px; padding-top: 20px; padding-bottom: 20px; }
+}
 @media (max-width: 1000px) { .intro-work { display: none; } }
 @media (max-height: 620px) and (min-width: 701px) {
   .intro-composition { width: min(72vmin, 620px); }
