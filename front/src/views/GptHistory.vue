@@ -606,7 +606,7 @@ onUnmounted(() => {
 .preface-line { position: absolute; right: 0; bottom: 0; left: 0; height: 1px; background: var(--hairline); }
 
 .chapter { position: relative; min-height: 100svh; scroll-margin-top: 1px; }
-.chapter-inner { display: grid; width: min(1160px, calc(100% - 140px)); min-height: 100svh; align-items: center; grid-template-columns: 1.1fr .9fr; gap: clamp(50px, 9vw, 150px); margin: 0 auto; padding: 100px 0; }
+.chapter-inner { display: grid; width: min(1160px, calc(100% - 200px)); min-height: 100svh; align-items: center; grid-template-columns: 1.1fr .9fr; gap: clamp(50px, 9vw, 150px); margin: 0 auto; padding: 100px 0; }
 .chapter:nth-child(even) .chapter-inner { grid-template-columns: .9fr 1.1fr; }.chapter:nth-child(even) .chapter-visual { order: 2; }.chapter:nth-child(even) .chapter-copy { order: 1; }
 .chapter-visual { position: relative; display: grid; min-height: min(70vh, 610px); place-items: center; }
 .visual-grid { position: absolute; width: 84%; height: 74%; opacity: .45; border: 1px solid var(--hairline); background-image: linear-gradient(rgba(243,240,234,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(243,240,234,.05) 1px, transparent 1px); background-size: 38px 38px; transform: perspective(700px) rotateX(58deg) rotateZ(-18deg); mask-image: radial-gradient(ellipse, black 15%, transparent 70%); }
