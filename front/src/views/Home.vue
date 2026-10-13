@@ -142,16 +142,16 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.home { max-width: 1700px; min-height: 100svh; padding: clamp(145px, 20vh, 205px) clamp(22px, 5.2vw, 84px) 112px; }
+.home { max-width: 1536px; min-height: 100svh; margin: 0 auto; padding: clamp(28px, 4vh, 42px) clamp(22px, 4.2vw, 64px) 96px; }
 .bg { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
 .orb { position: absolute; border-radius: 50%; filter: blur(110px); opacity: .035; will-change: transform; }
 .o1 { width: 360px; height: 360px; background: #fff; top: -8%; right: -5%; }
 .o2 { width: 280px; height: 280px; background: #bdbdb7; bottom: 5%; left: -8%; }
-.hero { position: relative; margin-bottom: clamp(45px, 9vh, 92px); padding-bottom: 0; border: 0; }
+.hero { position: relative; margin-bottom: clamp(30px, 6vh, 64px); padding-bottom: 0; border: 0; }
 .hero::after { display: none; }
 .tag { display: flex; align-items: center; gap: 9px; color: var(--muted); font-size: 8px; letter-spacing: .2em; margin-bottom: 19px; }
 .tag i { width: 25px; height: 1px; background: var(--muted); }
-h1 { font-family: var(--font-display); font-size: clamp(3.4rem, 8.2vw, 8.1rem); font-weight: 400; letter-spacing: -.09em; line-height: .88; margin-bottom: 22px; }
+h1 { font-family: var(--font-display); font-size: clamp(3rem, 6vw, 6rem); font-weight: 400; letter-spacing: -.09em; line-height: .92; margin-bottom: 18px; }
 .desc { color: var(--muted-light); font-size: 9px; letter-spacing: .2em; }
 .grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 0; margin-bottom: clamp(48px, 10vh, 100px); border-top: 1px solid rgba(239,239,235,.24); border-bottom: 1px solid rgba(239,239,235,.15); background: transparent; }
 .card { position: relative; min-width: 0; min-height: 142px; padding: 22px 18px 18px 0; background: transparent; border-right: 1px solid rgba(239,239,235,.12); will-change: transform, opacity; transition: transform .45s var(--ease), background .35s var(--ease); }
@@ -178,7 +178,7 @@ h1 { font-family: var(--font-display); font-size: clamp(3.4rem, 8.2vw, 8.1rem); 
 .retry-button:hover { border-color: rgba(239,239,235,.62); background: rgba(255,255,255,.05); }
 @media (max-width: 900px) { .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 @media (max-width: 540px) {
-  .home { padding-top: 145px; }
+  .home { padding-top: 28px; padding-bottom: 72px; }
   .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .card:nth-child(3) { border-top: 1px solid rgba(239,239,235,.12); }
   .card:nth-child(n+4) { border-top: 1px solid rgba(239,239,235,.12); }

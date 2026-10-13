@@ -287,8 +287,6 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-:deep(.page) { padding-top: clamp(78px, 11vh, 110px); }
-.gallery-layout { margin-top: -44px; }
 .project-tools { display: flex; align-items: center; gap: 12px; }
 .search-wrap { display: flex; width: min(24vw, 250px); align-items: center; gap: 10px; padding: 9px 12px; border-bottom: 1px solid rgba(239,239,235,.3); color: var(--muted); }
 .search-wrap > span { font-size: 18px; line-height: 1; }
@@ -346,8 +344,6 @@ onUnmounted(() => {
 .empty { grid-column: 1 / -1; text-align: center; color: var(--muted); padding: 46px 0; font-size: 12px; }
 @media (max-width: 900px) { .project-card { width: min(60vw, 650px); } }
 @media (max-width: 700px) {
-  :deep(.page) { padding-top: 96px; }
-  .gallery-layout { margin-top: -24px; }
   .project-tools { width: 100%; }
   .search-wrap { flex: 1; width: auto; }
   .gallery-layout { min-height: 55vh; }

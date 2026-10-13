@@ -45,10 +45,10 @@ onUnmounted(() => context?.revert())
 .page {
   position: relative;
   width: 100%;
-  max-width: 1700px;
+  max-width: 1536px;
   min-height: 100svh;
   margin: 0 auto;
-  padding: clamp(98px, 14vh, 142px) clamp(22px, 5.2vw, 84px) 112px;
+  padding: clamp(28px, 4vh, 42px) clamp(22px, 4.2vw, 64px) 96px;
   isolation: isolate;
 }
 .head {
@@ -67,7 +67,7 @@ h1 { font-family: var(--font-display); font-size: clamp(2.5rem, 6vw, 5.6rem); fo
   padding: 0;
 }
 @media (max-width: 700px) {
-  .page { padding-top: 96px; padding-bottom: 88px; }
+  .page { padding-top: 28px; padding-bottom: 72px; }
   .head { align-items: flex-start; }
   .page-action { width: 100%; }
 }

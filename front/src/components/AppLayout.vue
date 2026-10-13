@@ -149,7 +149,8 @@ onUnmounted(() => {
 .route-transition__label strong { color: var(--text); font-size: 11px; font-weight: 500; letter-spacing: .08em; }
 .nav {
   position: fixed; inset: 0 0 auto; z-index: 100;
-  height: 78px; display: flex; align-items: center; justify-content: space-between;
+  height: 78px; display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center; gap: 20px;
   padding: 0 clamp(22px, 5.2vw, 84px);
   pointer-events: none;
 }
@@ -166,9 +167,9 @@ onUnmounted(() => {
 .brand-copy strong { font-size: 11px; letter-spacing: .2em; }
 .brand-copy small { color: var(--muted-light); font-size: 7px; letter-spacing: .15em; }
 .nav-list {
-  position: fixed; left: clamp(22px, 5.2vw, 84px); bottom: 27px; z-index: 101;
+  position: static; justify-self: center; min-width: 0;
   display: flex; align-items: center; gap: clamp(15px, 2.1vw, 30px);
-  max-width: calc(100vw - 44px); overflow-x: auto; pointer-events: auto;
+  max-width: 100%; overflow-x: auto; pointer-events: auto;
 }
 .nav-item {
   position: relative; display: inline-flex; align-items: center; gap: 7px;
@@ -183,7 +184,7 @@ onUnmounted(() => {
 .nav-item:hover, .nav-item.active { color: var(--text); }
 .nav-item.active::after { transform: scaleX(1); }
 .nav-index { color: rgba(239, 239, 235, .38); font-size: 8px; letter-spacing: .08em; }
-.nav-end { display: flex; align-items: center; gap: 18px; flex: 0 0 auto; pointer-events: auto; }
+.nav-end { display: flex; align-items: center; justify-self: end; gap: 18px; flex: 0 0 auto; pointer-events: auto; }
 .user { display: flex; align-items: center; gap: 14px; color: var(--muted); font-size: 10px; letter-spacing: .08em; }
 .user-name { max-width: 96px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .user button {
@@ -193,15 +194,32 @@ onUnmounted(() => {
 .user button:hover { color: var(--text); border-color: rgba(239, 239, 235, .55); }
 main { padding-top: 0; }
 @media (max-width: 760px) {
-  .nav { height: 64px; padding: 0 20px; }
+  .layout { --nav-h: 108px; }
+  .nav {
+    height: 108px;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: 40px 32px;
+    align-content: center;
+    gap: 8px 12px;
+    padding: 8px 20px 10px;
+  }
   .route-transition__rings { width: min(72vw, 54vh, 420px); }
-  .route-transition__label { right: 20px; bottom: 70px; }
-  .brand-copy { display: none; }
-  .nav-list { right: 20px; bottom: 18px; left: 20px; justify-content: space-between; gap: 12px; }
-  .nav-item { gap: 5px; font-size: 9px; }
+  .route-transition__label { right: 20px; bottom: 24px; }
+  .brand { grid-column: 1; grid-row: 1; }
+  .brand-copy { display: flex; }
+  .nav-end { grid-column: 2; grid-row: 1; }
+  .nav-list {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    justify-self: stretch;
+    gap: clamp(12px, 4vw, 22px);
+    padding-bottom: 3px;
+    scrollbar-width: none;
+  }
+  .nav-list::-webkit-scrollbar { display: none; }
+  .nav-item { flex: 0 0 auto; gap: 5px; font-size: 9px; }
 }
 @media (max-width: 440px) {
-  .nav-list { bottom: 14px; gap: 10px; }
   .nav-index { display: none; }
   .user-name { display: none; }
 }
