@@ -29,7 +29,7 @@ const globalData = ref({
 })
 const projectData = ref(null)
 let loadSequence = 0
-const completedRequirementStatuses = new Set(['approved', 'done'])
+const completedRequirementStatuses = new Set(['done'])
 
 const isAllProjects = computed(() => selectedProjectId.value === 'all')
 const selectedProject = computed(() => projects.value.find((item) => String(item.id) === String(selectedProjectId.value)))
@@ -169,7 +169,7 @@ function maxRows(rows) {
 const metrics = computed(() => {
   if (isAllProjects.value) {
     const reqTotal = sumStatus(globalData.value.status?.requirement)
-    const reqDone = number(globalData.value.status?.requirement?.approved) + number(globalData.value.status?.requirement?.done)
+    const reqDone = number(globalData.value.status?.requirement?.done)
     const taskTotal = sumStatus(globalData.value.status?.task)
     const taskDone = number(globalData.value.status?.task?.done)
     const bugTotal = sumStatus(globalData.value.status?.bug)

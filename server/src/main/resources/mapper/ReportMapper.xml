@@ -63,7 +63,7 @@
     <select id="projectCompletion" resultType="map">
         SELECT p.id AS projectId, p.name AS projectName,
                COUNT(r.id) AS total,
-               SUM(CASE WHEN r.status IN ('done', 'approved') THEN 1 ELSE 0 END) AS doneCnt
+               SUM(CASE WHEN r.status = 'done' THEN 1 ELSE 0 END) AS doneCnt
         FROM project p
         LEFT JOIN requirement r ON r.project_id = p.id
         GROUP BY p.id, p.name
