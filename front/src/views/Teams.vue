@@ -6,7 +6,7 @@
       <el-button link @click="load">重新加载</el-button>
     </div>
     <div v-else class="table-frame">
-      <el-table :data="list" v-loading="loading" stripe>
+      <el-table :data="list" v-loading="loading" stripe empty-text="还没有团队，点击右上角「新增」创建">
       <el-table-column prop="code" label="编码" min-width="150" />
       <el-table-column prop="name" label="名称" min-width="240" />
       <el-table-column prop="capacity" label="并发上限" min-width="150" />

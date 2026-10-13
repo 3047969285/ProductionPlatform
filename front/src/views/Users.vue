@@ -6,7 +6,7 @@
       <el-button link @click="load">重新加载</el-button>
     </div>
     <div v-else class="table-frame">
-      <el-table :data="list" v-loading="loading" stripe>
+      <el-table :data="list" v-loading="loading" stripe empty-text="还没有用户，点击右上角「新增」创建">
       <el-table-column prop="username" label="用户名" min-width="180" />
       <el-table-column prop="nickname" label="昵称" min-width="180" />
       <el-table-column label="角色" min-width="160">
