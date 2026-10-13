@@ -84,7 +84,7 @@ onUnmounted(() => {
         </div>
         <label class="field statement-field"><span>一句话，关于它 <b>*</b></span><textarea v-model="statement" required maxlength="120" rows="3" placeholder="你想改变什么？"></textarea><small>{{ statement.length }} / 120</small></label>
         <label class="upload-zone">
-          <input type="file" accept="image/*,.pdf,.mp4,.mov" @change="chooseFile" />
+          <input type="file" accept=".jpg,.jpeg,.png,.pdf,.mp4,image/jpeg,image/png,application/pdf,video/mp4" @change="chooseFile" />
           <span class="upload-symbol">＋</span>
           <span class="upload-label">{{ fileName || '放入一张作品图或方案文件' }}</span>
           <small>{{ fileName ? '文件已选，可在预览中查看作品信息' : 'JPG · PNG · PDF · MP4' }}</small>
