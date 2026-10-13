@@ -7,6 +7,7 @@ gsap.registerPlugin(ScrollTrigger)
 
 const filters = ['全部', '影像', '物件', '空间', '数字']
 const activeFilter = ref('全部')
+const sortOrder = ref('desc')
 const selectedWork = ref(null)
 const root = ref(null)
 let animationContext
@@ -23,9 +24,13 @@ const works = [
   { id: '05', title: '给月亮的备忘', creator: '何也 / 影像', category: '影像', year: '2025', visual: 'moon', note: '没有被说出口的事，交给夜色保管。' },
   { id: '06', title: '慢速机器', creator: '野行 / 物件', category: '物件', year: '2026', visual: 'machine', note: '让工具学会等待，让效率暂停片刻。' },
 ]
-const filteredWorks = computed(() => activeFilter.value === '全部' ? works : works.filter((work) => work.category === activeFilter.value))
+const filteredWorks = computed(() => {
+  const visibleWorks = activeFilter.value === '全部' ? works : works.filter((work) => work.category === activeFilter.value)
+  const direction = sortOrder.value === 'desc' ? -1 : 1
+  return [...visibleWorks].sort((left, right) => (Number(left.year) - Number(right.year)) * direction)
+})
 
-watch(activeFilter, async () => {
+watch([activeFilter, sortOrder], async () => {
   await nextTick()
   if (!root.value) return
   const cards = root.value.querySelectorAll('.work-card')
@@ -68,6 +73,10 @@ function openWork(work, event) {
 
 function closeWork() {
   selectedWork.value = null
+}
+
+function toggleSortOrder() {
+  sortOrder.value = sortOrder.value === 'desc' ? 'asc' : 'desc'
 }
 
 function handleWorkDialogKeydown(event) {
@@ -146,7 +155,9 @@ onUnmounted(() => {
       <div class="filter-row" aria-label="作品分类">
         <button v-for="filter in filters" :key="filter" :class="{ active: activeFilter === filter }" :aria-pressed="activeFilter === filter" @click="activeFilter = filter">{{ filter }}</button>
       </div>
-      <span class="sort-label">按时间 / 由新到旧 <span>⌄</span></span>
+      <button class="sort-toggle" type="button" :aria-label="`按年份${sortOrder === 'desc' ? '由新到旧' : '由旧到新'}，点击切换`" @click="toggleSortOrder">
+        按时间 / {{ sortOrder === 'desc' ? '由新到旧' : '由旧到新' }} <span aria-hidden="true">{{ sortOrder === 'desc' ? '↓' : '↑' }}</span>
+      </button>
     </div>
 
     <section class="work-grid" aria-label="参赛作品">
@@ -190,7 +201,7 @@ onUnmounted(() => {
 .heading-count { padding-bottom: 9px; font-family: Georgia, serif; font-size: 30px; }.heading-count small { color: #898a83; font-family: inherit; font-size: 10px; }
 .works-toolbar { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-top: 1px solid rgba(25,26,26,.2); border-bottom: 1px solid rgba(25,26,26,.2); }
 .filter-row { display: flex; gap: 7px; }.filter-row button { min-width: 50px; padding: 8px 13px; border: 1px solid transparent; background: none; color: #777873; font: inherit; font-size: 10px; cursor: pointer; transition: all .2s ease; }.filter-row button.active, .filter-row button:hover { border-color: rgba(25,26,26,.55); color: #191a1a; }
-.sort-label { color: #777873; font-size: 9px; }.sort-label span { padding-left: 8px; color: #191a1a; }
+.sort-toggle { display: inline-flex; min-height: 36px; align-items: center; gap: 8px; padding: 0 8px; border: 1px solid transparent; color: #777873; background: transparent; cursor: pointer; font: inherit; font-size: 9px; transition: border-color .2s ease, color .2s ease; }.sort-toggle span { color: #191a1a; font-size: 13px; }.sort-toggle:hover, .sort-toggle:focus-visible { border-color: rgba(25,26,26,.35); color: #191a1a; }
 .work-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 39px 19px; padding-top: 26px; }
 .work-card { min-width: 0; cursor: pointer; outline: none; will-change: transform, opacity; }.work-card:focus-visible .work-visual { outline: 2px solid #747951; outline-offset: 4px; }.work-card.featured { grid-column: span 2; }.work-visual { position: relative; overflow: hidden; aspect-ratio: 1.12 / 1; isolation: isolate; transition: transform .4s cubic-bezier(.2,.8,.2,1), filter .4s ease; will-change: transform; }.work-card:hover .work-visual { transform: translateY(-6px) scale(1.012); filter: saturate(1.06); }.featured .work-visual { aspect-ratio: 1.94 / 1; }
 .visual-grain { position: absolute; inset: 0; z-index: 3; pointer-events: none; opacity: .18; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.28'/%3E%3C/svg%3E"); mix-blend-mode: soft-light; }
@@ -204,6 +215,6 @@ onUnmounted(() => {
 .work-meta { display: flex; justify-content: space-between; align-items: end; padding-top: 13px; }.work-id, .work-year { color: #8c8d83; font-size: 8px; letter-spacing: .08em; }.work-meta h2 { margin-top: 5px; font-family: Georgia, "Songti SC", serif; font-size: 19px; font-weight: 400; letter-spacing: -.04em; }.work-creator { margin-top: 5px; color: #777873; font-size: 9px; }
 .works-end { display: flex; justify-content: space-between; gap: 20px; margin-top: 75px; padding-top: 14px; border-top: 1px solid rgba(25,26,26,.2); color: #85867e; font-size: 8px; letter-spacing: .1em; }
 .work-modal { position: fixed; inset: 0; z-index: 20; display: grid; place-items: center; padding: 24px; background: rgba(15,17,16,.75); backdrop-filter: blur(7px); }.modal-card { position: relative; display: grid; grid-template-columns: 1.1fr .9fr; width: min(820px,100%); min-height: 380px; background: #f2f1ec; }.modal-close { position: absolute; top: 12px; right: 13px; z-index: 3; width: 34px; height: 34px; border: 1px solid rgba(25,26,26,.2); border-radius: 50%; background: transparent; font-size: 22px; cursor: pointer; }.modal-art { position: relative; display: grid; overflow: hidden; min-height: 380px; place-items: end start; padding: 20px; color: rgba(255,255,255,.8); font-size: 9px; letter-spacing: .15em; }.modal-art.visual-object, .modal-art.visual-breath, .modal-art.visual-machine { color: #393a32; }.modal-copy { display: flex; flex-direction: column; justify-content: center; padding: clamp(26px,5vw,52px); }.modal-copy h2 { margin-top: 21px; font-family: Georgia, "Songti SC", serif; font-size: clamp(31px,5vw,48px); font-weight: 400; }.modal-copy > p:not(.works-kicker) { margin-top: 19px; color: #777873; font-family: Georgia, "Songti SC", serif; font-size: 15px; line-height: 1.9; }.modal-mark { margin-top: 50px; color: #93948c; font-size: 8px; letter-spacing: .12em; }.work-modal-enter-active, .work-modal-leave-active { transition: opacity .2s ease; }.work-modal-enter-from, .work-modal-leave-to { opacity: 0; }
-@media (max-width: 760px) { .works-page { padding: 57px 24px 55px; }.works-heading { grid-template-columns: 1fr auto; gap: 15px; }.heading-note { grid-column: 1 / -1; order: 3; }.heading-count { align-self: start; padding-top: 36px; }.work-grid { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 29px 13px; }.work-card.featured { grid-column: span 2; }.works-end { margin-top: 50px; }.sort-label { display: none; } }
-@media (max-width: 480px) { .works-heading h1 { font-size: 66px; }.filter-row { width: 100%; justify-content: space-between; gap: 0; }.filter-row button { min-width: 0; padding: 8px; }.work-grid { grid-template-columns: 1fr 1fr; }.featured .work-visual { aspect-ratio: 1.25 / 1; }.work-meta h2 { font-size: 16px; }.works-end span:nth-child(2) { display: none; }.modal-card { grid-template-columns: 1fr; max-height: 90svh; overflow: auto; }.modal-art { min-height: 250px; }.modal-mark { margin-top: 25px; } }
+@media (max-width: 760px) { .works-page { padding: 57px 24px 55px; }.works-heading { grid-template-columns: 1fr auto; gap: 15px; }.heading-note { grid-column: 1 / -1; order: 3; }.heading-count { align-self: start; padding-top: 36px; }.work-grid { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 29px 13px; }.work-card.featured { grid-column: span 2; }.works-end { margin-top: 50px; }.works-toolbar { flex-wrap: wrap; row-gap: 8px; }.filter-row { flex: 1; flex-wrap: wrap; } }
+@media (max-width: 480px) { .works-heading h1 { font-size: 66px; }.filter-row { flex: 1 1 100%; width: 100%; justify-content: space-between; gap: 0; }.filter-row button { min-width: 0; padding: 8px; }.sort-toggle { margin-left: auto; }.work-grid { grid-template-columns: 1fr 1fr; }.featured .work-visual { aspect-ratio: 1.25 / 1; }.work-meta h2 { font-size: 16px; }.works-end span:nth-child(2) { display: none; }.modal-card { grid-template-columns: 1fr; max-height: 90svh; overflow: auto; }.modal-art { min-height: 250px; }.modal-mark { margin-top: 25px; } }
 </style>
