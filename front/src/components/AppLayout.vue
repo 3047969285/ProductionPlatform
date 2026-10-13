@@ -80,7 +80,7 @@ onMounted(() => {
         ease: 'power3.out',
         clearProps: 'all',
       })
-      gsap.from('.nav-item, .system-status, .user', {
+      gsap.from('.nav-item, .user', {
         autoAlpha: 0,
         y: reduced ? 0 : 6,
         duration: reduced ? 0 : .4,
@@ -114,7 +114,6 @@ onUnmounted(() => {
         </RouterLink>
       </nav>
       <div class="nav-end">
-        <span class="system-status"><i /> LIVE</span>
         <div class="user">
           <span class="user-name">{{ user?.nickname || user?.username }}</span>
           <button @click="logout">退出</button>
@@ -185,8 +184,6 @@ onUnmounted(() => {
 .nav-item.active::after { transform: scaleX(1); }
 .nav-index { color: rgba(239, 239, 235, .38); font-size: 8px; letter-spacing: .08em; }
 .nav-end { display: flex; align-items: center; gap: 18px; flex: 0 0 auto; pointer-events: auto; }
-.system-status { display: inline-flex; align-items: center; gap: 7px; color: var(--muted-light); font-size: 8px; letter-spacing: .14em; }
-.system-status i { width: 4px; height: 4px; border-radius: 50%; background: #d1d1cb; }
 .user { display: flex; align-items: center; gap: 14px; color: var(--muted); font-size: 10px; letter-spacing: .08em; }
 .user-name { max-width: 96px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .user button {
@@ -199,7 +196,7 @@ main { padding-top: 0; }
   .nav { height: 64px; padding: 0 20px; }
   .route-transition__rings { width: min(72vw, 54vh, 420px); }
   .route-transition__label { right: 20px; bottom: 70px; }
-  .brand-copy, .system-status { display: none; }
+  .brand-copy { display: none; }
   .nav-list { right: 20px; bottom: 18px; left: 20px; justify-content: space-between; gap: 12px; }
   .nav-item { gap: 5px; font-size: 9px; }
 }

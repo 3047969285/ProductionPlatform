@@ -34,7 +34,6 @@ onUnmounted(() => context?.revert())
       <div>
         <p v-if="tag" class="tag"><i />{{ tag }}</p>
         <h1>{{ title }}</h1>
-        <p class="page-signal">PDE / DELIVERY / LIVE</p>
       </div>
       <div class="page-action"><slot name="action" /></div>
     </header>
@@ -63,7 +62,6 @@ onUnmounted(() => context?.revert())
 .tag { display: flex; align-items: center; gap: 9px; color: var(--muted); font-size: 9px; font-weight: 500; letter-spacing: .2em; margin-bottom: 11px; }
 .tag i { width: 24px; height: 1px; background: var(--muted); }
 h1 { font-family: var(--font-display); font-size: clamp(2.5rem, 6vw, 5.6rem); font-weight: 400; letter-spacing: -.07em; line-height: .95; }
-.page-signal { margin-top: 12px; color: var(--muted-light); font-size: 8px; letter-spacing: .2em; }
 .page-action { display: flex; align-items: center; }
 .panel {
   padding: 0;
