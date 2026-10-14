@@ -1,5 +1,6 @@
 <script setup>
 import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue'
+import { RouterLink } from 'vue-router'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
@@ -369,7 +370,10 @@ onUnmounted(() => {
         <span class="status-dot" />
         <span>{{ activeIndex < 0 ? '一部仍在继续的历史' : `${currentEra.year} · ${currentEra.model}` }}</span>
       </div>
-      <button class="nav-action" type="button" @click="scrollToChapter(eras.length - 1)">跳到现在 <span>↗</span></button>
+      <div class="nav-actions">
+        <RouterLink class="nav-action" to="/">← 返回工作台</RouterLink>
+        <button class="nav-action" type="button" @click="scrollToChapter(eras.length - 1)">跳到现在 <span>↗</span></button>
+      </div>
     </header>
 
     <aside class="chapter-rail" aria-label="GPT 发展章节">
@@ -592,6 +596,8 @@ onUnmounted(() => {
 .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--lime); box-shadow: 0 0 16px var(--lime); }
 .nav-action { display: flex; align-items: center; gap: 11px; padding: 9px 0; border: 0; border-bottom: 1px solid var(--hairline); background: none; cursor: pointer; font: inherit; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; transition: border-color .3s ease, color .3s ease; }
 .nav-action:hover { color: var(--cyan); border-color: var(--cyan); }
+.nav-actions { display: inline-flex; align-items: center; gap: 22px; }
+@media (max-width: 720px) { .nav-actions { gap: 12px; } .nav-action { font-size: 10px; letter-spacing: .07em; } }
 
 .chapter-rail { position: fixed; top: 50%; right: clamp(17px, 3vw, 44px); z-index: 16; display: flex; flex-direction: column; align-items: center; gap: 11px; transform: translateY(-50%); }
 .rail-dot { position: relative; display: grid; width: 24px; height: 24px; padding: 0; place-items: center; border: 0; border-radius: 50%; color: transparent; background: transparent; cursor: pointer; }

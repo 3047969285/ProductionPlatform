@@ -3,7 +3,8 @@ import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter, RouterLink, RouterView } from 'vue-router'
 import { gsap } from 'gsap'
 import { clearAuth, getUser } from '../auth'
-import api from '../api'
+import api, { connection } from '../api'
+import CommandPalette from './CommandPalette.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -12,6 +13,9 @@ const root = ref(null)
 const routeCurtain = ref(null)
 const routeTransitioning = ref(false)
 const routeTransitionLabel = ref('')
+const paletteOpen = ref(false)
+const refreshTick = ref(0)
+const probing = ref(false)
 let animationContext
 let mediaContext
 let routeAnimationContext
@@ -42,6 +46,43 @@ async function logout() {
   router.push('/login')
 }
 
+/* ── 全局命令面板 ─────────────────────────────────────── */
+function openPalette() {
+  paletteOpen.value = true
+}
+
+function togglePalette() {
+  paletteOpen.value = !paletteOpen.value
+}
+
+function onGlobalKey(event) {
+  if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
+    event.preventDefault()
+    togglePalette()
+  }
+}
+
+function refreshCurrent() {
+  refreshTick.value += 1
+}
+
+/* ── 后端连接状态 ─────────────────────────────────────── */
+const connectionState = computed(() => connection.value.state)
+const connectionLabel = computed(() => {
+  if (connectionState.value === 'down') return '后端不可达，点击重试'
+  if (connectionState.value === 'ok') return '后端连接正常'
+  return '尚未发起请求'
+})
+
+async function probeConnection() {
+  if (probing.value) return
+  probing.value = true
+  try {
+    await api.get('/dashboard')
+  } catch { /* 状态由拦截器统一维护 */ }
+  finally { probing.value = false }
+}
+
 watch(() => route.path, async (path, previousPath) => {
   if (!previousPath || path === '/login' || !root.value) return
   routeTransitionLabel.value = transitionLabel(route.path)
@@ -68,6 +109,7 @@ watch(() => route.path, async (path, previousPath) => {
 })
 
 onMounted(() => {
+  window.addEventListener('keydown', onGlobalKey)
   if (!root.value) return
   animationContext = gsap.context(() => {
     mediaContext = gsap.matchMedia()
@@ -94,6 +136,7 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
+  window.removeEventListener('keydown', onGlobalKey)
   routeAnimationContext?.revert()
   mediaContext?.revert()
   animationContext?.revert()
@@ -114,6 +157,21 @@ onUnmounted(() => {
         </RouterLink>
       </nav>
       <div class="nav-end">
+        <button class="nav-search" type="button" aria-label="打开全局命令面板" @click="openPalette">
+          <span class="nav-search-key" aria-hidden="true">⌘K</span>
+          <span class="nav-search-text">搜索</span>
+        </button>
+        <button
+          class="conn"
+          type="button"
+          :class="connectionState"
+          :title="connectionLabel"
+          :aria-label="connectionLabel"
+          :disabled="probing"
+          @click="probeConnection"
+        >
+          <i aria-hidden="true" />
+        </button>
         <div class="user">
           <span class="user-name">{{ user?.nickname || user?.username }}</span>
           <button @click="logout">退出</button>
@@ -128,10 +186,11 @@ onUnmounted(() => {
     <main>
       <RouterView v-slot="{ Component }">
         <Transition name="page" mode="out-in">
-          <component :is="Component" :key="route.path" />
+          <component :is="Component" :key="route.path + '#' + refreshTick" />
         </Transition>
       </RouterView>
     </main>
+    <CommandPalette v-model="paletteOpen" @logout="logout" @refresh="refreshCurrent" />
   </div>
 </template>
 
@@ -184,7 +243,27 @@ onUnmounted(() => {
 .nav-item:hover, .nav-item.active { color: var(--text); }
 .nav-item.active::after { transform: scaleX(1); }
 .nav-index { color: rgba(239, 239, 235, .38); font-size: 8px; letter-spacing: .08em; }
-.nav-end { display: flex; align-items: center; justify-self: end; gap: 18px; flex: 0 0 auto; pointer-events: auto; }
+.nav-end { display: flex; align-items: center; justify-self: end; gap: 14px; flex: 0 0 auto; pointer-events: auto; }
+.nav-search {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 6px 12px 6px 10px;
+  border: 1px solid rgba(238, 238, 234, .18); border-radius: 999px;
+  color: var(--muted); background: transparent; cursor: pointer;
+  font-size: 10px; letter-spacing: .08em; font-family: inherit;
+  transition: color .25s var(--ease), border-color .25s var(--ease), background .25s var(--ease);
+}
+.nav-search:hover { color: var(--text); border-color: rgba(238, 238, 234, .5); background: rgba(255, 255, 255, .05); }
+.nav-search-key {
+  display: inline-grid; place-items: center; min-width: 26px; height: 18px; padding: 0 5px;
+  border: 1px solid rgba(238, 238, 234, .22); border-radius: 5px;
+  color: var(--muted-light); font-size: 8px; letter-spacing: .06em;
+}
+.conn { display: grid; width: 22px; height: 22px; place-items: center; border: 0; border-radius: 50%; background: transparent; cursor: pointer; }
+.conn i { display: block; width: 6px; height: 6px; border-radius: 50%; background: rgba(239, 239, 235, .3); transition: background .3s ease, box-shadow .3s ease; }
+.conn.ok i { background: #a9c295; box-shadow: 0 0 0 3px rgba(169, 194, 149, .14); }
+.conn.down i { background: #d98b7d; box-shadow: 0 0 0 3px rgba(217, 139, 125, .18); animation: conn-pulse 2s ease-in-out infinite; }
+.conn:disabled { cursor: progress; }
+@keyframes conn-pulse { 0%, 100% { opacity: 1 } 50% { opacity: .35 } }
 .user { display: flex; align-items: center; gap: 14px; color: var(--muted); font-size: 10px; letter-spacing: .08em; }
 .user-name { max-width: 96px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .user button {
@@ -207,7 +286,9 @@ main { padding-top: 0; }
   .route-transition__label { right: 20px; bottom: 24px; }
   .brand { grid-column: 1; grid-row: 1; }
   .brand-copy { display: flex; }
-  .nav-end { grid-column: 2; grid-row: 1; }
+  .nav-end { grid-column: 2; grid-row: 1; gap: 10px; }
+  .nav-search { padding: 5px 9px 5px 7px; }
+  .nav-search-text { display: none; }
   .nav-list {
     grid-column: 1 / -1;
     grid-row: 2;

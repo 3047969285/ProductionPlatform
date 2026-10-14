@@ -1,11 +1,12 @@
 <script setup>
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { gsap } from 'gsap'
 import PageShell from '../components/PageShell.vue'
 import api from '../api'
 
+const route = useRoute()
 const router = useRouter()
 const root = ref(null)
 const list = ref([])
@@ -176,6 +177,17 @@ function openAdd() {
   dialog.value = true
 }
 
+// 命令面板等入口通过 ?new=1 直接唤起新建表单，消费后立刻清掉参数避免刷新重开。
+function consumeNewQuery() {
+  if (route.query.new !== '1') return
+  openAdd()
+  const query = { ...route.query }
+  delete query.new
+  router.replace({ query })
+}
+
+watch(() => route.query.new, (value) => { if (value === '1') consumeNewQuery() })
+
 function openEdit(p) {
   if (deletingProjectId.value !== null) return
   editing.value = true
@@ -215,6 +227,7 @@ async function remove(id) {
 onMounted(() => {
   window.addEventListener('resize', syncViewport, { passive: true })
   load()
+  consumeNewQuery()
 })
 
 onUnmounted(() => {
