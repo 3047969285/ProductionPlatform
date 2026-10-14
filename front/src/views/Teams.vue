@@ -5,25 +5,36 @@
       <span>暂时无法读取团队列表</span>
       <el-button link @click="load">重新加载</el-button>
     </div>
-    <div v-else class="table-frame">
-      <el-table :data="list" v-loading="loading" stripe style="width: 100%" empty-text="还没有团队，点击右上角「新增」创建">
-      <el-table-column prop="code" label="编码" min-width="150" />
-      <el-table-column prop="name" label="名称" min-width="240" />
-      <el-table-column prop="capacity" label="并发上限" min-width="150" />
-      <el-table-column label="状态" min-width="150">
-        <template #default="{ row }">
-          <span class="badge" :class="badgeClass('team', row.status)">{{ teamStatus[row.status] }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="操作" width="190" fixed="right">
-        <template #default="{ row }">
-          <div class="team-actions">
-            <el-button size="small" @click="openForm(row)">编辑</el-button>
-            <el-button size="small" type="danger" @click="remove(row.id)">删除</el-button>
-          </div>
-        </template>
-      </el-table-column>
-      </el-table>
+    <div v-else v-loading="loading" class="table-frame">
+      <table class="teams-table" aria-label="团队列表">
+        <colgroup>
+          <col class="code-column" />
+          <col class="name-column" />
+          <col class="capacity-column" />
+          <col class="status-column" />
+          <col class="actions-column" />
+        </colgroup>
+        <thead>
+          <tr><th scope="col">编码</th><th scope="col">名称</th><th scope="col">并发上限</th><th scope="col">状态</th><th scope="col">操作</th></tr>
+        </thead>
+        <tbody v-if="list.length">
+          <tr v-for="row in list" :key="row.id">
+            <td>{{ row.code }}</td>
+            <td>{{ row.name }}</td>
+            <td>{{ row.capacity ?? '—' }}</td>
+            <td><span class="badge" :class="badgeClass('team', row.status)">{{ teamStatus[row.status] || row.status || '未知' }}</span></td>
+            <td>
+              <div class="team-actions">
+                <el-button size="small" @click="openForm(row)">编辑</el-button>
+                <el-button size="small" type="danger" @click="remove(row.id)">删除</el-button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+        <tbody v-else>
+          <tr><td class="empty-row" colspan="5">还没有团队，点击右上角「新增」创建</td></tr>
+        </tbody>
+      </table>
     </div>
     <el-dialog
       :title="form.id ? '编辑团队' : '新增团队'"
@@ -82,14 +93,26 @@ onMounted(load)
 </script>
 
 <style scoped>
-.table-frame :deep(.el-table__cell) { padding: 14px 16px; }
-.table-frame :deep(.el-table__row) { transition: background .25s var(--ease); }
+.table-frame { overflow: hidden; border: 1px solid var(--border); border-radius: var(--radius-lg); background: rgba(12, 12, 12, .78); }
+.teams-table { width: 100%; border-collapse: collapse; table-layout: fixed; text-align: left; }
+.code-column { width: 18%; }
+.name-column { width: 26%; }
+.capacity-column { width: 17%; }
+.status-column { width: 18%; }
+.actions-column { width: 21%; }
+.teams-table th, .teams-table td { padding: 15px 18px; border-bottom: 1px solid var(--border); }
+.teams-table th { color: var(--muted); background: rgba(255, 255, 255, .025); font-size: 11px; font-weight: 500; }
+.teams-table td { color: var(--text); font-size: 12px; }
+.teams-table tbody tr { transition: background .25s var(--ease); }
+.teams-table tbody tr:hover { background: rgba(203, 210, 118, .045); }
+.teams-table tbody tr:last-child td { border-bottom: 0; }
+.teams-table .empty-row { height: 112px; color: var(--muted); text-align: center; }
 .list-error { display: flex; min-height: 110px; align-items: center; justify-content: space-between; gap: 12px; padding: 20px; border: 1px solid var(--border); border-radius: var(--radius-lg); color: var(--muted); }
 .team-actions { display: flex; align-items: center; gap: 8px; white-space: nowrap; }
 .team-actions :deep(.el-button + .el-button) { margin-left: 0; }
 @media (max-width: 980px) {
   .table-frame { overflow-x: auto; }
-  .table-frame :deep(.el-table) { min-width: 880px !important; }
+  .teams-table { min-width: 880px; }
 }
 @media (max-width: 720px) {
   .list-error { align-items: flex-start; flex-direction: column; }
