@@ -5,23 +5,35 @@
       <span>暂时无法读取用户列表</span>
       <el-button link @click="load">重新加载</el-button>
     </div>
-    <div v-else class="table-frame">
-      <el-table :data="list" v-loading="loading" stripe style="width: 100%" empty-text="还没有用户，点击右上角「新增」创建">
-      <el-table-column prop="username" label="用户名" min-width="180" />
-      <el-table-column prop="nickname" label="昵称" min-width="180" />
-      <el-table-column label="角色" min-width="160">
-        <template #default="{ row }">{{ roles[row.role] }}</template>
-      </el-table-column>
-      <el-table-column label="操作" width="290" fixed="right">
-        <template #default="{ row }">
-          <div class="user-actions">
-            <el-button size="small" @click="openForm(row)">编辑</el-button>
-            <el-button size="small" @click="resetPwd(row)">重置密码</el-button>
-            <el-button size="small" type="danger" @click="remove(row.id)">删除</el-button>
-          </div>
-        </template>
-      </el-table-column>
-      </el-table>
+    <div v-else v-loading="loading" class="table-frame">
+      <table class="users-table" aria-label="用户列表">
+        <colgroup>
+          <col class="username-column" />
+          <col class="nickname-column" />
+          <col class="role-column" />
+          <col class="actions-column" />
+        </colgroup>
+        <thead>
+          <tr><th scope="col">用户名</th><th scope="col">昵称</th><th scope="col">角色</th><th scope="col">操作</th></tr>
+        </thead>
+        <tbody v-if="list.length">
+          <tr v-for="row in list" :key="row.id">
+            <td>{{ row.username }}</td>
+            <td>{{ row.nickname || '—' }}</td>
+            <td>{{ roles[row.role] || row.role || '未知' }}</td>
+            <td>
+              <div class="user-actions">
+                <el-button size="small" @click="openForm(row)">编辑</el-button>
+                <el-button size="small" @click="resetPwd(row)">重置密码</el-button>
+                <el-button size="small" type="danger" @click="remove(row.id)">删除</el-button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+        <tbody v-else>
+          <tr><td class="empty-row" colspan="4">还没有用户，点击右上角「新增」创建</td></tr>
+        </tbody>
+      </table>
     </div>
     <el-dialog
       :title="form.id ? '编辑用户' : '新增用户'"
@@ -92,14 +104,25 @@ onMounted(load)
 </script>
 
 <style scoped>
-.table-frame :deep(.el-table__cell) { padding: 14px 16px; }
-.table-frame :deep(.el-table__row) { transition: background .25s var(--ease); }
+.table-frame { overflow: hidden; border: 1px solid var(--border); border-radius: var(--radius-lg); background: rgba(12, 12, 12, .78); }
+.users-table { width: 100%; border-collapse: collapse; table-layout: fixed; text-align: left; }
+.username-column { width: 24%; }
+.nickname-column { width: 24%; }
+.role-column { width: 20%; }
+.actions-column { width: 32%; }
+.users-table th, .users-table td { padding: 15px 18px; border-bottom: 1px solid var(--border); }
+.users-table th { color: var(--muted); background: rgba(255, 255, 255, .025); font-size: 11px; font-weight: 500; }
+.users-table td { color: var(--text); font-size: 12px; }
+.users-table tbody tr { transition: background .25s var(--ease); }
+.users-table tbody tr:hover { background: rgba(203, 210, 118, .045); }
+.users-table tbody tr:last-child td { border-bottom: 0; }
+.users-table .empty-row { height: 112px; color: var(--muted); text-align: center; }
 .list-error { display: flex; min-height: 110px; align-items: center; justify-content: space-between; gap: 12px; padding: 20px; border: 1px solid var(--border); border-radius: var(--radius-lg); color: var(--muted); }
-.user-actions { display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+.user-actions { display: flex; align-items: center; gap: 8px; white-space: nowrap; }
 .user-actions :deep(.el-button + .el-button) { margin-left: 0; }
 @media (max-width: 980px) {
   .table-frame { overflow-x: auto; }
-  .table-frame :deep(.el-table) { min-width: 810px !important; }
+  .users-table { min-width: 810px; }
 }
 @media (max-width: 720px) {
   .list-error { align-items: flex-start; flex-direction: column; }
