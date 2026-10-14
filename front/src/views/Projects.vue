@@ -11,6 +11,8 @@ const root = ref(null)
 const list = ref([])
 const workSummary = ref([])
 const completionSummary = ref([])
+const workSummaryAvailable = ref(true)
+const completionSummaryAvailable = ref(true)
 const keyword = ref('')
 const loading = ref(false)
 const saving = ref(false)
@@ -18,6 +20,7 @@ const loadError = ref(false)
 const dialog = ref(false)
 const editing = ref(false)
 const openingProject = ref(false)
+const deletingProjectId = ref(null)
 const form = ref({ code: '', name: '', description: '', techStack: '', deliveryType: 'SaaS' })
 const activeIndex = ref(0)
 const viewportWidth = ref(window.innerWidth)
@@ -31,12 +34,14 @@ async function load() {
   try {
     const [projects, work, completion] = await Promise.all([
       api.get('/projects'),
-      api.get('/reports/projects').catch(() => ({ data: [] })),
-      api.get('/reports/completion').catch(() => ({ data: [] })),
+      api.get('/reports/projects').catch(() => null),
+      api.get('/reports/completion').catch(() => null),
     ])
     list.value = projects.data
-    workSummary.value = work.data
-    completionSummary.value = completion.data
+    workSummaryAvailable.value = Array.isArray(work?.data)
+    completionSummaryAvailable.value = Array.isArray(completion?.data)
+    workSummary.value = workSummaryAvailable.value ? work.data : []
+    completionSummary.value = completionSummaryAvailable.value ? completion.data : []
   }
   catch { loadError.value = true }
   finally { loading.value = false }
@@ -85,7 +90,7 @@ function cardStyle(index) {
 }
 
 function moveTo(index) {
-  if (openingProject.value) return
+  if (openingProject.value || deletingProjectId.value !== null) return
   const count = filteredList.value.length
   if (!count) return
   activeIndex.value = (index + count) % count
@@ -97,7 +102,7 @@ function activateCard(index, id) {
 }
 
 function openProject(id) {
-  if (openingProject.value) return
+  if (openingProject.value || deletingProjectId.value !== null) return
   const selectedCard = root.value?.querySelector('.project-card.selected')
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
   if (!selectedCard || reduced) {
@@ -116,7 +121,7 @@ function openProject(id) {
 
 function handleGalleryKey(event) {
   if (event.target !== event.currentTarget && event.target.closest('button, a, input, textarea, select, [contenteditable="true"]')) return
-  if (openingProject.value) { event.preventDefault(); return }
+  if (openingProject.value || deletingProjectId.value !== null) { event.preventDefault(); return }
   if (event.key === 'ArrowLeft') { event.preventDefault(); moveTo(activeIndex.value - 1) }
   if (event.key === 'ArrowRight') { event.preventDefault(); moveTo(activeIndex.value + 1) }
   if (event.key === 'Enter') {
@@ -137,11 +142,21 @@ function completionFor(project) {
 }
 
 function completionRate(project) {
+  if (!completionSummaryAvailable.value) return null
   const item = completionFor(project)
-  return item.total ? Math.round(Number(item.doneCnt || 0) / Number(item.total) * 100) : 0
+  const total = Number(item.total) || 0
+  return total > 0 ? Math.round(Number(item.doneCnt || 0) / total * 100) : null
+}
+
+function completionLabel(project) {
+  const rate = completionRate(project)
+  if (rate !== null) return `需求完成率 ${rate}%`
+  if (!completionSummaryAvailable.value || Number(workFor(project).reqCnt || 0) > 0) return '需求完成率 —'
+  return '暂无需求'
 }
 
 function deliveryHint(project) {
+  if (!workSummaryAvailable.value) return '工作项统计暂不可用'
   const work = workFor(project)
   if (Number(work.bugCnt || 0) > 0) return '优先查看缺陷'
   if (Number(work.reqCnt || 0) === 0) return '先录入需求'
@@ -149,20 +164,27 @@ function deliveryHint(project) {
   return '继续推进交付'
 }
 
+const unavailableSummaryLabels = computed(() => [
+  !workSummaryAvailable.value && '工作项数量',
+  !completionSummaryAvailable.value && '需求完成率',
+].filter(Boolean))
+
 function openAdd() {
+  if (deletingProjectId.value !== null) return
   editing.value = false
   form.value = { code: '', name: '', description: '', techStack: '', deliveryType: 'SaaS' }
   dialog.value = true
 }
 
 function openEdit(p) {
+  if (deletingProjectId.value !== null) return
   editing.value = true
   form.value = { ...p }
   dialog.value = true
 }
 
 async function save() {
-  if (saving.value) return
+  if (saving.value || deletingProjectId.value !== null) return
   if (!form.value.code || !form.value.name) return ElMessage.warning('请填写编码和名称')
   saving.value = true
   try {
@@ -176,13 +198,17 @@ async function save() {
 }
 
 async function remove(id) {
+  if (deletingProjectId.value !== null) return
+  deletingProjectId.value = id
   try {
     await ElMessageBox.confirm('删除项目将清空关联数据，确定？', '提示', { type: 'warning' })
     await api.delete(`/projects/${id}`)
     ElMessage.success('已删除')
-    load()
+    await load()
   } catch (e) {
-    if (e !== 'cancel') ElMessage.error(e.message || '删除失败')
+    if (e !== 'cancel' && e !== 'close') ElMessage.error(e?.message || '删除失败')
+  } finally {
+    deletingProjectId.value = null
   }
 }
 
@@ -204,17 +230,21 @@ onUnmounted(() => {
       <div class="project-tools">
         <label class="search-wrap">
           <span aria-hidden="true">⌕</span>
-          <input v-model="keyword" type="search" placeholder="搜索项目" aria-label="搜索项目" :disabled="openingProject" />
+          <input v-model="keyword" type="search" placeholder="搜索项目" aria-label="搜索项目" :disabled="openingProject || deletingProjectId !== null" />
         </label>
-        <button class="create-button" type="button" :disabled="openingProject || saving" @click="openAdd">＋ 新建</button>
+        <button class="create-button" type="button" :disabled="openingProject || deletingProjectId !== null || saving" @click="openAdd">＋ 新建</button>
       </div>
     </template>
-    <div ref="root" v-loading="loading" class="gallery-layout" :class="{ opening: openingProject }">
+    <div ref="root" v-loading="loading" class="gallery-layout" :class="{ opening: openingProject, deleting: deletingProjectId !== null }">
+      <div v-if="!loading && !loadError && unavailableSummaryLabels.length" class="summary-warning" role="status">
+        <span>项目已加载；{{ unavailableSummaryLabels.join('、') }}暂不可用</span>
+        <el-button link size="small" :disabled="loading || deletingProjectId !== null" @click="load">重试统计</el-button>
+      </div>
       <div v-if="loadError" class="list-error" role="alert">
         <span>项目列表读取失败</span>
         <el-button link @click="load">重新加载</el-button>
       </div>
-      <div v-if="filteredList.length" class="gallery-stage" tabindex="0" aria-label="项目画廊，使用左右方向键切换，按回车打开当前项目" :aria-busy="openingProject" @keydown="handleGalleryKey">
+      <div v-if="!loadError && filteredList.length" class="gallery-stage" tabindex="0" aria-label="项目画廊，使用左右方向键切换，按回车打开当前项目" :aria-busy="openingProject || deletingProjectId !== null" @keydown="handleGalleryKey">
         <span class="stage-note">PROJECTS / {{ String(filteredList.length).padStart(2, '0') }}</span>
         <article
           v-for="(p, index) in filteredList"
@@ -230,34 +260,34 @@ onUnmounted(() => {
           <div class="project-cover" :class="'cover-' + (index % 4)">
             <div class="cover-topline"><span>{{ p.code }}</span><span>{{ p.deliveryType || 'DELIVERY' }}</span></div>
             <div class="cover-art" aria-hidden="true"><i /><i /><i /></div>
-            <button type="button" class="cover-title" @click.stop="activateCard(index, p.id)">{{ p.name }}</button>
+            <button type="button" class="cover-title" :disabled="deletingProjectId !== null" @click.stop="activateCard(index, p.id)">{{ p.name }}</button>
             <div class="cover-bottom"><span>{{ p.techStack || 'PRODUCT DEVELOPMENT' }}</span><span>{{ String(index + 1).padStart(2, '0') }}</span></div>
           </div>
           <div class="project-info">
             <div class="project-heading">
               <div><span class="project-code">{{ p.code }}</span><span class="project-hint">{{ deliveryHint(p) }}</span></div>
               <div v-if="index === activeIndex" class="card-actions" @click.stop>
-                <button type="button" aria-label="编辑项目" @click="openEdit(p)">编辑</button>
-                <button type="button" aria-label="删除项目" @click="remove(p.id)">删除</button>
+                <button type="button" aria-label="编辑项目" :disabled="deletingProjectId !== null" @click="openEdit(p)">编辑</button>
+                <button type="button" aria-label="删除项目" :disabled="deletingProjectId !== null" @click="remove(p.id)">{{ deletingProjectId === p.id ? '处理中…' : '删除' }}</button>
               </div>
             </div>
             <p class="project-description">{{ p.description || '暂无描述' }}</p>
             <div class="project-stats">
-              <span>需求 <b>{{ workFor(p).reqCnt || 0 }}</b></span>
-              <span>任务 <b>{{ workFor(p).taskCnt || 0 }}</b></span>
-              <span>缺陷 <b>{{ workFor(p).bugCnt || 0 }}</b></span>
-              <span class="project-progress">{{ completionRate(p) }}%</span>
+              <span>需求 <b>{{ workSummaryAvailable ? workFor(p).reqCnt || 0 : '—' }}</b></span>
+              <span>任务 <b>{{ workSummaryAvailable ? workFor(p).taskCnt || 0 : '—' }}</b></span>
+              <span>缺陷 <b>{{ workSummaryAvailable ? workFor(p).bugCnt || 0 : '—' }}</b></span>
+              <span class="project-progress">{{ completionLabel(p) }}</span>
             </div>
-            <div class="progress-track"><i :style="{ width: completionRate(p) + '%' }" /></div>
+            <div v-if="completionRate(p) !== null" class="progress-track"><i :style="{ width: completionRate(p) + '%' }" /></div>
           </div>
         </article>
       </div>
       <p v-if="!loadError && !loading && !filteredList.length" class="empty">{{ list.length ? '没有匹配的项目' : '还没有项目' }}</p>
-      <div v-if="filteredList.length" class="gallery-controls">
+      <div v-if="!loadError && filteredList.length" class="gallery-controls">
         <span>{{ String(activeIndex + 1).padStart(2, '0') }} <i /> {{ String(filteredList.length).padStart(2, '0') }}</span>
         <div class="gallery-arrows">
-          <button type="button" aria-label="上一个项目" @click="moveTo(activeIndex - 1)">←</button>
-          <button type="button" aria-label="下一个项目" @click="moveTo(activeIndex + 1)">→</button>
+          <button type="button" aria-label="上一个项目" :disabled="deletingProjectId !== null" @click="moveTo(activeIndex - 1)">←</button>
+          <button type="button" aria-label="下一个项目" :disabled="deletingProjectId !== null" @click="moveTo(activeIndex + 1)">→</button>
         </div>
         <span class="gallery-hint">选择项目以打开交付驾驶舱</span>
       </div>
@@ -295,7 +325,8 @@ onUnmounted(() => {
 .create-button { padding: 10px 14px; border: 1px solid rgba(239,239,235,.6); border-radius: 999px; color: #080808; background: var(--text); cursor: pointer; font-size: 10px; transition: color .25s ease, background .25s ease, transform .35s var(--ease); }
 .create-button:hover { color: var(--text); background: transparent; transform: translateY(-2px); }
 .gallery-layout { min-height: 57vh; }
-.gallery-layout.opening { pointer-events: none; }
+.gallery-layout.opening, .gallery-layout.deleting { pointer-events: none; }
+.summary-warning { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0 auto 8px; color: var(--muted-light); font-size: 10px; }
 .gallery-stage { position: relative; height: clamp(360px, 47vh, 520px); overflow: visible; outline: none; perspective: 1500px; transform-style: preserve-3d; }
 .stage-note { position: absolute; top: -19px; left: 0; color: var(--muted-light); font-size: 8px; letter-spacing: .18em; }
 .project-card { position: absolute; top: 50%; left: 50%; display: flex; width: min(43vw, 650px); height: clamp(300px, 43.5vh, 500px); flex-direction: column; overflow: hidden; border: 1px solid rgba(239,239,235,.16); border-radius: 17px; background: #0d0d0d; box-shadow: 0 28px 80px rgba(0,0,0,.55); cursor: pointer; transform-origin: center center; transition: transform .85s cubic-bezier(.2,.75,.2,1), opacity .55s ease, border-color .5s ease, box-shadow .5s ease; will-change: transform, opacity; }
@@ -320,6 +351,7 @@ onUnmounted(() => {
 .cover-2 .cover-art::after { width: 45%; height: 80%; border-radius: 2px; }
 .cover-3 .cover-art { transform: rotate(50deg) scale(.9); }
 .cover-title { position: relative; z-index: 2; max-width: 75%; padding: 0; border: 0; color: rgba(245,245,240,.88); background: transparent; text-align: left; font-family: var(--font-display); font-size: clamp(21px, 3vw, 42px); letter-spacing: -.06em; cursor: pointer; }
+.cover-title:disabled { cursor: wait; opacity: .55; }
 .project-info { display: flex; min-height: 42%; flex-direction: column; padding: 14px 20px 13px; }
 .project-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .project-code { color: var(--muted); font-size: 8px; letter-spacing: .13em; }
@@ -327,6 +359,7 @@ onUnmounted(() => {
 .card-actions { display: flex; gap: 8px; }
 .card-actions button { padding: 5px 8px; border: 1px solid rgba(239,239,235,.18); border-radius: 5px; color: var(--muted); background: transparent; cursor: pointer; font-size: 9px; }
 .card-actions button:hover { border-color: rgba(239,239,235,.65); color: var(--text); }
+.card-actions button:disabled, .gallery-arrows button:disabled { cursor: wait; opacity: .45; }
 .project-description { display: -webkit-box; overflow: hidden; margin-top: 7px; color: var(--muted); font-size: 10px; line-height: 1.5; -webkit-box-orient: vertical; -webkit-line-clamp: 1; }
 .project-stats { display: flex; align-items: center; gap: 15px; margin-top: auto; padding-top: 12px; color: var(--muted-light); font-size: 9px; }
 .project-stats b { margin-left: 4px; color: var(--text); font-size: 11px; font-weight: 500; }

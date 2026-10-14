@@ -6,7 +6,7 @@
       <el-button link @click="load">重新加载</el-button>
     </div>
     <div v-else class="table-frame">
-      <el-table :data="list" v-loading="loading" stripe empty-text="还没有团队，点击右上角「新增」创建">
+      <el-table :data="list" v-loading="loading" stripe style="width: 100%" empty-text="还没有团队，点击右上角「新增」创建">
       <el-table-column prop="code" label="编码" min-width="150" />
       <el-table-column prop="name" label="名称" min-width="240" />
       <el-table-column prop="capacity" label="并发上限" min-width="150" />
@@ -87,9 +87,11 @@ onMounted(load)
 .list-error { display: flex; min-height: 110px; align-items: center; justify-content: space-between; gap: 12px; padding: 20px; border: 1px solid var(--border); border-radius: var(--radius-lg); color: var(--muted); }
 .team-actions { display: flex; align-items: center; gap: 8px; white-space: nowrap; }
 .team-actions :deep(.el-button + .el-button) { margin-left: 0; }
+@media (max-width: 980px) {
+  .table-frame { overflow-x: auto; }
+  .table-frame :deep(.el-table) { min-width: 880px !important; }
+}
 @media (max-width: 720px) {
   .list-error { align-items: flex-start; flex-direction: column; }
-  .table-frame { overflow-x: auto; }
-  .table-frame :deep(.el-table) { min-width: 760px !important; }
 }
 </style>

@@ -48,7 +48,7 @@ onUnmounted(() => context?.revert())
   max-width: 1536px;
   min-height: 100svh;
   margin: 0 auto;
-  padding: clamp(28px, 4vh, 42px) clamp(22px, 4.2vw, 64px) 96px;
+  padding: calc(var(--nav-h) + clamp(28px, 4vh, 42px)) clamp(22px, 4.2vw, 64px) 96px;
   isolation: isolate;
 }
 .head {
@@ -67,7 +67,7 @@ h1 { font-family: var(--font-display); font-size: clamp(2.5rem, 6vw, 5.6rem); fo
   padding: 0;
 }
 @media (max-width: 700px) {
-  .page { padding-top: 28px; padding-bottom: 72px; }
+  .page { padding-top: calc(var(--nav-h) + 28px); padding-bottom: 72px; }
   .head { align-items: flex-start; }
   .page-action { width: 100%; }
 }

@@ -7,7 +7,13 @@ export function getToken() {
 
 export function getUser() {
   const raw = localStorage.getItem(USER_KEY)
-  return raw ? JSON.parse(raw) : null
+  if (!raw) return null
+  try {
+    const user = JSON.parse(raw)
+    return user && typeof user === 'object' && !Array.isArray(user) ? user : null
+  } catch {
+    return null
+  }
 }
 
 export function setAuth(token, user) {

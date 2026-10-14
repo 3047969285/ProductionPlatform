@@ -176,13 +176,15 @@ const metrics = computed(() => {
     const bugOpen = bugTotal - number(globalData.value.status?.bug?.resolved) - number(globalData.value.status?.bug?.closed)
     return [
       { label: '项目', value: projects.value.length, note: '实际项目' },
-      { label: '需求完成', value: `${reqDone}/${reqTotal}`, note: `${reqTotal ? Math.round(reqDone / reqTotal * 100) : 0}% 已完成` },
-      { label: '任务完成', value: `${taskDone}/${taskTotal}`, note: `${taskTotal ? Math.round(taskDone / taskTotal * 100) : 0}% 已完成` },
+      { label: '需求完成', value: `${reqDone}/${reqTotal}`, note: reqTotal ? `${Math.round(reqDone / reqTotal * 100)}% 已完成` : '暂无需求记录' },
+      { label: '任务完成', value: `${taskDone}/${taskTotal}`, note: taskTotal ? `${Math.round(taskDone / taskTotal * 100)}% 已完成` : '暂无任务记录' },
       { label: '未解决缺陷', value: bugOpen, note: `${bugTotal} 条缺陷记录` },
     ]
   }
 
   const data = projectData.value || {}
+  const requirementTotal = data.requirements?.length || 0
+  const taskTotal = data.tasks?.length || 0
   const requirementDone = (data.requirements || []).filter((item) => completedRequirementStatuses.has(item.status)).length
   const taskDone = countBy(data.tasks, 'status', 'done')
   const openBugs = (data.bugs || []).filter((bug) => !['resolved', 'closed'].includes(bug.status)).length
@@ -190,10 +192,10 @@ const metrics = computed(() => {
   const runningPlans = (data.testPlans || []).filter((plan) => plan.status === 'running').length
   const pendingReleases = (data.releases || []).filter((release) => ['planned', 'deploying'].includes(release.status)).length
   return [
-    { label: '需求完成', value: `${requirementDone}/${data.requirements?.length || 0}`, note: `${data.requirements?.length ? Math.round(requirementDone / data.requirements.length * 100) : 0}% 已完成` },
-    { label: '任务完成', value: `${taskDone}/${data.tasks?.length || 0}`, note: `${data.tasks?.length ? Math.round(taskDone / data.tasks.length * 100) : 0}% 已完成` },
+    { label: '需求完成', value: `${requirementDone}/${requirementTotal}`, note: requirementTotal ? `${Math.round(requirementDone / requirementTotal * 100)}% 已完成` : '暂无需求记录' },
+    { label: '任务完成', value: `${taskDone}/${taskTotal}`, note: taskTotal ? `${Math.round(taskDone / taskTotal * 100)}% 已完成` : '暂无任务记录' },
     { label: '风险缺陷', value: openBugs, note: `${(data.bugs || []).length} 条缺陷记录` },
-    { label: '交付节点', value: activeSprint + runningPlans + pendingReleases, note: `${activeSprint} 个迭代 · ${pendingReleases} 个待发布` },
+    { label: '交付节点', value: activeSprint + runningPlans + pendingReleases, note: `${activeSprint} 个迭代 · ${runningPlans} 个测试 · ${pendingReleases} 个待发布` },
   ]
 })
 
@@ -223,7 +225,9 @@ const trendRows = computed(() => {
   for (let offset = 29; offset >= 0; offset -= 1) {
     const date = new Date(today.getFullYear(), today.getMonth(), today.getDate() - offset)
     const day = [date.getFullYear(), String(date.getMonth() + 1).padStart(2, '0'), String(date.getDate()).padStart(2, '0')].join('-')
-    rows.push({ day, total: (requirementMap.get(day) || 0) + (bugMap.get(day) || 0) })
+    const requirements = requirementMap.get(day) || 0
+    const bugs = bugMap.get(day) || 0
+    rows.push({ day, requirements, bugs, total: requirements + bugs })
   }
   return rows
 })
@@ -404,7 +408,8 @@ onMounted(load)
               <el-table-column prop="bugCnt" label="缺陷" width="90" />
               <el-table-column label="需求完成" min-width="220">
                 <template #default="{ row }">
-                  <el-progress :percentage="row.completion.total ? Math.round(number(row.completion.doneCnt) / number(row.completion.total) * 100) : 0" :stroke-width="8" />
+                  <el-progress v-if="number(row.completion.total) > 0" :percentage="Math.round(number(row.completion.doneCnt) / number(row.completion.total) * 100)" :stroke-width="8" />
+                  <span v-else class="completion-empty">暂无需求</span>
                 </template>
               </el-table-column>
             </el-table>
@@ -436,12 +441,17 @@ onMounted(load)
         <section class="card span-2">
           <div class="section-head">
             <div><p class="eyebrow">全项目 · 时间</p><h3>近 30 天新增内容</h3></div>
-            <span class="section-note">需求 + 缺陷</span>
+            <div class="trend-legend" aria-label="图例">
+              <span><i class="trend-legend-dot trend-legend-dot--requirement" />需求</span>
+              <span><i class="trend-legend-dot trend-legend-dot--bug" />缺陷</span>
+            </div>
           </div>
           <div class="trend-chart">
             <div class="trend-bars" role="list" aria-label="近 30 天每天新增的需求与缺陷">
-              <div v-for="row in trendRows" :key="row.day" class="trend-col" role="listitem" :aria-label="`${row.day}，新增 ${row.total} 条`" :title="`${row.day}：${row.total} 条`">
-                <div class="trend-fill" :class="{ 'is-zero': row.total === 0 }" :style="{ height: (row.total ? Math.max(4, row.total / maxTrend * 130) : 2) + 'px' }" />
+              <div v-for="row in trendRows" :key="row.day" class="trend-col" role="listitem" :aria-label="`${row.day}，新增需求 ${row.requirements} 条，缺陷 ${row.bugs} 条，共 ${row.total} 条`" :title="`${row.day}：需求 ${row.requirements} 条 · 缺陷 ${row.bugs} 条`">
+                <span v-if="row.bugs" class="trend-part trend-part--bug" aria-hidden="true" :style="{ height: (row.bugs / maxTrend * 130) + 'px' }" />
+                <span v-if="row.requirements" class="trend-part trend-part--requirement" aria-hidden="true" :style="{ height: (row.requirements / maxTrend * 130) + 'px' }" />
+                <span v-if="!row.total" class="trend-zero" aria-hidden="true" />
               </div>
             </div>
             <div class="trend-axis" aria-hidden="true">
@@ -608,10 +618,18 @@ onMounted(load)
 .sprint-load-row small { display: block; margin-top: 4px; color: var(--muted); font-size: 10px; }
 .sprint-load-row small span { padding: 0 3px; color: var(--muted-light); }
 .table-frame { margin-top: 4px; }
+.completion-empty { color: var(--muted); font-size: 11px; }
+.trend-legend { display: flex; align-items: center; gap: 14px; color: var(--muted); font-size: 10px; }
+.trend-legend > span { display: inline-flex; align-items: center; gap: 6px; }
+.trend-legend-dot { width: 7px; height: 7px; border-radius: 50%; }
+.trend-legend-dot--requirement { background: var(--cyan); }
+.trend-legend-dot--bug { background: var(--pink); }
 .trend-bars { display: flex; align-items: flex-end; gap: 3px; height: 140px; padding-top: 10px; border-bottom: 1px solid var(--border); }
-.trend-col { display: flex; align-items: flex-end; flex: 1; height: 100%; min-width: 2px; }
-.trend-fill { width: 100%; min-height: 4px; border-radius: 3px 3px 0 0; background: linear-gradient(180deg, var(--cyan), var(--purple)); }
-.trend-fill.is-zero { min-height: 0; background: rgba(234, 238, 222, .18); }
+.trend-col { display: flex; flex: 1; flex-direction: column; justify-content: flex-end; height: 100%; min-width: 2px; }
+.trend-part { display: block; width: 100%; }
+.trend-part--requirement { border-radius: 3px 3px 0 0; background: var(--cyan); }
+.trend-part--bug { border-radius: 3px 3px 0 0; background: var(--pink); }
+.trend-zero { display: block; width: 100%; height: 2px; background: rgba(234, 238, 222, .18); }
 .trend-axis { display: flex; justify-content: space-between; margin-top: 7px; color: var(--muted-light); font-size: 10px; font-variant-numeric: tabular-nums; }
 .focus-block { padding: 16px; border: 1px solid var(--border); background: rgba(255, 255, 255, .025); }
 .focus-title { display: flex; align-items: center; justify-content: space-between; gap: 10px; }

@@ -379,7 +379,7 @@ onMounted(() => {
             <el-button link @click="loadTests">重新加载</el-button>
           </div>
           <div v-else class="table-frame">
-            <el-table :data="tests" v-loading="testLoading" stripe empty-text="暂无验证任务，点击上方新建" @row-click="(row) => openDetail('test', row.id)" class="clickable-table">
+            <el-table :data="tests" v-loading="testLoading" stripe empty-text="暂无验证任务，点击上方新建" @row-click="(row) => openDetail('test', row.id)" class="clickable-table test-items-table">
               <el-table-column prop="title" label="验证任务" min-width="220" show-overflow-tooltip />
               <el-table-column label="进度" min-width="180">
                 <template #default="{ row }"><el-progress :percentage="Math.max(0, Math.min(100, Number(row.progress) || 0))" :stroke-width="7" /></template>
@@ -420,30 +420,32 @@ onMounted(() => {
             <span>运维问题暂时无法读取</span>
             <el-button link @click="loadOps">重新加载</el-button>
           </div>
-          <el-table v-else :data="opsList" v-loading="opsLoading" stripe empty-text="暂无运维问题，点击上方登记问题" @row-click="(row) => openDetail('ops', row.id)" class="clickable-table">
-            <el-table-column prop="title" label="问题" min-width="180" />
-            <el-table-column label="严重程度" width="100">
-              <template #default="{ row }">
-                <span class="badge" :class="badgeClass('severity', row.severity)">{{ opsSeverity[row.severity] }}</span>
-              </template>
-            </el-table-column>
-            <el-table-column label="状态" width="100">
-              <template #default="{ row }">
-                <span class="badge" :class="badgeClass('ops', row.status)">{{ opsStatus[row.status] }}</span>
-              </template>
-            </el-table-column>
-            <el-table-column prop="owner" label="负责人" width="110" />
-            <el-table-column prop="reporter" label="提出人" width="110" />
-            <el-table-column label="操作" width="200" fixed="right">
-              <template #default="{ row }">
-                <div class="ops-actions">
-                  <el-button size="small" @click.stop="openDetail('ops', row.id)">详情</el-button>
-                  <el-button size="small" @click.stop="openOpsEdit(row)">编辑</el-button>
-                  <el-button size="small" type="danger" @click.stop="removeOps(row.id)">删除</el-button>
-                </div>
-              </template>
-            </el-table-column>
-          </el-table>
+          <div v-else class="table-frame">
+            <el-table :data="opsList" v-loading="opsLoading" stripe empty-text="暂无运维问题，点击上方登记问题" @row-click="(row) => openDetail('ops', row.id)" class="clickable-table ops-table">
+              <el-table-column prop="title" label="问题" min-width="180" />
+              <el-table-column label="严重程度" width="100">
+                <template #default="{ row }">
+                  <span class="badge" :class="badgeClass('severity', row.severity)">{{ opsSeverity[row.severity] }}</span>
+                </template>
+              </el-table-column>
+              <el-table-column label="状态" width="100">
+                <template #default="{ row }">
+                  <span class="badge" :class="badgeClass('ops', row.status)">{{ opsStatus[row.status] }}</span>
+                </template>
+              </el-table-column>
+              <el-table-column prop="owner" label="负责人" width="110" />
+              <el-table-column prop="reporter" label="提出人" width="110" />
+              <el-table-column label="操作" width="200" fixed="right">
+                <template #default="{ row }">
+                  <div class="ops-actions">
+                    <el-button size="small" @click.stop="openDetail('ops', row.id)">详情</el-button>
+                    <el-button size="small" @click.stop="openOpsEdit(row)">编辑</el-button>
+                    <el-button size="small" type="danger" @click.stop="removeOps(row.id)">删除</el-button>
+                  </div>
+                </template>
+              </el-table-column>
+            </el-table>
+          </div>
         </section>
         </Transition>
       </main>
@@ -560,6 +562,11 @@ onMounted(() => {
 .stage-panel-enter-active, .stage-panel-leave-active { transition: opacity .28s var(--ease), transform .28s var(--ease); }
 .stage-panel-enter-from { opacity: 0; transform: translateY(10px); }
 .stage-panel-leave-to { opacity: 0; transform: translateY(-5px); }
+@media (max-width: 980px) {
+  .table-frame { overflow-x: auto; }
+  .table-frame :deep(.test-items-table) { min-width: 872px !important; }
+  .table-frame :deep(.ops-table) { min-width: 800px !important; }
+}
 @media (max-width: 768px) {
   .project-body { grid-template-columns: 1fr; }
   .side-nav { position: static; display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 4px; }

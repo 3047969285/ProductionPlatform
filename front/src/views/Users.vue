@@ -6,7 +6,7 @@
       <el-button link @click="load">重新加载</el-button>
     </div>
     <div v-else class="table-frame">
-      <el-table :data="list" v-loading="loading" stripe empty-text="还没有用户，点击右上角「新增」创建">
+      <el-table :data="list" v-loading="loading" stripe style="width: 100%" empty-text="还没有用户，点击右上角「新增」创建">
       <el-table-column prop="username" label="用户名" min-width="180" />
       <el-table-column prop="nickname" label="昵称" min-width="180" />
       <el-table-column label="角色" min-width="160">
@@ -95,9 +95,11 @@ onMounted(load)
 .list-error { display: flex; min-height: 110px; align-items: center; justify-content: space-between; gap: 12px; padding: 20px; border: 1px solid var(--border); border-radius: var(--radius-lg); color: var(--muted); }
 .user-actions { display: flex; align-items: center; gap: 6px; white-space: nowrap; }
 .user-actions :deep(.el-button + .el-button) { margin-left: 0; }
+@media (max-width: 980px) {
+  .table-frame { overflow-x: auto; }
+  .table-frame :deep(.el-table) { min-width: 810px !important; }
+}
 @media (max-width: 720px) {
   .list-error { align-items: flex-start; flex-direction: column; }
-  .table-frame { overflow-x: auto; }
-  .table-frame :deep(.el-table) { min-width: 680px !important; }
 }
 </style>

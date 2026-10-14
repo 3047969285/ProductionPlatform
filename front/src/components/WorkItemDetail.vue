@@ -20,11 +20,20 @@ const emit = defineEmits(['update:visible', 'changed'])
 
 const item = ref(null)
 const loading = ref(false)
+const detailError = ref(false)
 const comments = ref([])
+const commentsLoading = ref(false)
+const commentsError = ref(false)
 const activities = ref([])
+const activitiesLoading = ref(false)
+const activitiesError = ref(false)
 const newComment = ref('')
 const commentLoading = ref(false)
 const saving = ref(false)
+let detailRequestId = 0
+let commentsRequestId = 0
+let activitiesRequestId = 0
+let commentRequestId = 0
 
 // 每种工作项的 API 路径和编号字段
 const typeMeta = {
@@ -43,52 +52,102 @@ const badgeKey = computed(() => (props.workType === 'requirement' ? 'req' : prop
 
 async function loadDetail() {
   if (!props.workId) return
+  const requestId = ++detailRequestId
   loading.value = true
+  detailError.value = false
+  item.value = null
   try {
     // 详情：列表接口筛单个（不带多余查询参数）
     const res = await api.get(meta.value.path)
-    const arr = res.data || []
-    item.value = arr.find((x) => x.id === props.workId) || null
-  } catch (e) {
-    ElMessage.error(e.message)
+    if (requestId !== detailRequestId) return
+    if (!Array.isArray(res.data)) throw new Error('Invalid detail response')
+    item.value = res.data.find((x) => x.id === props.workId) || null
+  } catch {
+    if (requestId === detailRequestId) detailError.value = true
   } finally {
-    loading.value = false
+    if (requestId === detailRequestId) loading.value = false
   }
 }
 
 async function loadComments() {
+  const requestId = ++commentsRequestId
+  const workType = props.workType
+  const workId = props.workId
+  commentsLoading.value = true
+  commentsError.value = false
   try {
-    const res = await api.get('/logs/comments', { params: { workType: props.workType, workId: props.workId } })
-    comments.value = res.data || []
-  } catch { comments.value = [] }
+    const res = await api.get('/logs/comments', { params: { workType, workId } })
+    if (requestId !== commentsRequestId) return
+    if (!Array.isArray(res.data)) throw new Error('Invalid comments response')
+    comments.value = res.data
+  } catch {
+    if (requestId === commentsRequestId) {
+      comments.value = []
+      commentsError.value = true
+    }
+  } finally {
+    if (requestId === commentsRequestId) commentsLoading.value = false
+  }
 }
 
 async function loadActivities() {
+  const requestId = ++activitiesRequestId
+  const workType = props.workType
+  const workId = props.workId
+  activitiesLoading.value = true
+  activitiesError.value = false
   try {
-    const res = await api.get('/logs/activities', { params: { workType: props.workType, workId: props.workId } })
-    activities.value = res.data || []
-  } catch { activities.value = [] }
+    const res = await api.get('/logs/activities', { params: { workType, workId } })
+    if (requestId !== activitiesRequestId) return
+    if (!Array.isArray(res.data)) throw new Error('Invalid activities response')
+    activities.value = res.data
+  } catch {
+    if (requestId === activitiesRequestId) {
+      activities.value = []
+      activitiesError.value = true
+    }
+  } finally {
+    if (requestId === activitiesRequestId) activitiesLoading.value = false
+  }
 }
 
 async function submitComment() {
   if (commentLoading.value) return
   const text = newComment.value.trim()
   if (!text) return
+  const requestId = ++commentRequestId
+  const workType = props.workType
+  const workId = props.workId
   commentLoading.value = true
   try {
-    await api.post('/logs/comments', { workType: props.workType, workId: props.workId, content: text })
+    await api.post('/logs/comments', { workType, workId, content: text })
+    if (requestId !== commentRequestId || !props.visible || props.workId !== workId || props.workType !== workType) return
     newComment.value = ''
     ElMessage.success('评论成功')
     await loadComments()
-    emit('changed')
-  } catch (e) { ElMessage.error(e.message) }
-  finally { commentLoading.value = false }
+    if (requestId === commentRequestId && props.visible && props.workId === workId && props.workType === workType) emit('changed')
+  } catch (e) {
+    if (requestId === commentRequestId && props.visible && props.workId === workId && props.workType === workType) ElMessage.error(e.message)
+  } finally {
+    if (requestId === commentRequestId) commentLoading.value = false
+  }
 }
 
 function onClosed() {
+  detailRequestId += 1
+  commentsRequestId += 1
+  activitiesRequestId += 1
+  commentRequestId += 1
   item.value = null
+  detailError.value = false
+  loading.value = false
   comments.value = []
+  commentsLoading.value = false
+  commentsError.value = false
   activities.value = []
+  activitiesLoading.value = false
+  activitiesError.value = false
+  commentLoading.value = false
   newComment.value = ''
 }
 
@@ -101,8 +160,13 @@ function actionLabel(a) {
   return map[a] || a
 }
 
-watch(() => props.visible, (v) => {
+watch([() => props.visible, () => props.workId, () => props.workType], ([v, workId, workType], [, previousWorkId, previousWorkType]) => {
   if (v && props.workId) {
+    if (workId !== previousWorkId || workType !== previousWorkType) {
+      commentRequestId += 1
+      commentLoading.value = false
+      newComment.value = ''
+    }
     loadDetail()
     loadComments()
     loadActivities()
@@ -170,14 +234,23 @@ watch(() => props.visible, (v) => {
           <div class="rich-body" v-html="contentHtml" />
         </div>
       </template>
-      <p v-else-if="!loading" class="empty">未找到该工作项</p>
+      <div v-if="detailError" class="inline-error" role="alert">
+        <span>详情暂时无法读取</span>
+        <el-button link size="small" @click="loadDetail">重试</el-button>
+      </div>
+      <p v-else-if="!item && !loading" class="empty">未找到该工作项</p>
     </div>
 
     <!-- 评论 + 操作历史 -->
     <template v-if="item">
       <div class="section">
-        <h4>评论（{{ comments.length }}）</h4>
-        <div class="comment-list">
+        <h4>评论<span v-if="!commentsLoading && !commentsError">（{{ comments.length }}）</span></h4>
+        <p v-if="commentsLoading" class="empty" aria-live="polite">正在读取评论…</p>
+        <div v-else-if="commentsError" class="inline-error" role="alert">
+          <span>评论暂时无法读取</span>
+          <el-button link size="small" @click="loadComments">重试</el-button>
+        </div>
+        <div v-else class="comment-list">
           <div v-for="c in comments" :key="c.id" class="comment">
             <div class="c-head"><b>{{ c.userName || '匿名' }}</b><span>{{ fmtTime(c.createdAt) }}</span></div>
             <div class="c-body">{{ c.content }}</div>
@@ -191,8 +264,13 @@ watch(() => props.visible, (v) => {
       </div>
 
       <div class="section">
-        <h4>操作历史（{{ activities.length }}）</h4>
-        <el-timeline v-if="activities.length">
+        <h4>操作历史<span v-if="!activitiesLoading && !activitiesError">（{{ activities.length }}）</span></h4>
+        <p v-if="activitiesLoading" class="empty" aria-live="polite">正在读取操作历史…</p>
+        <div v-else-if="activitiesError" class="inline-error" role="alert">
+          <span>操作历史暂时无法读取</span>
+          <el-button link size="small" @click="loadActivities">重试</el-button>
+        </div>
+        <el-timeline v-else-if="activities.length">
           <el-timeline-item v-for="a in activities" :key="a.id" :timestamp="fmtTime(a.createdAt)">
             <b>{{ a.operator || '系统' }}</b> {{ actionLabel(a.action) }}：{{ a.detail }}
           </el-timeline-item>
@@ -243,4 +321,5 @@ watch(() => props.visible, (v) => {
 .comment-input { display: flex; gap: 8px; align-items: flex-start; }
 .comment-input .el-button { margin-top: 4px; }
 .empty { color: var(--muted); text-align: center; padding: 12px; font-size: 13px; }
+.inline-error { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 12px; color: var(--muted); font-size: 12px; }
 </style>

@@ -136,7 +136,7 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-.layout { min-height: 100vh; }
+.layout { --nav-h: 78px; min-height: 100vh; }
 .route-transition { position: fixed; z-index: 200; inset: 0; overflow: hidden; pointer-events: auto; }
 .route-transition__veil { position: absolute; top: 50%; left: 50%; width: 240vmax; height: 240vmax; border-radius: 50%; background: #020303; transform: translate3d(-50%, -50%, 0) scale(.001); will-change: transform; }
 .route-transition__rings { position: absolute; top: 50%; left: 50%; width: min(62vw, 60vh, 560px); aspect-ratio: 1; border: 1px solid rgba(239, 239, 235, .72); border-radius: 50%; transform: translate3d(-50%, -50%, 0); box-shadow: 0 0 0 13px rgba(239, 239, 235, .035), inset 0 0 72px rgba(239, 239, 235, .035); will-change: transform, opacity; }

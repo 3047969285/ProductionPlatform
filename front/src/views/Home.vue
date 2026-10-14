@@ -22,7 +22,7 @@
       <button type="button" class="retry-button" @click="loadDashboard">重新加载 <span aria-hidden="true">↗</span></button>
     </section>
 
-    <section v-if="recentReqs.length" class="recent">
+    <section v-if="!loading && !loadError && recentReqs.length" class="recent">
       <div class="recent-head"><h2>最近</h2><RouterLink to="/projects">查看全部 ↗</RouterLink></div>
       <ul class="list">
         <li v-for="r in recentReqs" :key="r.id">
@@ -52,8 +52,7 @@ const data = ref(null)
 const recentReqs = computed(() => data.value?.recentRequirements || [])
 let animationContext
 let mediaQuery
-let cardTween
-let recentTween
+let contentContext
 
 const cards = computed(() => {
   const d = data.value
@@ -93,34 +92,37 @@ function setupAnimations() {
 
 async function animateDashboardContent() {
   await nextTick()
-  if (!root.value) return
+  if (!root.value || loading.value || loadError.value) return
 
-  const cardsEl = root.value.querySelectorAll('.card')
+  contentContext?.revert()
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  cardTween?.kill()
-  if (cardsEl.length) {
-    cardTween = gsap.fromTo(
-      cardsEl,
-      reducedMotion ? { autoAlpha: 1, y: 0 } : { autoAlpha: 0, y: 22 },
-      { autoAlpha: 1, y: 0, duration: reducedMotion ? 0 : 0.55, stagger: reducedMotion ? 0 : 0.07, ease: 'power3.out', overwrite: 'auto' },
-    )
-  }
+  contentContext = gsap.context(() => {
+    const cardsEl = root.value.querySelectorAll('.card')
+    if (cardsEl.length) {
+      gsap.fromTo(
+        cardsEl,
+        reducedMotion ? { autoAlpha: 1, y: 0 } : { autoAlpha: 0, y: 22 },
+        { autoAlpha: 1, y: 0, duration: reducedMotion ? 0 : 0.55, stagger: reducedMotion ? 0 : 0.07, ease: 'power3.out', overwrite: 'auto' },
+      )
+    }
 
-  const recentEl = root.value.querySelector('.recent')
-  recentTween?.kill()
-  if (recentEl && !reducedMotion) {
-    recentTween = gsap.timeline({
-      scrollTrigger: { trigger: recentEl, start: 'top 86%', once: true },
-    }).from(recentEl, { autoAlpha: 0, y: 26, duration: 0.7, ease: 'power3.out' })
-    ScrollTrigger.refresh()
-  }
+    const recentEl = root.value.querySelector('.recent')
+    if (recentEl && !reducedMotion) {
+      gsap.timeline({
+        scrollTrigger: { trigger: recentEl, start: 'top 86%', once: true },
+      }).from(recentEl, { autoAlpha: 0, y: 26, duration: 0.7, ease: 'power3.out' })
+      ScrollTrigger.refresh()
+    }
+  }, root.value)
 }
 
 watch(loading, (isLoading) => {
-  if (!isLoading) animateDashboardContent()
+  if (!isLoading && !loadError.value) animateDashboardContent()
 })
 
 async function loadDashboard() {
+  contentContext?.revert()
+  contentContext = null
   loading.value = true
   loadError.value = false
   try { data.value = (await api.get('/dashboard')).data }
@@ -134,15 +136,14 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
-  cardTween?.kill()
-  recentTween?.kill()
+  contentContext?.revert()
   mediaQuery?.revert()
   animationContext?.revert()
 })
 </script>
 
 <style scoped>
-.home { max-width: 1536px; min-height: 100svh; margin: 0 auto; padding: clamp(28px, 4vh, 42px) clamp(22px, 4.2vw, 64px) 96px; }
+.home { max-width: 1536px; min-height: 100svh; margin: 0 auto; padding: calc(var(--nav-h) + clamp(28px, 4vh, 42px)) clamp(22px, 4.2vw, 64px) 96px; }
 .bg { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
 .orb { position: absolute; border-radius: 50%; filter: blur(110px); opacity: .035; will-change: transform; }
 .o1 { width: 360px; height: 360px; background: #fff; top: -8%; right: -5%; }
@@ -178,7 +179,7 @@ h1 { font-family: var(--font-display); font-size: clamp(3rem, 6vw, 6rem); font-w
 .retry-button:hover { border-color: rgba(239,239,235,.62); background: rgba(255,255,255,.05); }
 @media (max-width: 900px) { .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 @media (max-width: 540px) {
-  .home { padding-top: 28px; padding-bottom: 72px; }
+  .home { padding-top: calc(var(--nav-h) + 28px); padding-bottom: 72px; }
   .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .card:nth-child(3) { border-top: 1px solid rgba(239,239,235,.12); }
   .card:nth-child(n+4) { border-top: 1px solid rgba(239,239,235,.12); }
