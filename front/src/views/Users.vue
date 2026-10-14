@@ -83,7 +83,9 @@ async function resetPwd(row) {
     if (!value) return
     await api.put('/users/password', { id: row.id, password: value })
     ElMessage.success('密码已重置')
-  } catch (e) { if (e !== 'cancel') ElMessage.error(e.message) }
+  } catch (e) {
+    if (e !== 'cancel' && e !== 'close') ElMessage.error(e?.message || '密码重置失败')
+  }
 }
 
 onMounted(load)

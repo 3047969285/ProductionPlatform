@@ -88,7 +88,7 @@ async function remove(id) {
     ElMessage.success('已删除')
     loadList()
   } catch (e) {
-    if (e !== 'cancel') ElMessage.error(e.message || '删除失败')
+    if (e !== 'cancel' && e !== 'close') ElMessage.error(e?.message || '删除失败')
   }
 }
 
@@ -115,7 +115,7 @@ async function addFolder() {
     ElMessage.success('文件夹已创建')
     loadFolders()
   } catch (e) {
-    if (e !== 'cancel') ElMessage.error(e.message || '创建失败')
+    if (e !== 'cancel' && e !== 'close') ElMessage.error(e?.message || '创建失败')
   }
 }
 
@@ -137,7 +137,7 @@ async function renameFolder(folder) {
     ElMessage.success('已重命名')
     loadFolders()
   } catch (e) {
-    if (e !== 'cancel') ElMessage.error(e.message || '重命名失败')
+    if (e !== 'cancel' && e !== 'close') ElMessage.error(e?.message || '重命名失败')
   }
 }
 
@@ -156,7 +156,7 @@ async function removeFolder(folder) {
     loadFolders()
     loadList()
   } catch (e) {
-    if (e !== 'cancel') ElMessage.error(e.message || '删除失败')
+    if (e !== 'cancel' && e !== 'close') ElMessage.error(e?.message || '删除失败')
   }
 }
 

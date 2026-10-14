@@ -160,7 +160,7 @@ async function addCasesToPlan() {
     ElMessage.success('已加入')
     await loadActivePlanCases()
   } catch (e) {
-    if (e !== 'cancel') ElMessage.error(e.message || '加入失败')
+    if (e !== 'cancel' && e !== 'close') ElMessage.error(e?.message || '加入失败')
   }
 }
 async function execCase(row, status) {
