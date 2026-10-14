@@ -90,6 +90,7 @@ const stageDefinitions = [
     ],
   },
 ]
+const validTabs = new Set(stageDefinitions.flatMap((stage) => stage.tabs.map((item) => item.key)))
 
 const activeStageKey = ref('flow')
 const activeStage = computed(() => stageDefinitions.find((stage) => stage.key === activeStageKey.value) || stageDefinitions[0])
@@ -257,6 +258,9 @@ function selectTab(name) {
   tab.value = name
   activeStageKey.value = stageForTab(name).key
   onTabChange(name)
+  if (route.query.tab !== name) {
+    router.replace({ query: { ...route.query, tab: name } })
+  }
 }
 
 watch(projectId, (nextProjectId, previousProjectId) => {
@@ -283,9 +287,16 @@ watch(projectId, (nextProjectId, previousProjectId) => {
   if (tab.value === 'ops') loadOps()
 })
 
+watch(() => route.query.tab, (queryTab) => {
+  const nextTab = typeof queryTab === 'string' && validTabs.has(queryTab) ? queryTab : 'cockpit'
+  if (nextTab === tab.value) return
+  tab.value = nextTab
+  activeStageKey.value = stageForTab(nextTab).key
+  onTabChange(nextTab)
+})
+
 onMounted(() => {
-  const validTabs = stageDefinitions.flatMap((stage) => stage.tabs.map((item) => item.key))
-  if (!validTabs.includes(tab.value)) tab.value = 'cockpit'
+  if (!validTabs.has(tab.value)) tab.value = 'cockpit'
   activeStageKey.value = stageForTab(tab.value).key
   loadProject()
   if (tab.value === 'test-items') loadTests()

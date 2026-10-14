@@ -42,7 +42,7 @@ async function logout() {
   router.push('/login')
 }
 
-watch(() => route.fullPath, async (path, previousPath) => {
+watch(() => route.path, async (path, previousPath) => {
   if (!previousPath || path === '/login' || !root.value) return
   routeTransitionLabel.value = transitionLabel(route.path)
   routeTransitioning.value = true
@@ -128,7 +128,7 @@ onUnmounted(() => {
     <main>
       <RouterView v-slot="{ Component }">
         <Transition name="page" mode="out-in">
-          <component :is="Component" :key="route.fullPath" />
+          <component :is="Component" :key="route.path" />
         </Transition>
       </RouterView>
     </main>
