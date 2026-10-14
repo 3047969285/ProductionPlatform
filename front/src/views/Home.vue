@@ -7,10 +7,10 @@
       <p class="desc">需求 / 开发 / 测试 / 部署</p>
     </section>
     <section v-if="!loading && !loadError" class="grid">
-      <article v-for="c in cards" :key="c.label" class="card">
+      <RouterLink v-for="c in cards" :key="c.label" :to="c.to" class="card" :aria-label="`${c.label} ${c.value}，查看相关页面`">
         <span class="num" :style="{ color: c.color }">{{ c.value }}</span>
         <span class="label">{{ c.label }}</span>
-      </article>
+      </RouterLink>
     </section>
     <section v-else-if="loading" class="status-panel" aria-live="polite">
       <span class="status-mark" aria-hidden="true">···</span>
@@ -58,12 +58,12 @@ const cards = computed(() => {
   const d = data.value
   if (!d) return []
   return [
-    { label: '项目', value: d.projects ?? 0, color: '#fff' },
-    { label: '需求', value: d.requirements?.total ?? 0, color: 'var(--cyan)' },
-    { label: '接口', value: d.apis ?? 0, color: 'var(--purple)' },
-    { label: '测试中', value: d.tests?.running ?? 0, color: 'var(--cyan)' },
-    { label: '运维待处理', value: d.ops?.open ?? 0, color: 'var(--pink)' },
-    { label: '活跃团队', value: d.teams?.active ?? 0, color: 'var(--lime)' },
+    { label: '项目', value: d.projects ?? 0, color: '#fff', to: '/projects' },
+    { label: '需求', value: d.requirements?.total ?? 0, color: 'var(--cyan)', to: '/reports' },
+    { label: '接口', value: d.apis ?? 0, color: 'var(--purple)', to: '/reports' },
+    { label: '测试中', value: d.tests?.running ?? 0, color: 'var(--cyan)', to: '/reports' },
+    { label: '运维待处理', value: d.ops?.open ?? 0, color: 'var(--pink)', to: '/reports' },
+    { label: '活跃团队', value: d.teams?.active ?? 0, color: 'var(--lime)', to: '/teams' },
   ]
 })
 
@@ -155,7 +155,8 @@ onUnmounted(() => {
 h1 { font-family: var(--font-display); font-size: clamp(3rem, 6vw, 6rem); font-weight: 400; letter-spacing: -.09em; line-height: .92; margin-bottom: 18px; }
 .desc { color: var(--muted-light); font-size: 9px; letter-spacing: .2em; }
 .grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 0; margin-bottom: clamp(48px, 10vh, 100px); border-top: 1px solid rgba(239,239,235,.24); border-bottom: 1px solid rgba(239,239,235,.15); background: transparent; }
-.card { position: relative; min-width: 0; min-height: 142px; padding: 22px 18px 18px 0; background: transparent; border-right: 1px solid rgba(239,239,235,.12); will-change: transform, opacity; transition: transform .45s var(--ease), background .35s var(--ease); }
+.card { position: relative; min-width: 0; min-height: 142px; padding: 22px 18px 18px 0; color: inherit; background: transparent; border-right: 1px solid rgba(239,239,235,.12); cursor: pointer; text-decoration: none; will-change: transform, opacity; transition: transform .45s var(--ease), background .35s var(--ease); }
+.card:focus-visible { outline: 1px solid rgba(239,239,235,.72); outline-offset: -1px; }
 .card + .card { padding-left: 18px; }
 .card:last-child { border-right: 0; }
 .card::before { position: absolute; top: -1px; left: 0; width: 24px; height: 1px; background: rgba(239,239,235,.72); content: ""; }
