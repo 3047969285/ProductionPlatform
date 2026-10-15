@@ -339,7 +339,12 @@ onMounted(load)
       <el-button @click="load">重新加载</el-button>
     </section>
 
-    <div v-else v-loading="loading" v-reveal="{ blocks: '.reports > section', rows: '.metric-card, .bar-row, .el-table__row', bars: '.bar-fill', scroll: true }" class="reports">
+    <div
+      v-else
+      v-loading="loading"
+      v-reveal="{ blocks: '.reports > section', rows: '.metric-card, .bar-row, .el-table__row', bars: '.bar-fill', scroll: true }"
+      class="reports"
+    >
       <section class="card hero-card span-full">
         <div>
           <p class="eyebrow">实际数据看板</p>
@@ -347,14 +352,14 @@ onMounted(load)
           <p class="hero-copy">{{ boardDescription }}</p>
         </div>
         <div class="hero-signal">
-          <strong>{{ isAllProjects ? globalProjectRows.reduce((total, row) => total + row.total, 0) : (projectData?.requirements?.length || 0) + (projectData?.tasks?.length || 0) + (projectData?.bugs?.length || 0) }}</strong>
+          <strong v-count="isAllProjects ? globalProjectRows.reduce((total, row) => total + row.total, 0) : (projectData?.requirements?.length || 0) + (projectData?.tasks?.length || 0) + (projectData?.bugs?.length || 0)">{{ isAllProjects ? globalProjectRows.reduce((total, row) => total + row.total, 0) : (projectData?.requirements?.length || 0) + (projectData?.tasks?.length || 0) + (projectData?.bugs?.length || 0) }}</strong>
           <span>实际工作项</span>
         </div>
       </section>
 
       <section class="metric-grid span-full">
         <article v-for="metric in metrics" :key="metric.label" class="metric-card">
-          <span class="metric-value">{{ metric.value }}</span>
+          <span class="metric-value" v-count="metric.value">{{ metric.value }}</span>
           <span class="metric-label">{{ metric.label }}</span>
           <small>{{ metric.note }}</small>
         </article>
@@ -373,7 +378,7 @@ onMounted(load)
                 <div v-for="row in block.rows" :key="row.key" class="bar-row">
                   <span class="bar-label">{{ row.label }}</span>
                   <div class="bar-track"><div class="bar-fill" :style="{ width: (row.value / maxRows(block.rows) * 100) + '%' }" /></div>
-                  <span class="bar-val">{{ row.value }}</span>
+                  <span class="bar-val" v-count="row.value">{{ row.value }}</span>
                 </div>
               </div>
             </div>
@@ -389,7 +394,7 @@ onMounted(load)
             <div v-for="row in globalRiskRows" :key="row.severity" class="bar-row">
               <span class="bar-label">{{ row.label }}</span>
               <div class="bar-track"><div class="bar-fill" :class="badgeClass('severity', row.severity)" :style="{ width: (row.cnt / maxRisk * 100) + '%' }" /></div>
-              <span class="bar-val">{{ row.cnt }}</span>
+              <span class="bar-val" v-count="row.cnt">{{ row.cnt }}</span>
             </div>
             <p v-if="!globalRiskRows.length" class="empty">当前没有缺陷记录</p>
           </div>
@@ -470,7 +475,7 @@ onMounted(load)
             <div v-for="row in globalData.assignee.slice(0, 7)" :key="row.assignee" class="bar-row">
               <span class="bar-label">{{ row.assignee }}</span>
               <div class="bar-track"><div class="bar-fill" :style="{ width: (row.cnt / Math.max(1, ...globalData.assignee.map((item) => number(item.cnt))) * 100) + '%' }" /></div>
-              <span class="bar-val">{{ row.cnt }}</span>
+              <span class="bar-val" v-count="row.cnt">{{ row.cnt }}</span>
             </div>
             <p v-if="!globalData.assignee.length" class="empty">暂无负责人数据</p>
           </div>
@@ -490,7 +495,7 @@ onMounted(load)
                 <div v-for="row in block.rows" :key="row.key" class="bar-row">
                   <span class="bar-label">{{ row.label }}</span>
                   <div class="bar-track"><div class="bar-fill" :style="{ width: (row.value / maxRows(block.rows) * 100) + '%' }" /></div>
-                  <span class="bar-val">{{ row.value }}</span>
+                  <span class="bar-val" v-count="row.value">{{ row.value }}</span>
                 </div>
               </div>
             </div>
@@ -588,7 +593,8 @@ onMounted(load)
 .hero-signal strong { color: var(--accent); font-family: var(--font-display); font-size: 4rem; font-weight: 400; line-height: .9; }
 .hero-signal span { margin-top: 10px; font-size: 11px; letter-spacing: .12em; }
 .metric-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1px; border: 1px solid var(--border); background: var(--border); }
-.metric-card { min-height: 120px; padding: 18px; background: rgba(10, 10, 10, .88); }
+.metric-card { min-height: 120px; padding: 18px; background: rgba(10, 10, 10, .88); transition: background .35s var(--ease); }
+.metric-card:hover { background: rgba(24, 24, 24, .92); }
 .metric-value { display: block; color: var(--text); font-family: var(--font-display); font-size: 2.2rem; line-height: 1; }
 .metric-label { display: block; margin-top: 18px; color: var(--muted); font-size: 12px; letter-spacing: .08em; }
 .metric-card small { display: block; margin-top: 7px; color: var(--muted-light); font-size: 11px; }
@@ -598,7 +604,8 @@ onMounted(load)
 .status-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
 .type-name { margin-bottom: 10px; color: var(--cyan); font-size: 13px; }
 .bars { display: flex; flex-direction: column; gap: 9px; }
-.bar-row { display: grid; grid-template-columns: 70px 1fr 34px; gap: 8px; align-items: center; min-width: 0; font-size: 12px; }
+.bar-row { display: grid; grid-template-columns: 70px 1fr 34px; gap: 8px; align-items: center; min-width: 0; font-size: 12px; padding: 2px 0; border-radius: 4px; transition: background .3s var(--ease); }
+.bar-row:hover { background: rgba(255, 255, 255, .03); }
 .bar-label { overflow: hidden; color: var(--muted); text-overflow: ellipsis; white-space: nowrap; }
 .bar-track { height: 5px; overflow: hidden; border-radius: 999px; background: rgba(234, 238, 222, .1); }
 .bar-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--cyan), var(--purple)); }
@@ -612,7 +619,7 @@ onMounted(load)
 .sprint-load-heading span { overflow: hidden; color: var(--text); text-overflow: ellipsis; white-space: nowrap; }
 .sprint-load-heading strong { color: var(--text); font-weight: 500; }
 .sprint-load-track { display: flex; height: 5px; overflow: hidden; border-radius: 999px; background: rgba(234, 238, 222, .1); }
-.sprint-load-track span { height: 100%; }
+.sprint-load-track span { height: 100%; transform-origin: left center; animation: wb-grow-x .8s var(--ease) both; }
 .sprint-task-fill { background: var(--cyan); }
 .sprint-bug-fill { background: var(--pink); }
 .sprint-load-row small { display: block; margin-top: 4px; color: var(--muted); font-size: 10px; }
@@ -626,7 +633,9 @@ onMounted(load)
 .trend-legend-dot--bug { background: var(--pink); }
 .trend-bars { display: flex; align-items: flex-end; gap: 3px; height: 140px; padding-top: 10px; border-bottom: 1px solid var(--border); }
 .trend-col { display: flex; flex: 1; flex-direction: column; justify-content: flex-end; height: 100%; min-width: 2px; }
-.trend-part { display: block; width: 100%; }
+.trend-part { display: block; width: 100%; transform-origin: center bottom; animation: wb-grow-y .72s var(--ease) both; }
+.trend-col:hover .trend-part { filter: brightness(1.35); }
+.trend-part, .trend-zero { transition: filter .3s var(--ease); }
 .trend-part--requirement { border-radius: 3px 3px 0 0; background: var(--cyan); }
 .trend-part--bug { border-radius: 3px 3px 0 0; background: var(--pink); }
 .trend-zero { display: block; width: 100%; height: 2px; background: rgba(234, 238, 222, .18); }
@@ -636,7 +645,8 @@ onMounted(load)
 .focus-block p { min-height: 36px; margin: 14px 0; color: var(--muted); font-size: 12px; }
 .focus-block small { display: block; margin-top: 9px; color: var(--muted-light); font-size: 11px; }
 .activity-list, .risk-list { display: flex; flex-direction: column; gap: 0; border-top: 1px solid var(--border); }
-.activity-list li, .risk-list li { display: grid; align-items: center; gap: 12px; padding: 13px 0; border-bottom: 1px solid var(--border); }
+.activity-list li, .risk-list li { display: grid; align-items: center; gap: 12px; padding: 13px 0; border-bottom: 1px solid var(--border); transition: background .3s var(--ease), box-shadow .3s var(--ease), border-color .3s var(--ease); }
+.activity-list li:hover, .risk-list li:hover { background: rgba(255, 255, 255, .026); box-shadow: inset 2px 0 0 rgba(239, 239, 235, .42); border-bottom-color: var(--border-strong); }
 .activity-list li { grid-template-columns: 42px minmax(0, 1.4fr) minmax(130px, 1fr) 120px auto; }
 .activity-kind { color: var(--cyan); font-size: 11px; }
 .activity-title, .risk-title { overflow: hidden; color: var(--text); text-overflow: ellipsis; white-space: nowrap; }
@@ -646,7 +656,8 @@ onMounted(load)
 .risk-dot.pink { background: var(--pink); box-shadow: 0 0 12px rgba(239, 239, 235, .3); }
 .risk-dot.cyan { background: var(--cyan); }
 .delivery-list { display: flex; flex-direction: column; gap: 0; }
-.delivery-row { display: grid; grid-template-columns: 70px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 14px 0; border-bottom: 1px solid var(--border); font-size: 12px; }
+.delivery-row { display: grid; grid-template-columns: 70px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 14px 0; border-bottom: 1px solid var(--border); font-size: 12px; transition: padding-left .35s var(--ease), border-color .3s var(--ease); }
+.delivery-row:hover { padding-left: 8px; border-bottom-color: var(--border-strong); }
 .delivery-row:first-child { padding-top: 0; }
 .delivery-row:last-child { padding-bottom: 0; border-bottom: 0; }
 .delivery-row span, .delivery-row em { color: var(--muted); font-style: normal; }

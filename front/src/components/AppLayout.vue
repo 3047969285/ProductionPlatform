@@ -157,7 +157,7 @@ onUnmounted(() => {
         </RouterLink>
       </nav>
       <div class="nav-end">
-        <button class="nav-search" type="button" aria-label="打开全局命令面板" @click="openPalette">
+        <button class="nav-search wb-press" type="button" aria-label="打开全局命令面板" @click="openPalette">
           <span class="nav-search-key" aria-hidden="true">⌘K</span>
           <span class="nav-search-text">搜索</span>
         </button>
@@ -174,7 +174,7 @@ onUnmounted(() => {
         </button>
         <div class="user">
           <span class="user-name">{{ user?.nickname || user?.username }}</span>
-          <button @click="logout">退出</button>
+          <button class="wb-press" @click="logout">退出</button>
         </div>
       </div>
     </header>
@@ -241,7 +241,8 @@ onUnmounted(() => {
   background: var(--text); transition: transform .4s var(--ease);
 }
 .nav-item:hover, .nav-item.active { color: var(--text); }
-.nav-item.active::after { transform: scaleX(1); }
+.nav-item:hover::after { transform: scaleX(1); background: rgba(239, 239, 235, .42); }
+.nav-item.active::after { transform: scaleX(1); background: var(--text); }
 .nav-index { color: rgba(239, 239, 235, .38); font-size: 8px; letter-spacing: .08em; }
 .nav-end { display: flex; align-items: center; justify-self: end; gap: 14px; flex: 0 0 auto; pointer-events: auto; }
 .nav-search {
@@ -258,12 +259,16 @@ onUnmounted(() => {
   border: 1px solid rgba(238, 238, 234, .22); border-radius: 5px;
   color: var(--muted-light); font-size: 8px; letter-spacing: .06em;
 }
-.conn { display: grid; width: 22px; height: 22px; place-items: center; border: 0; border-radius: 50%; background: transparent; cursor: pointer; }
-.conn i { display: block; width: 6px; height: 6px; border-radius: 50%; background: rgba(239, 239, 235, .3); transition: background .3s ease, box-shadow .3s ease; }
+.conn { position: relative; display: grid; width: 22px; height: 22px; place-items: center; border: 0; border-radius: 50%; background: transparent; cursor: pointer; }
+.conn::after { position: absolute; inset: 0; border: 1px solid rgba(239, 239, 235, .5); border-radius: 50%; content: ""; opacity: 0; pointer-events: none; }
+.conn.ok::after { animation: conn-ring 3.4s var(--ease) infinite; }
+.conn i { display: block; width: 6px; height: 6px; border-radius: 50%; background: rgba(239, 239, 235, .3); transition: background .3s ease, box-shadow .3s ease, transform .25s var(--ease); }
 .conn.ok i { background: #a9c295; box-shadow: 0 0 0 3px rgba(169, 194, 149, .14); }
 .conn.down i { background: #d98b7d; box-shadow: 0 0 0 3px rgba(217, 139, 125, .18); animation: conn-pulse 2s ease-in-out infinite; }
 .conn:disabled { cursor: progress; }
+.conn:hover i { transform: scale(1.25); }
 @keyframes conn-pulse { 0%, 100% { opacity: 1 } 50% { opacity: .35 } }
+@keyframes conn-ring { 0% { opacity: .5; transform: scale(.45) } 62%, 100% { opacity: 0; transform: scale(1.7) } }
 .user { display: flex; align-items: center; gap: 14px; color: var(--muted); font-size: 10px; letter-spacing: .08em; }
 .user-name { max-width: 96px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .user button {

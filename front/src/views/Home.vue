@@ -8,7 +8,7 @@
     </section>
     <section v-if="!loading && !loadError" class="grid">
       <RouterLink v-for="c in cards" :key="c.label" :to="c.to" class="card" :aria-label="`${c.label} ${c.value}，查看相关页面`">
-        <span class="num" :style="{ color: c.color }">{{ c.value }}</span>
+        <span class="num" :style="{ color: c.color }" v-count="c.value">{{ c.value }}</span>
         <span class="label">{{ c.label }}</span>
       </RouterLink>
     </section>
@@ -19,7 +19,7 @@
     <section v-else class="status-panel status-error" role="alert">
       <span class="status-mark" aria-hidden="true">!</span>
       <div><h2>暂时无法读取总览</h2><p>检查网络或服务状态后重试；现有项目数据不会被修改。</p></div>
-      <button type="button" class="retry-button" @click="loadDashboard">重新加载 <span aria-hidden="true">↗</span></button>
+      <button type="button" class="retry-button wb-press" @click="loadDashboard">重新加载 <span aria-hidden="true">↗</span></button>
     </section>
 
     <section v-if="!loading && !loadError && recentReqs.length" class="recent">
@@ -102,7 +102,16 @@ async function animateDashboardContent() {
       gsap.fromTo(
         cardsEl,
         reducedMotion ? { autoAlpha: 1, y: 0 } : { autoAlpha: 0, y: 22 },
-        { autoAlpha: 1, y: 0, duration: reducedMotion ? 0 : 0.55, stagger: reducedMotion ? 0 : 0.07, ease: 'power3.out', overwrite: 'auto' },
+        {
+          autoAlpha: 1,
+          y: 0,
+          duration: reducedMotion ? 0 : 0.55,
+          stagger: reducedMotion ? 0 : 0.07,
+          ease: 'power3.out',
+          overwrite: 'auto',
+          // 入场结束后交还内联样式，否则 GSAP 留下的 transform 会压掉 CSS 的 hover 抬升。
+          clearProps: 'all',
+        },
       )
     }
 
@@ -161,15 +170,18 @@ h1 { font-family: var(--font-display); font-size: clamp(3rem, 6vw, 6rem); font-w
 .card:last-child { border-right: 0; }
 .card::before { position: absolute; top: -1px; left: 0; width: 24px; height: 1px; background: rgba(239,239,235,.72); content: ""; }
 .card:hover { z-index: 1; background: rgba(255,255,255,.025); transform: translateY(-5px); }
-.num { display: block; font-family: var(--font-display); font-size: clamp(2rem, 4vw, 3.7rem); font-weight: 400; line-height: 1; letter-spacing: -.06em; }
-.label { display: block; margin-top: 32px; color: var(--muted-light); font-size: 9px; letter-spacing: .11em; }
+.num { display: block; font-family: var(--font-display); font-size: clamp(2rem, 4vw, 3.7rem); font-weight: 400; line-height: 1; letter-spacing: -.06em; transition: transform .5s var(--ease), letter-spacing .5s var(--ease); }
+.label { display: block; margin-top: 32px; color: var(--muted-light); font-size: 9px; letter-spacing: .11em; transition: color .35s var(--ease), letter-spacing .5s var(--ease); }
+.card:hover .num { transform: translateY(-3px); letter-spacing: -.04em; }
+.card:hover .label { color: var(--text); letter-spacing: .16em; }
 .recent { max-width: 1000px; margin-bottom: 32px; }
 .recent-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 18px; }
 .recent-head h2 { font-family: var(--font-display); font-size: clamp(1.5rem, 2.8vw, 2.2rem); font-weight: 400; letter-spacing: -.04em; }
-.recent-head a { color: var(--muted); text-decoration: none; font-size: 9px; letter-spacing: .12em; transition: color .25s ease; }
-.recent-head a:hover { color: var(--text); }
+.recent-head a { display: inline-block; color: var(--muted); text-decoration: none; font-size: 9px; letter-spacing: .12em; transition: color .25s ease, transform .35s var(--ease); }
+.recent-head a:hover { color: var(--text); transform: translateX(4px); }
 .list { overflow: hidden; border-top: 1px solid rgba(239,239,235,.18); background: transparent; }
-.list li { display: grid; grid-template-columns: minmax(120px, .65fr) minmax(180px, 1.7fr) auto; gap: 18px; align-items: center; padding: 14px 0; border-bottom: 1px solid rgba(239,239,235,.12); font-size: 11px; }
+.list li { display: grid; grid-template-columns: minmax(120px, .65fr) minmax(180px, 1.7fr) auto; gap: 18px; align-items: center; padding: 14px 0; border-bottom: 1px solid rgba(239,239,235,.12); font-size: 11px; transition: background .3s var(--ease), box-shadow .3s var(--ease), border-color .3s var(--ease); }
+.list li:hover { background: rgba(255,255,255,.028); box-shadow: inset 2px 0 0 rgba(239,239,235,.5); border-bottom-color: rgba(239,239,235,.28); }
 .no { color: var(--muted-light); font-size: 8px; letter-spacing: .14em; }
 .name { color: var(--text); }
 .status-panel { display: flex; min-height: 150px; align-items: center; gap: 18px; padding: 26px 0; border-top: 1px solid rgba(239,239,235,.18); border-bottom: 1px solid rgba(239,239,235,.12); color: var(--muted-light); }

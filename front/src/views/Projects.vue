@@ -245,10 +245,10 @@ onUnmounted(() => {
           <span aria-hidden="true">⌕</span>
           <input v-model="keyword" type="search" placeholder="搜索项目" aria-label="搜索项目" :disabled="openingProject || deletingProjectId !== null" />
         </label>
-        <button class="create-button" type="button" :disabled="openingProject || deletingProjectId !== null || saving" @click="openAdd">＋ 新建</button>
+        <button class="create-button wb-press" type="button" :disabled="openingProject || deletingProjectId !== null || saving" @click="openAdd">＋ 新建</button>
       </div>
     </template>
-    <div ref="root" v-loading="loading" class="gallery-layout" :class="{ opening: openingProject, deleting: deletingProjectId !== null }">
+    <div ref="root" v-loading="loading" class="gallery-layout" :class="{ opening: openingProject, deleting: deletingProjectId !== null }" >
       <div v-if="!loading && !loadError && unavailableSummaryLabels.length" class="summary-warning" role="status">
         <span>项目已加载；{{ unavailableSummaryLabels.join('、') }}暂不可用</span>
         <el-button link size="small" :disabled="loading || deletingProjectId !== null" @click="load">重试统计</el-button>
@@ -331,7 +331,8 @@ onUnmounted(() => {
 
 <style scoped>
 .project-tools { display: flex; align-items: center; gap: 12px; }
-.search-wrap { display: flex; width: min(24vw, 250px); align-items: center; gap: 10px; padding: 9px 12px; border-bottom: 1px solid rgba(239,239,235,.3); color: var(--muted); }
+.search-wrap { display: flex; width: min(24vw, 250px); align-items: center; gap: 10px; padding: 9px 12px; border-bottom: 1px solid rgba(239,239,235,.3); color: var(--muted); transition: border-color .4s var(--ease), color .4s var(--ease); }
+.search-wrap:focus-within { border-bottom-color: rgba(239,239,235,.78); color: var(--text); }
 .search-wrap > span { font-size: 18px; line-height: 1; }
 .search-wrap input { width: 100%; border: 0; outline: 0; color: var(--text); background: transparent; font: inherit; font-size: 11px; }
 .search-wrap input::placeholder { color: var(--muted-light); }
@@ -363,7 +364,8 @@ onUnmounted(() => {
 .cover-2 .cover-art::before { width: 70%; height: 56%; border-radius: 2px; }
 .cover-2 .cover-art::after { width: 45%; height: 80%; border-radius: 2px; }
 .cover-3 .cover-art { transform: rotate(50deg) scale(.9); }
-.cover-title { position: relative; z-index: 2; max-width: 75%; padding: 0; border: 0; color: rgba(245,245,240,.88); background: transparent; text-align: left; font-family: var(--font-display); font-size: clamp(21px, 3vw, 42px); letter-spacing: -.06em; cursor: pointer; }
+.cover-title { position: relative; z-index: 2; max-width: 75%; padding: 0; border: 0; color: rgba(245,245,240,.88); background: transparent; text-align: left; font-family: var(--font-display); font-size: clamp(21px, 3vw, 42px); letter-spacing: -.06em; cursor: pointer; transition: letter-spacing .5s var(--ease), color .3s var(--ease); }
+.project-card.selected:hover .cover-title { letter-spacing: -.038em; color: #fff; }
 .cover-title:disabled { cursor: wait; opacity: .55; }
 .project-info { display: flex; min-height: 42%; flex-direction: column; padding: 14px 20px 13px; }
 .project-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
@@ -378,7 +380,7 @@ onUnmounted(() => {
 .project-stats b { margin-left: 4px; color: var(--text); font-size: 11px; font-weight: 500; }
 .project-progress { margin-left: auto; color: var(--text); }
 .progress-track { height: 1px; margin-top: 8px; background: rgba(239,239,235,.13); }
-.progress-track i { display: block; height: 100%; background: rgba(239,239,235,.78); }
+.progress-track i { display: block; height: 100%; background: rgba(239,239,235,.78); transform-origin: left center; animation: wb-grow-x .85s var(--ease) both; transition: width .7s var(--ease); }
 .gallery-controls { display: grid; grid-template-columns: 100px 100px 1fr; align-items: center; gap: 20px; margin-top: 13px; color: var(--muted); font-size: 8px; letter-spacing: .12em; }
 .gallery-controls > span:first-child { display: inline-flex; align-items: center; gap: 9px; }
 .gallery-controls > span:first-child i { width: 28px; height: 1px; background: rgba(239,239,235,.3); }

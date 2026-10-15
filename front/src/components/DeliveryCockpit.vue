@@ -107,7 +107,7 @@ const health = computed(() => {
 })
 
 const stats = computed(() => [
-  { key: 'progress', label: '交付进度', value: `${progress.value}%`, note: '综合完成度', tone: 'blue' },
+  { key: 'progress', label: '交付进度', value: progress.value, suffix: '%', note: '综合完成度', tone: 'blue' },
   { key: 'tasks', label: '待办任务', value: pendingTasks.value.length, note: `${tasks.value.filter(isDoneTask).length} 项完成`, tone: 'purple' },
   { key: 'bugs', label: '待处理缺陷', value: openBugs.value.length, note: `${seriousBugs.value.length} 项高优`, tone: 'pink' },
   { key: 'milestones', label: '下个里程碑', value: overdueMilestones.value.length ? '逾期' : (milestones.value.length ? '按计划' : '未设置'), note: overdueMilestones.value.length ? '需要调整' : '发布前设置', tone: overdueMilestones.value.length ? 'pink' : 'green' },
@@ -276,7 +276,7 @@ onUnmounted(() => {
     <section class="stats" aria-label="交付概览">
       <article v-for="item in stats" :key="item.key" class="stat-card" :class="item.tone">
         <span class="stat-label">{{ item.label }}</span>
-        <strong>{{ item.value }}</strong>
+        <strong v-count="{ value: item.value, suffix: item.suffix }">{{ item.value }}</strong>
         <small>{{ item.note }}</small>
       </article>
     </section>
@@ -389,6 +389,12 @@ onUnmounted(() => {
 .health strong { font-size: 14px; }
 .health small { color: var(--muted); font-size: 12px; margin-top: 2px; }
 .health-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--lime); box-shadow: 0 0 0 5px rgba(52,199,89,.12); }
+.health { position: relative; }
+.health.good .health-dot { animation: health-breathe 3.6s var(--ease) infinite; }
+@keyframes health-breathe {
+  0%, 100% { box-shadow: 0 0 0 5px rgba(52,199,89,.12); }
+  50% { box-shadow: 0 0 0 9px rgba(52,199,89,.04); }
+}
 .health.warning .health-dot { background: var(--orange); box-shadow: 0 0 0 5px rgba(255,159,10,.14); }
 .health.danger .health-dot { background: var(--pink); box-shadow: 0 0 0 5px rgba(255,55,95,.12); }
 .stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
@@ -431,15 +437,18 @@ onUnmounted(() => {
 .all-clear strong { font-size: 14px; }
 .all-clear small { color: var(--muted); font-size: 12px; margin-top: 3px; }
 .pulse-list { display: flex; flex-direction: column; gap: 0; }
-.pulse-row { display: flex; justify-content: space-between; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+.pulse-row { display: flex; justify-content: space-between; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); transition: background .3s var(--ease), border-color .3s var(--ease); }
+.pulse-row:hover { background: rgba(255, 255, 255, .022); border-bottom-color: var(--border-strong); }
 .pulse-row:first-child { padding-top: 2px; }
 .pulse-row:last-child { border-bottom: 0; padding-bottom: 2px; }
 .pulse-row span { color: var(--muted); font-size: 13px; }
 .pulse-row strong { max-width: 62%; font-size: 13px; text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .dangerText { color: var(--pink); }
 .timeline { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
-.timeline-item { position: relative; min-height: 84px; padding: 10px 10px 8px 15px; border-left: 1px solid var(--border-strong); }
-.timeline-dot { position: absolute; left: -5px; top: 12px; width: 9px; height: 9px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 4px rgba(239, 239, 235, .1); }
+.timeline-item { position: relative; min-height: 84px; padding: 10px 10px 8px 15px; border-left: 1px solid var(--border-strong); transition: border-color .35s var(--ease), transform .4s var(--ease); }
+.timeline-item:hover { border-left-color: rgba(239, 239, 235, .62); transform: translateY(-3px); }
+.timeline-dot { position: absolute; left: -5px; top: 12px; width: 9px; height: 9px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 4px rgba(239, 239, 235, .1); transition: box-shadow .4s var(--ease); }
+.timeline-item:hover .timeline-dot { box-shadow: 0 0 0 8px rgba(239, 239, 235, .09); }
 .timeline-dot.good { background: var(--lime); box-shadow: 0 0 0 4px rgba(52,199,89,.12); }
 .timeline-dot.danger { background: var(--pink); box-shadow: 0 0 0 4px rgba(255,55,95,.12); }
 .timeline-item small, .timeline-item strong { display: block; }

@@ -332,6 +332,92 @@ body::after { display: none; }
   border-radius: 0;
   box-shadow: none;
 }
+
+/* ── 交互动效层（interactions.js）────────────────────────
+   光标跟随高光 / 点击波纹 / 按压反馈 / 滚动进度。
+   与入场动画分工：入场负责「出现」，这里负责「操作后的即时反馈」。 */
+
+/* 光标跟随高光：指针位置写在 --wb-mx / --wb-my 上 */
+.wb-glow { position: relative; }
+.wb-glow::after {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  border-radius: inherit;
+  content: "";
+  opacity: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    190px circle at var(--wb-mx, 50%) var(--wb-my, 50%),
+    rgba(238, 238, 234, .11),
+    rgba(238, 238, 234, .035) 42%,
+    transparent 70%
+  );
+  transition: opacity .45s var(--ease);
+}
+.wb-glow.is-glowing::after { opacity: 1; }
+
+/* 点击波纹：画在 body 的共享图层上，不侵入 Vue 管理的 DOM */
+.wb-ripple-layer {
+  position: fixed;
+  z-index: 320;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.wb-ripple {
+  position: fixed;
+  display: block;
+  opacity: .9;
+  pointer-events: none;
+  background: radial-gradient(circle at center, rgba(238, 238, 234, .26), rgba(238, 238, 234, .08) 55%, transparent 74%);
+  animation: wb-ripple-run .74s var(--ease) forwards;
+  will-change: transform, opacity;
+}
+@keyframes wb-ripple-run {
+  from { opacity: .85; transform: scale(.02); }
+  to { opacity: 0; transform: scale(1); }
+}
+
+/* 按压反馈：只挂在不参与 3D 布局的按钮 / 卡片上 */
+.wb-press {
+  transition:
+    transform .17s var(--ease),
+    color .2s var(--ease),
+    background-color .2s var(--ease),
+    border-color .2s var(--ease),
+    box-shadow .2s var(--ease),
+    opacity .2s var(--ease) !important;
+}
+.wb-press.is-pressed { transform: scale(.968) !important; }
+
+/* 共享生长动画：进度条 / 柱状图从左下角展开 */
+@keyframes wb-grow-x { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes wb-grow-y { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+
+/* 顶部滚动进度线 */
+.scroll-progress {
+  position: fixed;
+  z-index: 140;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(238, 238, 234, .1), var(--text));
+  transform: scaleX(0);
+  transform-origin: left center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .4s var(--ease);
+}
+.scroll-progress.is-active { opacity: .72; }
+
+@media (prefers-reduced-motion: reduce) {
+  .wb-glow::after { display: none; }
+  .wb-ripple-layer { display: none; }
+  .wb-press.is-pressed { transform: none !important; }
+  .scroll-progress { display: none; }
+}
 .layout .table-frame {
   border-color: rgba(238, 238, 234, .16);
   border-radius: 12px;
