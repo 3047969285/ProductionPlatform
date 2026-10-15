@@ -245,7 +245,7 @@ onUnmounted(() => {
           <span aria-hidden="true">⌕</span>
           <input v-model="keyword" type="search" placeholder="搜索项目" aria-label="搜索项目" :disabled="openingProject || deletingProjectId !== null" />
         </label>
-        <button class="create-button wb-press" type="button" :disabled="openingProject || deletingProjectId !== null || saving" @click="openAdd">＋ 新建</button>
+        <button class="create-button wb-press" type="button" :disabled="openingProject || deletingProjectId !== null || saving" @click="openAdd"><span class="wb-arrow" aria-hidden="true">＋</span> 新建</button>
       </div>
     </template>
     <div ref="root" v-loading="loading" class="gallery-layout" :class="{ opening: openingProject, deleting: deletingProjectId !== null }" >

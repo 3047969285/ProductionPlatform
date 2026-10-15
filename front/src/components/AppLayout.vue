@@ -16,9 +16,13 @@ const routeTransitionLabel = ref('')
 const paletteOpen = ref(false)
 const refreshTick = ref(0)
 const probing = ref(false)
+const navList = ref(null)
+const navRail = ref(null)
 let animationContext
 let mediaContext
 let routeAnimationContext
+let navObserver
+let navRailFrame = 0
 
 const links = [
   { to: '/', label: '总览' },
@@ -108,9 +112,43 @@ watch(() => route.path, async (path, previousPath) => {
   }, root.value)
 })
 
+/* ── 导航滑轨 ─────────────────────────────────────────── */
+
+// 激活项的下划线由一条共享的轨来画，切换页面时从左滑到右，而不是原地闪一下。
+function syncNavRail() {
+  if (navRailFrame) return
+  navRailFrame = requestAnimationFrame(() => {
+    navRailFrame = 0
+    const list = navList.value
+    const rail = navRail.value
+    if (!list || !rail) return
+    const active = list.querySelector('.nav-item.active')
+    if (!active) {
+      rail.classList.remove('is-on')
+      return
+    }
+    rail.style.left = `${active.offsetLeft}px`
+    rail.style.width = `${active.offsetWidth}px`
+    rail.classList.add('is-on')
+  })
+}
+
+watch(() => route.path, async () => {
+  await nextTick()
+  syncNavRail()
+})
+
 onMounted(() => {
   window.addEventListener('keydown', onGlobalKey)
   if (!root.value) return
+  syncNavRail()
+  // 字体载入 / 视口变化都会改变导航项宽度，轨要跟着重算。
+  if (typeof ResizeObserver !== 'undefined' && navList.value) {
+    navObserver = new ResizeObserver(syncNavRail)
+    navObserver.observe(navList.value)
+  }
+  window.addEventListener('resize', syncNavRail, { passive: true })
+  document.fonts?.ready?.then(syncNavRail).catch(() => {})
   animationContext = gsap.context(() => {
     mediaContext = gsap.matchMedia()
     mediaContext.add({ reduced: '(prefers-reduced-motion: reduce)' }, ({ conditions }) => {
@@ -137,6 +175,9 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener('keydown', onGlobalKey)
+  window.removeEventListener('resize', syncNavRail)
+  if (navRailFrame) cancelAnimationFrame(navRailFrame)
+  navObserver?.disconnect()
   routeAnimationContext?.revert()
   mediaContext?.revert()
   animationContext?.revert()
@@ -150,7 +191,8 @@ onUnmounted(() => {
         <span class="brand-mark">DF</span>
         <span class="brand-copy"><strong>DEVFLOW</strong><small>PDE / DELIVERY</small></span>
       </RouterLink>
-      <nav class="nav-list" aria-label="主导航">
+      <nav ref="navList" class="nav-list" aria-label="主导航">
+        <span ref="navRail" class="nav-rail" aria-hidden="true" />
         <RouterLink v-for="(l, index) in visibleLinks" :key="l.to" :to="l.to" class="nav-item" :class="{ active: isActive(l) }">
           <span class="nav-index">{{ String(index + 1).padStart(2, '0') }}</span>
           <span>{{ l.label }}</span>
@@ -226,10 +268,18 @@ onUnmounted(() => {
 .brand-copy strong { font-size: 11px; letter-spacing: .2em; }
 .brand-copy small { color: var(--muted-light); font-size: 7px; letter-spacing: .15em; }
 .nav-list {
-  position: static; justify-self: center; min-width: 0;
+  position: relative; justify-self: center; min-width: 0;
   display: flex; align-items: center; gap: clamp(15px, 2.1vw, 30px);
   max-width: 100%; overflow-x: auto; pointer-events: auto;
 }
+/* 激活指示条：由 syncNavRail 量出位置后滑动过去 */
+.nav-rail {
+  position: absolute; bottom: 0; left: 0; width: 0; height: 1px;
+  background: var(--text);
+  opacity: 0; pointer-events: none;
+  transition: left .5s var(--ease), width .5s var(--ease), opacity .3s var(--ease);
+}
+.nav-rail.is-on { opacity: 1; }
 .nav-item {
   position: relative; display: inline-flex; align-items: center; gap: 7px;
   padding: 7px 0; color: rgba(239, 239, 235, .58); text-decoration: none;
@@ -242,7 +292,8 @@ onUnmounted(() => {
 }
 .nav-item:hover, .nav-item.active { color: var(--text); }
 .nav-item:hover::after { transform: scaleX(1); background: rgba(239, 239, 235, .42); }
-.nav-item.active::after { transform: scaleX(1); background: var(--text); }
+/* 激活态交给 .nav-rail，这里不再自己画一条，否则两条线会重叠。 */
+.nav-item.active::after { transform: scaleX(0); }
 .nav-index { color: rgba(239, 239, 235, .38); font-size: 8px; letter-spacing: .08em; }
 .nav-end { display: flex; align-items: center; justify-self: end; gap: 14px; flex: 0 0 auto; pointer-events: auto; }
 .nav-search {

@@ -23,7 +23,7 @@
     </section>
 
     <section v-if="!loading && !loadError && recentReqs.length" class="recent">
-      <div class="recent-head"><h2>最近</h2><RouterLink to="/projects">查看全部 ↗</RouterLink></div>
+      <div class="recent-head"><h2>最近</h2><RouterLink to="/projects">查看全部 <span class="wb-arrow" aria-hidden="true">↗</span></RouterLink></div>
       <ul class="list">
         <li v-for="r in recentReqs" :key="r.id">
           <span class="no">{{ r.reqNo }}</span>

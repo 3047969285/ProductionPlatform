@@ -1,4 +1,6 @@
-:root {
+/* 用 :root:root 提高特异性：Element Plus 按需注入的 base 样式会在 global.css 之后到达，
+   它的 :root 变量表（浅色默认值）会反过来覆盖本文件的深色变量。这里必须压过它。 */
+:root:root {
   --bg: #101312;
   --bg-deep: #0a0d0c;
   --surface: #171b19;
@@ -251,7 +253,8 @@ body .el-input, body .el-textarea {
 }
 
 /* Portfolio canvas: monochrome, open space, and a low-contrast perspective floor. */
-:root {
+/* 同样用 :root:root —— 两块变量表的先后关系必须保留，否则上面的旧色板会反压这一块。 */
+:root:root {
   --bg: #000;
   --bg-deep: #000;
   --surface: #101111;
@@ -298,6 +301,19 @@ body .el-input, body .el-textarea {
   --el-fill-color-light: rgba(255, 255, 255, .045);
   --el-fill-color-lighter: rgba(255, 255, 255, .03);
   --el-fill-color-blank: transparent;
+  /* 遮罩 / 浮层 / 阴影 / 禁用态：EP 的浅色默认值（白遮罩、亮阴影）在这套深色系统里很突兀 */
+  --el-mask-color: rgba(5, 7, 6, .78);
+  --el-mask-color-extra-light: rgba(5, 7, 6, .45);
+  --el-overlay-color: rgba(5, 7, 6, .9);
+  --el-overlay-color-light: rgba(5, 7, 6, .82);
+  --el-overlay-color-lighter: rgba(5, 7, 6, .82);
+  --el-box-shadow: 0 24px 54px rgba(0, 0, 0, .42);
+  --el-box-shadow-light: 0 12px 32px rgba(0, 0, 0, .32);
+  --el-box-shadow-lighter: 0 8px 24px rgba(0, 0, 0, .26);
+  --el-box-shadow-dark: 0 32px 80px rgba(0, 0, 0, .5);
+  --el-disabled-bg-color: rgba(255, 255, 255, .04);
+  --el-disabled-text-color: rgba(239, 239, 235, .32);
+  --el-disabled-border-color: rgba(238, 238, 234, .12);
 }
 
 html, body { background: #000; }
@@ -412,11 +428,96 @@ body::after { display: none; }
 }
 .scroll-progress.is-active { opacity: .72; }
 
+/* 全局指针聚光：跟随指针的柔光，只提亮不遮挡 */
+.wb-spotlight {
+  position: fixed;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  width: 620px;
+  height: 620px;
+  margin: -310px 0 0 -310px;
+  opacity: 0;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  background: radial-gradient(
+    circle at center,
+    rgba(238, 238, 234, .075),
+    rgba(238, 238, 234, .028) 40%,
+    transparent 66%
+  );
+  transition: opacity .6s var(--ease);
+  will-change: transform;
+}
+.wb-spotlight.is-on { opacity: 1; }
+
+/* 图标微动：按钮 / 链接里的箭头在悬停时往前推一下 */
+.wb-arrow { display: inline-block; transition: transform .28s var(--ease); }
+button:hover > .wb-arrow,
+a:hover > .wb-arrow,
+.el-button:hover > span > .wb-arrow { transform: translate(2px, -2px); }
+button:active > .wb-arrow,
+a:active > .wb-arrow { transform: translate(3px, -3px); }
+
+/* 弹窗 / 消息盒入场：抬起来一点再落位 */
+.dialog-fade-enter-active .el-dialog,
+.msgbox-fade-enter-active .el-message-box {
+  animation: wb-pop-in .46s var(--ease) both;
+}
+@keyframes wb-pop-in {
+  from { opacity: 0; transform: translateY(16px) scale(.968); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* 下拉 / 选择 / 气泡：收短一点、带一点回弹的节奏 */
+.el-zoom-in-top-enter-active,
+.el-zoom-in-top-leave-active,
+.el-zoom-in-bottom-enter-active,
+.el-zoom-in-bottom-leave-active {
+  transition: transform .24s var(--ease), opacity .24s var(--ease) !important;
+}
+.el-fade-in-linear-enter-active,
+.el-fade-in-linear-leave-active,
+.el-message-fade-enter-active,
+.el-message-fade-leave-active {
+  transition: opacity .28s var(--ease), transform .28s var(--ease) !important;
+}
+.el-notification-fade-enter-active,
+.el-notification-fade-leave-active {
+  transition: opacity .34s var(--ease), transform .34s var(--ease) !important;
+}
+
+/* 输入聚焦：一圈由内向外散开的光晕 */
+.el-input__wrapper,
+.el-textarea__inner,
+.el-select__wrapper {
+  transition: box-shadow .32s var(--ease), background-color .32s var(--ease), border-color .32s var(--ease) !important;
+}
+.el-input__wrapper.is-focus,
+.el-input__wrapper:focus-within,
+.el-select__wrapper.is-focused,
+.el-select__wrapper:focus-within,
+.el-textarea__inner:focus {
+  box-shadow: 0 0 0 1px rgba(238, 238, 234, .55), 0 0 0 5px rgba(238, 238, 234, .06) !important;
+}
+
+/* 表格行：悬停时补一条底线，指出「这一行」 */
+.el-table__body tr > td.el-table__cell {
+  transition: background-color .3s var(--ease), box-shadow .3s var(--ease);
+}
+.el-table--enable-row-hover .el-table__body tr:hover > td.el-table__cell {
+  box-shadow: inset 0 -1px 0 rgba(238, 238, 234, .2);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .wb-glow::after { display: none; }
   .wb-ripple-layer { display: none; }
   .wb-press.is-pressed { transform: none !important; }
   .scroll-progress { display: none; }
+  .wb-spotlight { display: none; }
+  .wb-arrow, button:hover > .wb-arrow, a:hover > .wb-arrow { transition: none; transform: none; }
+  .dialog-fade-enter-active .el-dialog,
+  .msgbox-fade-enter-active .el-message-box { animation: none; }
 }
 .layout .table-frame {
   border-color: rgba(238, 238, 234, .16);
@@ -424,27 +525,37 @@ body::after { display: none; }
   background: rgba(255, 255, 255, .018);
   box-shadow: none;
 }
-.el-overlay { background: rgba(0, 0, 0, .82); }
-.el-dialog, .el-message-box, .el-drawer, .el-popover, .el-card {
+/* 这一组是「必须赢过 Element Plus 按需注入样式」的覆盖。
+   变量层面的覆盖交给上面的 :root:root，这里只剩直接写死属性的少数几条，
+   用 body 前缀把特异性提到 (0,1,1)，否则 EP 后加载的同名规则会把它们压掉。 */
+body .el-overlay { background: rgba(0, 0, 0, .82); backdrop-filter: blur(5px); }
+body .el-dialog, body .el-message-box, body .el-drawer, body .el-popover, body .el-card {
   background: #111;
   border-radius: 14px;
 }
-.el-button { border-radius: 8px; }
-.el-button--primary { color: #101010; }
-.el-button--primary:hover, .el-button--primary:focus { color: #101010; }
-.el-table {
+body .el-button { border-radius: 8px; }
+body .el-button--primary,
+body .el-button--primary:hover,
+body .el-button--primary:focus {
+  color: #101010;
+  border-color: var(--accent);
+  background: var(--accent);
+}
+body .el-button--primary:hover,
+body .el-button--primary:focus { background: #fff; border-color: #fff; }
+body .el-table {
   --el-table-tr-bg-color: transparent;
   --el-table-row-hover-bg-color: rgba(255, 255, 255, .045);
   --el-table-header-bg-color: transparent;
 }
-.el-table th.el-table__cell { background: rgba(255, 255, 255, .025); }
-.el-table tr, .el-table td.el-table__cell, .el-table th.el-table__cell.is-leaf {
+body .el-table th.el-table__cell { background: rgba(255, 255, 255, .025); }
+body .el-table tr, body .el-table td.el-table__cell, body .el-table th.el-table__cell.is-leaf {
   background: transparent;
 }
-.el-table--enable-row-hover .el-table__body tr:hover > td.el-table__cell {
+body .el-table--enable-row-hover .el-table__body tr:hover > td.el-table__cell {
   background: rgba(255, 255, 255, .045);
 }
-.el-loading-mask { background: rgba(0, 0, 0, .75); }
+body .el-loading-mask { background: rgba(0, 0, 0, .75); }
 
 @media (max-width: 760px) {
   body::before {

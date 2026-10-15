@@ -224,17 +224,31 @@ function bindPress(el) {
   }
 }
 
+/* ── 图标微动 ─────────────────────────────────────────── */
+
+// 按钮 / 链接里的箭头字形在悬停时轻轻推一下，让「可点」这件事有个手势。
+const ARROW_GLYPH = /^[↗→←↑↓＋+×✕›»]$/
+const ARROW = 'wb-arrow'
+
+function bindArrow(el) {
+  if (el.children.length) return null
+  if (!ARROW_GLYPH.test((el.textContent || '').trim())) return null
+  el.classList.add(ARROW)
+  return () => el.classList.remove(ARROW)
+}
+
 /* ── 组合入口 ─────────────────────────────────────────── */
 
 const BINDERS = [
   ['glow', bindGlow],
   ['ripple', bindRipple],
   ['press', bindPress],
+  ['arrow', bindArrow],
 ]
 
 // 模块级去重：多个 createInteractions 作用在同一子树上时（例如全局层 + 页面层），
 // 同一个节点只绑一次，避免重复监听和相互拆台。
-const bound = { glow: new WeakSet(), ripple: new WeakSet(), press: new WeakSet() }
+const bound = { glow: new WeakSet(), ripple: new WeakSet(), press: new WeakSet(), arrow: new WeakSet() }
 
 // 异步数据到达后新出现的节点由 MutationObserver 补挂。
 export function createInteractions(root, options = {}) {
@@ -317,6 +331,70 @@ export function useInteractions(options = {}) {
     root,
     refresh: () => handle?.refresh(),
     destroy: () => handle?.destroy(),
+  }
+}
+
+/* ── 全局指针聚光 ─────────────────────────────────────── */
+
+// 一层跟随指针的柔光，让整个系统在鼠标移动时「有呼吸」。
+// 用 mix-blend-mode: screen 叠加，只提亮不遮挡，不会糊住正文。
+export function createSpotlight(options = {}) {
+  const noop = { destroy() {} }
+  if (typeof window === 'undefined' || typeof document === 'undefined') return noop
+  if (prefersReducedMotion()) return noop
+  // 触屏设备没有指针悬停，直接不装。
+  if (window.matchMedia?.('(hover: none)').matches) return noop
+
+  const node = document.createElement('div')
+  node.className = 'wb-spotlight'
+  node.setAttribute('aria-hidden', 'true')
+  document.body.appendChild(node)
+
+  const ease = Number.isFinite(options.ease) ? options.ease : 0.16
+  let frame = 0
+  let on = false
+  let target = null
+  let current = { x: window.innerWidth / 2, y: window.innerHeight / 3 }
+
+  const tick = () => {
+    if (!target) { frame = 0; return }
+    current.x += (target.x - current.x) * ease
+    current.y += (target.y - current.y) * ease
+    node.style.transform = `translate3d(${current.x}px, ${current.y}px, 0)`
+    if (Math.abs(target.x - current.x) < 0.4 && Math.abs(target.y - current.y) < 0.4) {
+      current.x = target.x
+      current.y = target.y
+      node.style.transform = `translate3d(${current.x}px, ${current.y}px, 0)`
+      frame = 0
+      return
+    }
+    frame = requestAnimationFrame(tick)
+  }
+
+  const move = (event) => {
+    target = { x: event.clientX, y: event.clientY }
+    if (!on) { on = true; node.classList.add('is-on') }
+    if (!frame) frame = requestAnimationFrame(tick)
+  }
+  const leave = () => {
+    on = false
+    node.classList.remove('is-on')
+    if (frame) { cancelAnimationFrame(frame); frame = 0 }
+    target = null
+  }
+
+  window.addEventListener('pointermove', move, { passive: true })
+  window.addEventListener('blur', leave)
+  document.addEventListener('pointerleave', leave)
+
+  return {
+    destroy() {
+      window.removeEventListener('pointermove', move)
+      window.removeEventListener('blur', leave)
+      document.removeEventListener('pointerleave', leave)
+      if (frame) cancelAnimationFrame(frame)
+      node.remove()
+    },
   }
 }
 
