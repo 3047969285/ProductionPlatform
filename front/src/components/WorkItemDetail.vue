@@ -185,7 +185,7 @@ watch([() => props.visible, () => props.workId, () => props.workType], ([v, work
     @update:model-value="(v) => emit('update:visible', v)"
     @closed="onClosed"
   >
-    <div v-loading="loading" class="detail">
+    <div v-loading="loading" v-reveal="{ blocks: '.head, .api-line, .fields, .content, .inline-error, .empty' }" class="detail">
       <template v-if="item">
         <!-- 头部 -->
         <div class="head">
@@ -243,7 +243,7 @@ watch([() => props.visible, () => props.workId, () => props.workType], ([v, work
 
     <!-- 评论 + 操作历史 -->
     <template v-if="item">
-      <div class="section">
+      <div v-reveal="{ blocks: '.section, .inline-error, .empty', rows: '.comment, .el-timeline-item' }" class="section">
         <h4>评论<span v-if="!commentsLoading && !commentsError">（{{ comments.length }}）</span></h4>
         <p v-if="commentsLoading" class="empty" aria-live="polite">正在读取评论…</p>
         <div v-else-if="commentsError" class="inline-error" role="alert">
@@ -263,7 +263,7 @@ watch([() => props.visible, () => props.workId, () => props.workType], ([v, work
         </div>
       </div>
 
-      <div class="section">
+      <div v-reveal="{ blocks: '.section, .inline-error, .empty', rows: '.comment, .el-timeline-item' }" class="section">
         <h4>操作历史<span v-if="!activitiesLoading && !activitiesError">（{{ activities.length }}）</span></h4>
         <p v-if="activitiesLoading" class="empty" aria-live="polite">正在读取操作历史…</p>
         <div v-else-if="activitiesError" class="inline-error" role="alert">

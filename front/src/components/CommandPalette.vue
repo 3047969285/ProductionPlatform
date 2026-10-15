@@ -343,11 +343,10 @@ onUnmounted(() => {
           </p>
 
           <div ref="listEl" class="palette-body">
-            <p v-if="loading" class="palette-state">正在读取项目…</p>
-            <p v-else-if="loadFailed" class="palette-state palette-state--warn">
+            <p v-if="loadFailed" class="palette-state palette-state--warn">
               项目列表读取失败，仅显示导航与操作
             </p>
-            <template v-else-if="flatItems.length">
+            <template v-if="flatItems.length">
               <div v-for="entry in results" :key="entry.group" class="palette-group">
                 <p class="palette-group-label">{{ entry.group }}</p>
                 <button
@@ -367,7 +366,10 @@ onUnmounted(() => {
                   </span>
                 </button>
               </div>
+              <!-- 导航与操作立即可用，项目列表在后台补齐 -->
+              <p v-if="loading" class="palette-note">正在读取项目…</p>
             </template>
+            <p v-else-if="loading" class="palette-state">正在读取项目…</p>
             <p v-else class="palette-state">没有匹配的结果</p>
           </div>
 
@@ -430,6 +432,7 @@ onUnmounted(() => {
 .palette-item.active .palette-drill { color: var(--text); transform: translateX(2px); }
 .palette-state { padding: 26px 12px; color: var(--muted-light); font-size: 11px; text-align: center; }
 .palette-state--warn { color: var(--muted); }
+.palette-note { padding: 12px 11px 4px; color: var(--muted-light); font-size: 10px; letter-spacing: .08em; }
 .palette-foot {
   display: flex; align-items: center; justify-content: space-between; gap: 14px;
   padding: 10px 18px; border-top: 1px solid rgba(238, 238, 234, .12);

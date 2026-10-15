@@ -170,7 +170,7 @@ onMounted(() => { loadFolders(); loadList() })
 </script>
 
 <template>
-  <div class="doc-panel">
+  <div v-reveal="{ blocks: '.sidebar, .main, .toolbar, .table-frame', rows: '.tree-node, .el-table__row, tbody > tr' }" class="doc-panel">
     <aside class="sidebar">
       <div class="side-head">
         <span>文件夹</span>

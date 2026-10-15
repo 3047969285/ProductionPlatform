@@ -123,7 +123,7 @@ watch(() => props.projectId, () => { loadMilestones(); if (sub.value === 'releas
 </script>
 
 <template>
-  <div>
+  <div v-reveal>
     <el-tabs v-model="sub" @tab-change="onSubChange">
       <el-tab-pane label="里程碑" name="milestones">
         <div class="toolbar">

@@ -10,18 +10,18 @@ defineProps({
 const root = ref(null)
 let context
 
+// 只负责页头入场；内容区的动效由各工作台自己用 v-reveal 声明，
+// 避免外层容器与内层面板叠加出两次位移。
 onMounted(() => {
   if (!root.value) return
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  if (reduced) return
   context = gsap.context(() => {
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    gsap.from(root.value.querySelectorAll('.page-reveal'), {
-      autoAlpha: 0,
-      y: reduced ? 0 : 14,
-      duration: reduced ? 0 : .5,
-      stagger: reduced ? 0 : .08,
-      ease: 'power3.out',
-      clearProps: 'all',
-    })
+    const timeline = gsap.timeline({ defaults: { ease: 'power3.out' } })
+    timeline
+      .from(root.value.querySelectorAll('.tag'), { autoAlpha: 0, y: 10, duration: 0.4, clearProps: 'all' })
+      .from(root.value.querySelectorAll('h1'), { autoAlpha: 0, y: 22, duration: 0.6, ease: 'power4.out', clearProps: 'all' }, '-=0.22')
+      .from(root.value.querySelectorAll('.page-action'), { autoAlpha: 0, y: 10, duration: 0.45, clearProps: 'all' }, '-=0.32')
   }, root.value)
 })
 
@@ -30,14 +30,14 @@ onUnmounted(() => context?.revert())
 
 <template>
   <div ref="root" class="page">
-    <header class="head page-reveal">
+    <header class="head">
       <div>
         <p v-if="tag" class="tag"><i />{{ tag }}</p>
         <h1>{{ title }}</h1>
       </div>
       <div class="page-action"><slot name="action" /></div>
     </header>
-    <div class="panel page-reveal"><slot /></div>
+    <div class="panel"><slot /></div>
   </div>
 </template>
 

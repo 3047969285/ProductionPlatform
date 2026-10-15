@@ -53,7 +53,7 @@ watch(() => props.projectId, load)
 </script>
 
 <template>
-  <div v-loading="loading">
+  <div v-loading="loading" v-reveal>
     <h3 class="lane-title">任务</h3>
     <div class="kanban">
       <div v-for="col in taskColumns" :key="'t' + col.status" class="col"

@@ -333,13 +333,13 @@ onMounted(load)
       </div>
     </template>
 
-    <section v-if="loadError" class="load-error" role="alert">
+    <section v-if="loadError" v-reveal class="load-error" role="alert">
       <span class="error-mark" aria-hidden="true">!</span>
       <div><h2>报表数据暂不可用</h2><p>本次统计没有完整加载，因此不展示可能误导的零值。请检查服务状态后重试。</p></div>
       <el-button @click="load">重新加载</el-button>
     </section>
 
-    <div v-else v-loading="loading" class="reports">
+    <div v-else v-loading="loading" v-reveal="{ blocks: '.reports > section', rows: '.metric-card, .bar-row, .el-table__row', bars: '.bar-fill', scroll: true }" class="reports">
       <section class="card hero-card span-full">
         <div>
           <p class="eyebrow">实际数据看板</p>

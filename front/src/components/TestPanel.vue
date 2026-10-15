@@ -183,7 +183,7 @@ watch(() => props.projectId, () => { loadCases(); if (sub.value === 'plans') loa
 </script>
 
 <template>
-  <div>
+  <div v-reveal>
     <el-tabs v-model="sub" @tab-change="onSubChange">
       <!-- 用例库 -->
       <el-tab-pane label="用例库" name="cases">

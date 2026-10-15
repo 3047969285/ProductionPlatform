@@ -112,7 +112,7 @@ watch(() => props.projectId, () => { load(); loadSprints() })
 </script>
 
 <template>
-  <div>
+  <div v-reveal>
     <div class="toolbar">
       <el-button type="primary" @click="openAdd">+ 登记缺陷</el-button>
       <el-input v-model="keyword" clearable placeholder="搜索缺陷、处理人或版本" class="search" />

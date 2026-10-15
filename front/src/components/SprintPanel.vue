@@ -92,7 +92,7 @@ watch(() => props.projectId, load)
 </script>
 
 <template>
-  <div>
+  <div v-reveal>
     <div class="toolbar">
       <el-button type="primary" @click="openAdd">+ 新建迭代</el-button>
     </div>

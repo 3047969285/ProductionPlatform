@@ -1,11 +1,11 @@
 <template>
   <PageShell tag="05 / USERS" title="用户">
     <template #action><el-button type="primary" :disabled="saving" @click="openForm()">+ 新增</el-button></template>
-    <div v-if="loadError" class="list-error" role="alert">
+    <div v-if="loadError" v-reveal class="list-error" role="alert">
       <span>暂时无法读取用户列表</span>
       <el-button link @click="load">重新加载</el-button>
     </div>
-    <div v-else v-loading="loading" class="table-frame">
+    <div v-else v-loading="loading" v-reveal class="table-frame">
       <table class="users-table" aria-label="用户列表">
         <colgroup>
           <col class="username-column" />

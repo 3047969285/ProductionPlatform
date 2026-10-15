@@ -104,7 +104,7 @@ watch(() => props.projectId, () => { load(); loadUsers() })
 </script>
 
 <template>
-  <div>
+  <div v-reveal>
     <div class="toolbar">
       <el-button type="primary" :disabled="loading || listError || saving" @click="openAdd">+ 添加成员</el-button>
     </div>

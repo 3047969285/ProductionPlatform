@@ -274,7 +274,7 @@ onMounted(() => {
 
       <div class="project-body">
       <!-- 当前阶段的工作台导航 -->
-      <aside class="side-nav">
+      <aside v-reveal="{ blocks: '.phase-menu-head, .phase-hint', rows: '.nav-item' }" class="side-nav">
         <div class="phase-menu-head">
           <span class="phase-number">{{ String(stageDefinitions.findIndex((stage) => stage.key === activeStageKey) + 1).padStart(2, '0') }}</span>
           <div><strong>{{ activeStage.label }}</strong><small>ACTIVE</small></div>
@@ -527,9 +527,10 @@ onMounted(() => {
 .clickable-table :deep(.el-table__row) { cursor: pointer; }
 :deep(.el-tabs__item) { font-size: 16px; }
 :deep(.el-tabs__nav-wrap::after) { background: var(--border); }
-.stage-panel-enter-active, .stage-panel-leave-active { transition: opacity .28s var(--ease), transform .28s var(--ease); }
-.stage-panel-enter-from { opacity: 0; transform: translateY(10px); }
-.stage-panel-leave-to { opacity: 0; transform: translateY(-5px); }
+.stage-panel-enter-active { transition: opacity .34s var(--ease), transform .34s var(--ease); }
+.stage-panel-leave-active { transition: opacity .2s var(--ease), transform .2s var(--ease); }
+.stage-panel-enter-from { opacity: 0; transform: translateY(12px) scale(.995); }
+.stage-panel-leave-to { opacity: 0; transform: translateY(-6px); }
 @media (max-width: 980px) {
   .table-frame { overflow-x: auto; }
   .table-frame :deep(.test-items-table) { min-width: 872px !important; }

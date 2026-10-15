@@ -111,7 +111,7 @@ watch(() => props.projectId, () => { load(); loadSprints() })
 </script>
 
 <template>
-  <div>
+  <div v-reveal>
     <div class="toolbar">
       <el-button type="primary" @click="openAdd">+ 新增任务</el-button>
       <el-input v-model="keyword" clearable placeholder="搜索任务、负责人或迭代" class="search" />
