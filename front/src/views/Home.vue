@@ -4,7 +4,7 @@
     <section class="hero">
       <p class="tag"><i />00 / DELIVERY</p>
       <h1>交付总览</h1>
-      <p class="desc">项目交付与协作数据实时汇总</p>
+      <p class="desc">项目交付五阶段，实时汇总</p>
     </section>
     <section v-if="!loading && !loadError" class="grid">
       <RouterLink v-for="c in cards" :key="c.label" :to="c.to" class="card" :aria-label="`${c.label} ${c.value}，${c.action}`">
@@ -63,10 +63,19 @@ const root = ref(null)
 const loading = ref(true)
 const loadError = ref(false)
 const data = ref(null)
+const taskStats = ref(null)
 const recentReqs = computed(() => data.value?.recentRequirements || [])
 let animationContext
 let mediaQuery
 let contentContext
+
+const taskTotal = computed(() => {
+  if (!taskStats.value) return '—'
+  return Object.values(taskStats.value).reduce((total, count) => {
+    const value = Number(count)
+    return total + (Number.isFinite(value) ? value : 0)
+  }, 0)
+})
 
 const cards = computed(() => {
   const d = data.value
@@ -74,10 +83,9 @@ const cards = computed(() => {
   return [
     { label: '项目', value: d.projects ?? 0, color: '#fff', to: '/projects', action: '查看项目' },
     { label: '需求总数', value: d.requirements?.total ?? 0, color: 'var(--cyan)', to: '/reports', action: '看需求统计' },
-    { label: '接口文档', value: d.apis ?? 0, color: 'var(--purple)', to: { path: '/projects', query: { tab: 'api' } }, action: '选项目后打开接口' },
+    { label: '开发任务', value: taskTotal.value, color: 'var(--purple)', to: { path: '/projects', query: { tab: 'task' } }, action: '选项目后打开开发任务' },
     { label: '执行中验证任务', value: d.tests?.running ?? 0, color: 'var(--cyan)', to: { path: '/projects', query: { tab: 'test-items' } }, action: '选项目后打开验证任务' },
     { label: '待处理运维问题', value: d.ops?.open ?? 0, color: 'var(--pink)', to: { path: '/projects', query: { tab: 'ops' } }, action: '选项目后打开运维问题' },
-    { label: '活跃团队', value: d.teams?.active ?? 0, color: 'var(--lime)', to: '/teams', action: '看协作团队' },
   ]
 })
 
@@ -168,7 +176,16 @@ async function loadDashboard() {
   contentContext = null
   loading.value = true
   loadError.value = false
-  try { data.value = (await api.get('/dashboard')).data }
+  taskStats.value = null
+  try {
+    const [dashboard, workStatus] = await Promise.all([
+      api.get('/dashboard'),
+      api.get('/reports/status').catch(() => null),
+    ])
+    data.value = dashboard.data
+    const taskCounts = workStatus?.data?.task
+    taskStats.value = taskCounts && typeof taskCounts === 'object' && !Array.isArray(taskCounts) ? taskCounts : null
+  }
   catch { loadError.value = true }
   finally { loading.value = false }
 }
@@ -197,7 +214,7 @@ onUnmounted(() => {
 .tag i { width: 25px; height: 1px; background: var(--muted); }
 h1 { font-family: var(--font-display); font-size: clamp(3rem, 6vw, 6rem); font-weight: 400; letter-spacing: -.09em; line-height: .92; margin-bottom: 18px; }
 .desc { color: var(--muted-light); font-size: 9px; letter-spacing: .14em; }
-.grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 0; margin-bottom: clamp(48px, 10vh, 100px); border-top: 1px solid rgba(239,239,235,.24); border-bottom: 1px solid rgba(239,239,235,.15); background: transparent; }
+.grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0; margin-bottom: clamp(48px, 10vh, 100px); border-top: 1px solid rgba(239,239,235,.24); border-bottom: 1px solid rgba(239,239,235,.15); background: transparent; }
 .card { position: relative; min-width: 0; min-height: 142px; padding: 22px 18px 36px 0; color: inherit; background: transparent; border-right: 1px solid rgba(239,239,235,.12); cursor: pointer; text-decoration: none; will-change: transform, opacity; transition: transform .45s var(--ease), background .35s var(--ease); }
 .card:focus-visible { outline: 1px solid rgba(239,239,235,.72); outline-offset: -1px; }
 .card + .card { padding-left: 18px; }
