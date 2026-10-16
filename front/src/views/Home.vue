@@ -23,12 +23,25 @@
     </section>
 
     <section v-if="!loading && !loadError && recentReqs.length" class="recent">
-      <div class="recent-head"><h2>最近</h2><RouterLink to="/projects">查看全部 <span class="wb-arrow" aria-hidden="true">↗</span></RouterLink></div>
+      <div class="recent-head">
+        <div><p class="recent-kicker">LIVE / REQUIREMENTS</p><h2>最近更新的需求</h2></div>
+        <RouterLink to="/reports">交付看板 <span class="wb-arrow" aria-hidden="true">↗</span></RouterLink>
+      </div>
       <ul class="list">
         <li v-for="r in recentReqs" :key="r.id">
-          <span class="no">{{ r.reqNo }}</span>
-          <span class="name">{{ r.title }}</span>
-          <span class="badge" :class="badgeClass('req', r.status)">{{ reqStatus[r.status] }}</span>
+          <RouterLink
+            class="recent-row"
+            :to="requirementTarget(r)"
+            :aria-label="`打开${r.projectName || '项目'}中的需求 ${r.reqNo || ''}：${r.title || '未命名需求'}`"
+          >
+            <span class="no">{{ r.reqNo || '需求' }}</span>
+            <span class="recent-copy">
+              <strong>{{ r.title || '未命名需求' }}</strong>
+              <small>{{ r.projectName || '所属项目' }}<template v-if="recentDate(r)"> · {{ recentDate(r) }}</template></small>
+            </span>
+            <span class="badge" :class="badgeClass('req', r.status)">{{ reqStatus[r.status] || r.status || '待确认' }}</span>
+            <span class="recent-open" aria-hidden="true">打开 <i>↗</i></span>
+          </RouterLink>
         </li>
       </ul>
     </section>
@@ -66,6 +79,17 @@ const cards = computed(() => {
     { label: '活跃团队', value: d.teams?.active ?? 0, color: 'var(--lime)', to: '/teams' },
   ]
 })
+
+function requirementTarget(requirement) {
+  const projectId = Number(requirement?.projectId)
+  if (!Number.isSafeInteger(projectId) || projectId < 1) return '/projects'
+  return { path: `/projects/${projectId}`, query: { tab: 'req' } }
+}
+
+function recentDate(requirement) {
+  const value = requirement?.updatedAt || requirement?.createdAt
+  return value ? String(value).replace('T', ' ').slice(0, 16) : ''
+}
 
 function setupAnimations() {
   if (!root.value) return
@@ -119,7 +143,16 @@ async function animateDashboardContent() {
     if (recentEl && !reducedMotion) {
       gsap.timeline({
         scrollTrigger: { trigger: recentEl, start: 'top 86%', once: true },
-      }).from(recentEl, { autoAlpha: 0, y: 26, duration: 0.7, ease: 'power3.out' })
+      })
+        .from(recentEl.querySelector('.recent-head'), { autoAlpha: 0, y: 12, duration: 0.42, ease: 'power3.out' })
+        .from(recentEl.querySelectorAll('.recent-row'), {
+          autoAlpha: 0,
+          y: 12,
+          duration: 0.42,
+          stagger: 0.055,
+          ease: 'power3.out',
+          clearProps: 'all',
+        }, '-=0.18')
       ScrollTrigger.refresh()
     }
   }, root.value)
@@ -175,15 +208,24 @@ h1 { font-family: var(--font-display); font-size: clamp(3rem, 6vw, 6rem); font-w
 .card:hover .num { transform: translateY(-3px); letter-spacing: -.04em; }
 .card:hover .label { color: var(--text); letter-spacing: .16em; }
 .recent { max-width: 1000px; margin-bottom: 32px; }
-.recent-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 18px; }
+.recent-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; margin-bottom: 18px; }
+.recent-kicker { margin-bottom: 6px; color: var(--muted); font-size: 8px; letter-spacing: .16em; }
 .recent-head h2 { font-family: var(--font-display); font-size: clamp(1.5rem, 2.8vw, 2.2rem); font-weight: 400; letter-spacing: -.04em; }
 .recent-head a { display: inline-block; color: var(--muted); text-decoration: none; font-size: 9px; letter-spacing: .12em; transition: color .25s ease, transform .35s var(--ease); }
 .recent-head a:hover { color: var(--text); transform: translateX(4px); }
 .list { overflow: hidden; border-top: 1px solid rgba(239,239,235,.18); background: transparent; }
-.list li { display: grid; grid-template-columns: minmax(120px, .65fr) minmax(180px, 1.7fr) auto; gap: 18px; align-items: center; padding: 14px 0; border-bottom: 1px solid rgba(239,239,235,.12); font-size: 11px; transition: background .3s var(--ease), box-shadow .3s var(--ease), border-color .3s var(--ease); }
-.list li:hover { background: rgba(255,255,255,.028); box-shadow: inset 2px 0 0 rgba(239,239,235,.5); border-bottom-color: rgba(239,239,235,.28); }
+.list li { border-bottom: 1px solid rgba(239,239,235,.12); }
+.recent-row { display: grid; grid-template-columns: minmax(110px, .55fr) minmax(0, 1.6fr) auto 72px; gap: 18px; align-items: center; min-height: 68px; padding: 11px 10px; margin: 0 -10px; color: inherit; font-size: 11px; text-decoration: none; transition: background .3s var(--ease), transform .35s var(--ease), box-shadow .3s var(--ease); }
+.recent-row:hover { background: rgba(255,255,255,.028); box-shadow: inset 2px 0 0 rgba(239,239,235,.5); transform: translateX(4px); }
+.recent-row:focus-visible { outline: 1px solid rgba(239,239,235,.72); outline-offset: -1px; }
+.recent-copy { display: block; min-width: 0; }
+.recent-copy strong { display: block; overflow: hidden; color: var(--text); font-weight: 500; text-overflow: ellipsis; white-space: nowrap; }
+.recent-copy small { display: block; margin-top: 4px; overflow: hidden; color: var(--muted); font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
+.recent-open { display: flex; justify-content: flex-end; gap: 8px; color: var(--muted); font-size: 9px; letter-spacing: .08em; transition: color .25s ease; }
+.recent-open i { color: var(--muted-light); font-size: 12px; font-style: normal; transition: transform .3s var(--ease); }
+.recent-row:hover .recent-open { color: var(--text); }
+.recent-row:hover .recent-open i { transform: translate(2px, -2px); }
 .no { color: var(--muted-light); font-size: 8px; letter-spacing: .14em; }
-.name { color: var(--text); }
 .status-panel { display: flex; min-height: 150px; align-items: center; gap: 18px; padding: 26px 0; border-top: 1px solid rgba(239,239,235,.18); border-bottom: 1px solid rgba(239,239,235,.12); color: var(--muted-light); }
 .status-mark { display: grid; width: 42px; height: 42px; flex: 0 0 auto; place-items: center; border: 1px solid rgba(239,239,235,.25); border-radius: 50%; color: var(--text); font-family: var(--font-display); font-size: 18px; }
 .status-panel h2 { margin: 0 0 8px; color: var(--text); font-size: 15px; font-weight: 500; }
@@ -198,8 +240,11 @@ h1 { font-family: var(--font-display); font-size: clamp(3rem, 6vw, 6rem); font-w
   .card:nth-child(n+4) { border-top: 1px solid rgba(239,239,235,.12); }
   .card:nth-child(3), .card:nth-child(5) { padding-left: 0; }
   .card:nth-child(even) { padding-left: 18px; border-right: 0; }
-  .list li { grid-template-columns: 1fr auto; }
-  .list .no { display: none; }
+  .recent-head { align-items: flex-start; }
+  .recent-row { grid-template-columns: minmax(0, 1fr) auto 16px; gap: 10px; padding-inline: 8px; }
+  .recent-row .no { display: none; }
+  .recent-open { font-size: 0; }
+  .recent-open i { font-size: 14px; }
   .status-panel { align-items: flex-start; flex-wrap: wrap; }
   .retry-button { margin-left: 60px; }
 }
