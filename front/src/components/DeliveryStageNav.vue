@@ -23,6 +23,19 @@ function selectStage(stage) {
   emit('change', stage.key)
 }
 
+function handleStageKey(event, index) {
+  let nextIndex
+  if (event.key === 'ArrowRight') nextIndex = Math.min(index + 1, props.stages.length - 1)
+  else if (event.key === 'ArrowLeft') nextIndex = Math.max(index - 1, 0)
+  else if (event.key === 'Home') nextIndex = 0
+  else if (event.key === 'End') nextIndex = props.stages.length - 1
+  else return
+
+  event.preventDefault()
+  root.value?.querySelectorAll('.stage')[nextIndex]?.focus()
+  selectStage(props.stages[nextIndex])
+}
+
 async function animateProgress() {
   await nextTick()
   const fill = root.value?.querySelector('.stage-progress-fill')
@@ -81,16 +94,19 @@ onUnmounted(() => {
       </div>
     </div>
 
-    <div class="stage-rail" role="group" aria-label="选择交付阶段">
+    <div class="stage-rail" role="group" aria-label="交付阶段导航，选择阶段查看对应工作台">
       <div class="stage-progress" aria-hidden="true"><span class="stage-progress-fill" /></div>
       <button
         v-for="(stage, index) in stages"
         :key="stage.key"
         type="button"
         class="stage"
-        :class="{ 'is-active': stage.key === modelValue, 'is-complete': index < activeIndex }"
+        :class="{ 'is-active': stage.key === modelValue }"
+        :tabindex="stage.key === modelValue ? 0 : -1"
+        :aria-current="stage.key === modelValue ? 'step' : undefined"
         :aria-pressed="stage.key === modelValue"
         @click="selectStage(stage)"
+        @keydown="handleStageKey($event, index)"
       >
         <span class="stage-dot">{{ index + 1 }}</span>
         <span class="stage-text"><strong>{{ stage.label }}</strong><small>{{ stage.short }}</small></span>
@@ -125,7 +141,6 @@ h2 { font-family: var(--font-display); font-size: clamp(1.45rem, 2vw, 2rem); fon
 .stage:hover .stage-dot { border-color: var(--accent); color: var(--accent); transform: translateY(-1px); }
 .stage.is-active .stage-dot { border-color: var(--accent); background: var(--accent); color: #11140f; box-shadow: 0 0 0 6px rgba(239, 239, 235, .1); }
 .stage.is-active .stage-text strong { color: var(--accent); }
-.stage.is-complete .stage-dot { border-color: var(--accent); color: var(--accent); background: rgba(239, 239, 235, .08); }
 @media (max-width: 700px) {
   .stage-nav { padding: 16px 12px 14px; }
   .stage-heading { margin-bottom: 18px; }
