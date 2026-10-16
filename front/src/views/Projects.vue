@@ -275,7 +275,6 @@ onUnmounted(() => {
         <el-button link @click="load">重新加载</el-button>
       </div>
       <div v-if="!loadError && filteredList.length" class="gallery-stage" tabindex="0" aria-label="项目画廊，使用左右方向键切换，按回车打开当前项目" :aria-busy="openingProject || deletingProjectId !== null" @keydown="handleGalleryKey">
-        <span class="stage-note">PROJECTS / {{ String(filteredList.length).padStart(2, '0') }}</span>
         <article
           v-for="(p, index) in filteredList"
           :key="p.id"
@@ -288,14 +287,14 @@ onUnmounted(() => {
           @click="activateCard(index, p.id)"
         >
           <div class="project-cover" :class="'cover-' + (index % 4)">
-            <div class="cover-topline"><span>{{ p.code }}</span><span>{{ p.deliveryType || 'DELIVERY' }}</span></div>
+            <div class="cover-topline"><span>{{ p.code }}</span><span>{{ p.deliveryType || '' }}</span></div>
             <div class="cover-art" aria-hidden="true"><i /><i /><i /></div>
             <button type="button" class="cover-title" :disabled="deletingProjectId !== null" @click.stop="activateCard(index, p.id)">{{ p.name }}</button>
-            <div class="cover-bottom"><span>{{ p.techStack || 'PRODUCT DEVELOPMENT' }}</span><span>{{ String(index + 1).padStart(2, '0') }}</span></div>
+            <div class="cover-bottom"><span>{{ p.techStack || '' }}</span></div>
           </div>
           <div class="project-info">
             <div class="project-heading">
-              <div><span class="project-code">{{ p.code }}</span><span class="project-hint">{{ deliveryHint(p) }}</span></div>
+              <div><span class="project-hint">{{ deliveryHint(p) }}</span></div>
               <div v-if="index === activeIndex" class="card-actions" @click.stop>
                 <button type="button" aria-label="编辑项目" :disabled="deletingProjectId !== null" @click="openEdit(p)">编辑</button>
                 <button type="button" aria-label="删除项目" :disabled="deletingProjectId !== null" @click="remove(p.id)">{{ deletingProjectId === p.id ? '处理中…' : '删除' }}</button>
@@ -319,7 +318,6 @@ onUnmounted(() => {
           <button type="button" aria-label="上一个项目" :disabled="deletingProjectId !== null" @click="moveTo(activeIndex - 1)">←</button>
           <button type="button" aria-label="下一个项目" :disabled="deletingProjectId !== null" @click="moveTo(activeIndex + 1)">→</button>
         </div>
-        <span class="gallery-hint">{{ destinationTab ? `选择项目后进入${destinationTab}` : '选择项目以打开交付驾驶舱' }}</span>
       </div>
     </div>
 
@@ -387,7 +385,7 @@ onUnmounted(() => {
 .project-info { display: flex; min-height: 42%; flex-direction: column; padding: 14px 20px 13px; }
 .project-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .project-code { color: var(--muted); font-size: 11px; letter-spacing: .13em; }
-.project-hint { margin-left: 10px; color: var(--muted-light); font-size: 11px; }
+.project-hint { margin-left: 0; color: var(--muted-light); font-size: 11px; }
 .card-actions { display: flex; gap: 8px; }
 .card-actions button { padding: 5px 8px; border: 1px solid rgba(239,239,235,.18); border-radius: 5px; color: var(--muted); background: transparent; cursor: pointer; font-size: 11px; }
 .card-actions button:hover { border-color: rgba(239,239,235,.65); color: var(--text); }

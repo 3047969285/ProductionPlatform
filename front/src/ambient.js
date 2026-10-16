@@ -218,54 +218,9 @@ export function startAmbient() {
     gsap.ticker.remove(tick)
     lenis.destroy()
   })
-  disposers.push(startEnterMotion())
-
   return () => disposers.splice(0).forEach((dispose) => dispose())
 }
 
-/* ── 内容区进场：任何卡片 / 区块进入视口都带模糊 + 遮罩展开入场 ──────────
-   只用 transform / opacity（GPU 合成，不触发重排，比 blur 丝滑）；已被 v-reveal 接管的元素会跳过，避免两套动画打架。 */
-const ENTER_SELECTOR = [
-  '.metric-card', '.stat-card', '.card', '.cockpit-section', '.cockpit-hero', '.hero-card',
-  '.timeline-item', '.report-card', '.table-frame', '.kanban', '.load-error',
-].join(',')
-
-function startEnterMotion() {
-  if (typeof IntersectionObserver === 'undefined') return () => {}
-  const seen = new WeakSet()
-  const from = { autoAlpha: 0, y: 28, scale: 0.985 }
-  const to = { autoAlpha: 1, y: 0, scale: 1, duration: 0.8, stagger: 0.06, ease: 'expo.out', clearProps: 'opacity,visibility,transform' }
-
-  const io = new IntersectionObserver((entries) => {
-    const batch = entries.filter((entry) => entry.isIntersecting).map((entry) => entry.target)
-    if (!batch.length) return
-    batch.forEach((el) => io.unobserve(el))
-    gsap.fromTo(batch, from, to)
-  }, { threshold: 0.06 })
-
-  let frame = 0
-  function scan() {
-    frame = 0
-    document.querySelectorAll(ENTER_SELECTOR).forEach((el) => {
-      if (seen.has(el)) return
-      seen.add(el)
-      if (el.closest('[data-reveal-owned]') || getComputedStyle(el).opacity !== '1') return
-      const rect = el.getBoundingClientRect()
-      // 已经在首屏里的先藏起来，避免内容闪一下再播入场
-      if (rect.top < window.innerHeight && rect.bottom > 0) gsap.set(el, from)
-      io.observe(el)
-    })
-  }
-  const mo = new MutationObserver(() => { if (!frame) frame = requestAnimationFrame(scan) })
-  mo.observe(document.body, { childList: true, subtree: true })
-  scan()
-
-  return () => {
-    mo.disconnect()
-    io.disconnect()
-    if (frame) cancelAnimationFrame(frame)
-  }
-}
 // 页面标题逐字入场：每个字从遮罩下方翻起，之后随滚动轻微视差上移。
 export function splitTitle(el) {
   if (!el || el.dataset.split === '1') return []

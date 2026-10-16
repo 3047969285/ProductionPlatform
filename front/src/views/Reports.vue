@@ -361,17 +361,6 @@ onMounted(load)
       v-reveal="{ blocks: '.reports > section', rows: '.metric-card, .bar-row, .el-table__row', bars: '.bar-fill', scroll: true }"
       class="reports"
     >
-      <section class="card hero-card span-full">
-        <div>
-          <p class="eyebrow">实际数据看板</p>
-          <p class="hero-copy">{{ boardDescription }}</p>
-        </div>
-        <div class="hero-signal">
-          <strong v-count="isAllProjects ? globalProjectRows.reduce((total, row) => total + row.total, 0) : (projectData?.requirements?.length || 0) + (projectData?.tasks?.length || 0) + (projectData?.bugs?.length || 0)">{{ isAllProjects ? globalProjectRows.reduce((total, row) => total + row.total, 0) : (projectData?.requirements?.length || 0) + (projectData?.tasks?.length || 0) + (projectData?.bugs?.length || 0) }}</strong>
-          <span>实际工作项</span>
-        </div>
-      </section>
-
       <section class="metric-grid span-full">
         <article v-for="metric in metrics" :key="metric.label" class="metric-card">
           <span class="metric-value" v-count="metric.value">{{ metric.value }}</span>
@@ -383,8 +372,7 @@ onMounted(load)
       <template v-if="isAllProjects">
         <section class="card span-2">
           <div class="section-head">
-            <div><p class="eyebrow">全项目 · 状态</p><h3>交付脉搏</h3></div>
-            <span class="section-note">来自实际状态记录</span>
+            <div><h3>交付脉搏</h3></div>
           </div>
           <div class="status-grid">
             <div v-for="block in statusBlocks" :key="block.key" class="status-block">
@@ -402,8 +390,7 @@ onMounted(load)
 
         <section class="card">
           <div class="section-head">
-            <div><p class="eyebrow">全项目 · 风险</p><h3>缺陷压力</h3></div>
-            <span class="section-note">按实际严重程度</span>
+            <div><h3>缺陷压力</h3></div>
           </div>
           <div class="bars">
             <div v-for="row in globalRiskRows" :key="row.severity" class="bar-row">
@@ -417,8 +404,7 @@ onMounted(load)
 
         <section class="card span-full">
           <div class="section-head">
-            <div><p class="eyebrow">项目实际内容</p><h3>项目推进</h3></div>
-            <span class="section-note">按项目名称查看真实工作量</span>
+            <div><h3>项目推进</h3></div>
           </div>
           <div class="table-frame">
             <el-table :data="globalProjectRows" size="small" stripe>
@@ -452,8 +438,7 @@ onMounted(load)
 
         <section class="card">
           <div class="section-head">
-            <div><p class="eyebrow">全项目 · 迭代</p><h3>迭代工作量</h3></div>
-            <span class="section-note">最近 6 个 · 任务 + 缺陷</span>
+            <div><h3>迭代工作量</h3></div>
           </div>
           <div v-if="globalSprintRows.length" class="sprint-load-list">
             <div v-for="row in globalSprintRows" :key="row.sprintId" class="sprint-load-row">
@@ -473,7 +458,7 @@ onMounted(load)
 
         <section class="card span-2">
           <div class="section-head">
-            <div><p class="eyebrow">全项目 · 时间</p><h3>近 30 天新增内容</h3></div>
+            <div><h3>近 30 天新增内容</h3></div>
             <div class="trend-legend" aria-label="图例">
               <span><i class="trend-legend-dot trend-legend-dot--requirement" />需求</span>
               <span><i class="trend-legend-dot trend-legend-dot--bug" />缺陷</span>
@@ -496,8 +481,7 @@ onMounted(load)
 
         <section class="card">
           <div class="section-head">
-            <div><p class="eyebrow">全项目 · 协作</p><h3>成员工作量</h3></div>
-            <span class="section-note">任务 + 缺陷</span>
+            <div><h3>成员工作量</h3></div>
           </div>
           <div class="bars">
             <div v-for="row in globalData.assignee.slice(0, 7)" :key="row.assignee" class="bar-row">
@@ -513,8 +497,7 @@ onMounted(load)
       <template v-else>
         <section class="card span-2">
           <div class="section-head">
-            <div><p class="eyebrow">{{ projectName }} · 状态</p><h3>交付脉搏</h3></div>
-            <span class="section-note">需求 / 开发 / 缺陷</span>
+            <div><h3>交付脉搏</h3></div>
           </div>
           <div class="status-grid">
             <div v-for="block in statusBlocks" :key="block.key" class="status-block">
@@ -532,8 +515,7 @@ onMounted(load)
 
         <section class="card">
           <div class="section-head">
-            <div><p class="eyebrow">{{ projectName }} · 节奏</p><h3>当前迭代</h3></div>
-            <span class="section-note">真实迭代记录</span>
+            <div><h3>当前迭代</h3></div>
           </div>
           <div v-if="selectedSprint" class="focus-block">
             <div class="focus-title"><strong>{{ selectedSprint.name }}</strong><span class="badge" :class="badgeClass('sprint', selectedSprint.status)">{{ sprintStatus[selectedSprint.status] }}</span></div>
@@ -546,8 +528,7 @@ onMounted(load)
 
         <section class="card span-full">
           <div class="section-head">
-            <div><p class="eyebrow">{{ projectName }} · 工作项</p><h3>最近实际内容</h3></div>
-            <span class="section-note">按最近更新排序</span>
+            <div><h3>最近实际内容</h3></div>
           </div>
           <ul v-if="projectActivity.length" class="activity-list">
             <li v-for="item in projectActivity" :key="item.id">
@@ -570,8 +551,7 @@ onMounted(load)
 
         <section class="card">
           <div class="section-head">
-            <div><p class="eyebrow">{{ projectName }} · 质量</p><h3>风险缺陷</h3></div>
-            <span class="section-note">只显示未关闭项</span>
+            <div><h3>风险缺陷</h3></div>
           </div>
           <ul v-if="projectRisks.length" class="risk-list">
             <li v-for="bug in projectRisks" :key="bug.id">
@@ -593,8 +573,7 @@ onMounted(load)
 
         <section class="card">
           <div class="section-head">
-            <div><p class="eyebrow">{{ projectName }} · 交付</p><h3>测试与发布</h3></div>
-            <span class="section-note">真实节点状态</span>
+            <div><h3>测试与发布</h3></div>
           </div>
           <div class="delivery-list">
             <div class="delivery-row"><span>测试计划</span><strong>{{ selectedPlan?.name || '暂无计划' }}</strong><em v-if="selectedPlan">{{ testPlanStatus[selectedPlan.status] || selectedPlan.status }}</em></div>
@@ -605,7 +584,7 @@ onMounted(load)
 
         <section class="card span-full">
           <div class="section-head">
-            <div><p class="eyebrow">{{ projectName }} · 协作</p><h3>成员工作量</h3></div>
+            <div><h3>成员工作量</h3></div>
             <span class="section-note">项目成员 {{ projectData?.members?.length || 0 }} 人</span>
           </div>
           <div v-if="memberLoad.length" class="member-grid">

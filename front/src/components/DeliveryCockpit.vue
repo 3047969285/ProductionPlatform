@@ -331,7 +331,6 @@ onUnmounted(() => {
     <section class="cockpit-hero">
       <div>
         <h2>交付驾驶舱</h2>
-        <p class="hero-copy">状态 / 下一步</p>
       </div>
       <div class="health" :class="health.tone">
         <span class="health-dot" />
@@ -372,7 +371,7 @@ onUnmounted(() => {
           <button v-for="item in nextActions" :key="item.key" class="next-item" :class="[item.tone, { 'is-featured': item.featured }]" type="button" @click="activateAction(item)">
             <span class="next-marker" />
             <span class="next-copy">
-              <small v-if="item.stage" class="next-stage">{{ item.stage }} · 建议下一步</small>
+              <small v-if="item.stage" class="next-stage">{{ item.stage }}</small>
               <strong>{{ item.title }}</strong>
               <small>{{ item.description }}</small>
             </span>
