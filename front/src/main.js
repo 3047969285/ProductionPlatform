@@ -1,3 +1,7 @@
+import { installMotionPreference } from './motionPreference'
+// 必须在任何动效模块读取 matchMedia 之前执行
+installMotionPreference()
+
 import { createApp } from 'vue'
 import { provideGlobalConfig } from 'element-plus'
 import zhCn from 'element-plus/es/locale/lang/zh-cn.mjs'

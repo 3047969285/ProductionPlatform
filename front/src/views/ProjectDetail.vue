@@ -546,7 +546,7 @@ onMounted(() => {
 .nav-item.active { background: rgba(239, 239, 235, .08); border-left-color: var(--accent); color: var(--accent); font-weight: 600; }
 .nav-icon { width: 20px; text-align: center; }
 .nav-arrow { margin-left: auto; font-size: 16px; }
-.phase-hint { padding: 12px 8px 2px; color: var(--muted-light); font-size: 10px; letter-spacing: .08em; }
+.phase-hint { padding: 12px 8px 2px; color: var(--muted-light); font-size: 11px; letter-spacing: .08em; }
 .content { min-width: 0; background: var(--glass); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 18px; box-shadow: var(--shadow-sm); }
 .tab-toolbar { margin-bottom: 12px; }
 .test-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; }

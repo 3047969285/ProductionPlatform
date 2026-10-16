@@ -5,6 +5,8 @@ import { gsap } from 'gsap'
 import { clearAuth, getUser } from '../auth'
 import api, { connection } from '../api'
 import CommandPalette from './CommandPalette.vue'
+import { startAmbient } from '../ambient'
+import { motionOff, setMotionOff } from '../motionPreference'
 
 const route = useRoute()
 const router = useRouter()
@@ -138,8 +140,18 @@ watch(() => route.path, async () => {
   syncNavRail()
 })
 
+let stopAmbient
+
+// 开关写入偏好后整页重载，让所有动效模块按新状态重新初始化
+const motionIsOff = motionOff()
+function toggleMotion() {
+  setMotionOff(!motionIsOff)
+  window.location.reload()
+}
+
 onMounted(() => {
   window.addEventListener('keydown', onGlobalKey)
+  stopAmbient = startAmbient()
   if (!root.value) return
   syncNavRail()
   // 字体载入 / 视口变化都会改变导航项宽度，轨要跟着重算。
@@ -174,6 +186,7 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
+  stopAmbient?.()
   window.removeEventListener('keydown', onGlobalKey)
   window.removeEventListener('resize', syncNavRail)
   if (navRailFrame) cancelAnimationFrame(navRailFrame)
@@ -202,6 +215,9 @@ onUnmounted(() => {
         <button class="nav-search wb-press" type="button" aria-label="打开全局命令面板" @click="openPalette">
           <span class="nav-search-key" aria-hidden="true">⌘K</span>
           <span class="nav-search-text">搜索</span>
+        </button>
+        <button class="motion-toggle" type="button" :aria-pressed="!motionIsOff" :title="motionIsOff ? '动效已关闭，点击开启' : '动效已开启，点击关闭'" @click="toggleMotion">
+          <span aria-hidden="true">{{ motionIsOff ? '静' : '动' }}</span>
         </button>
         <button
           class="conn"
@@ -246,7 +262,7 @@ onUnmounted(() => {
 .route-transition__rings::after { inset: 25px; border-color: rgba(239, 239, 235, .11); transform: rotate(-31deg); }
 .route-transition__rings i:first-child { inset: 21%; border-color: rgba(239, 239, 235, .28); transform: rotate(42deg); }
 .route-transition__rings i:last-child { inset: 35%; border-color: rgba(239, 239, 235, .13); transform: rotate(-18deg); }
-.route-transition__label { position: absolute; right: clamp(22px, 5.2vw, 84px); bottom: clamp(28px, 7vh, 64px); display: flex; align-items: baseline; gap: 12px; color: rgba(239, 239, 235, .58); font-size: 8px; letter-spacing: .16em; }
+.route-transition__label { position: absolute; right: clamp(22px, 5.2vw, 84px); bottom: clamp(28px, 7vh, 64px); display: flex; align-items: baseline; gap: 12px; color: rgba(239, 239, 235, .58); font-size: 11px; letter-spacing: .16em; }
 .route-transition__label strong { color: var(--text); font-size: 11px; font-weight: 500; letter-spacing: .08em; }
 .nav {
   position: fixed; inset: 0 0 auto; z-index: 100;
@@ -254,6 +270,13 @@ onUnmounted(() => {
   align-items: center; gap: 20px;
   padding: 0 clamp(22px, 5.2vw, 84px);
   pointer-events: none;
+}
+/* 滚动时页面标题会从固定导航下面穿过，给导航垫一层渐隐底色避免文字重叠 */
+.nav::before {
+  position: absolute; inset: 0 0 -14px; z-index: -1; content: ""; pointer-events: none;
+  background: linear-gradient(to bottom, rgba(8, 8, 8, .94) 62%, rgba(8, 8, 8, 0));
+  -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+  -webkit-mask-image: linear-gradient(to bottom, #000 70%, transparent); mask-image: linear-gradient(to bottom, #000 70%, transparent);
 }
 .brand {
   display: inline-flex; align-items: center; gap: 10px; flex: 0 0 auto;
@@ -266,7 +289,7 @@ onUnmounted(() => {
 }
 .brand-copy { display: flex; flex-direction: column; gap: 1px; line-height: 1; }
 .brand-copy strong { font-size: 11px; letter-spacing: .2em; }
-.brand-copy small { color: var(--muted-light); font-size: 7px; letter-spacing: .15em; }
+.brand-copy small { color: var(--muted-light); font-size: 11px; letter-spacing: .15em; }
 .nav-list {
   position: relative; justify-self: center; min-width: 0;
   display: flex; align-items: center; gap: clamp(15px, 2.1vw, 30px);
@@ -283,7 +306,7 @@ onUnmounted(() => {
 .nav-item {
   position: relative; display: inline-flex; align-items: center; gap: 7px;
   padding: 7px 0; color: rgba(239, 239, 235, .58); text-decoration: none;
-  white-space: nowrap; font-size: 10px; letter-spacing: .08em; transition: color .35s var(--ease);
+  white-space: nowrap; font-size: 11px; letter-spacing: .08em; transition: color .35s var(--ease);
 }
 .nav-item::after {
   position: absolute; right: 0; bottom: 0; left: 0; height: 1px; content: "";
@@ -294,22 +317,29 @@ onUnmounted(() => {
 .nav-item:hover::after { transform: scaleX(1); background: rgba(239, 239, 235, .42); }
 /* 激活态交给 .nav-rail，这里不再自己画一条，否则两条线会重叠。 */
 .nav-item.active::after { transform: scaleX(0); }
-.nav-index { color: rgba(239, 239, 235, .38); font-size: 8px; letter-spacing: .08em; }
+.nav-index { color: rgba(239, 239, 235, .38); font-size: 11px; letter-spacing: .08em; }
 .nav-end { display: flex; align-items: center; justify-self: end; gap: 14px; flex: 0 0 auto; pointer-events: auto; }
 .nav-search {
   display: inline-flex; align-items: center; gap: 8px;
   padding: 6px 12px 6px 10px;
   border: 1px solid rgba(238, 238, 234, .18); border-radius: 999px;
   color: var(--muted); background: transparent; cursor: pointer;
-  font-size: 10px; letter-spacing: .08em; font-family: inherit;
+  font-size: 11px; letter-spacing: .08em; font-family: inherit;
   transition: color .25s var(--ease), border-color .25s var(--ease), background .25s var(--ease);
 }
 .nav-search:hover { color: var(--text); border-color: rgba(238, 238, 234, .5); background: rgba(255, 255, 255, .05); }
 .nav-search-key {
   display: inline-grid; place-items: center; min-width: 26px; height: 18px; padding: 0 5px;
   border: 1px solid rgba(238, 238, 234, .22); border-radius: 5px;
-  color: var(--muted-light); font-size: 8px; letter-spacing: .06em;
+  color: var(--muted-light); font-size: 11px; letter-spacing: .06em;
 }
+.motion-toggle {
+  display: grid; place-items: center; width: 24px; height: 24px; padding: 0; cursor: pointer;
+  border: 1px solid rgba(238, 238, 234, .22); border-radius: 50%; background: transparent;
+  color: var(--muted); font-size: 11px; font-family: inherit;
+  transition: color .25s var(--ease), border-color .25s var(--ease), transform .4s var(--ease);
+}
+.motion-toggle:hover { color: var(--text); border-color: rgba(238, 238, 234, .6); transform: rotate(90deg); }
 .conn { position: relative; display: grid; width: 22px; height: 22px; place-items: center; border: 0; border-radius: 50%; background: transparent; cursor: pointer; }
 .conn::after { position: absolute; inset: 0; border: 1px solid rgba(239, 239, 235, .5); border-radius: 50%; content: ""; opacity: 0; pointer-events: none; }
 .conn.ok::after { animation: conn-ring 3.4s var(--ease) infinite; }
@@ -320,11 +350,11 @@ onUnmounted(() => {
 .conn:hover i { transform: scale(1.25); }
 @keyframes conn-pulse { 0%, 100% { opacity: 1 } 50% { opacity: .35 } }
 @keyframes conn-ring { 0% { opacity: .5; transform: scale(.45) } 62%, 100% { opacity: 0; transform: scale(1.7) } }
-.user { display: flex; align-items: center; gap: 14px; color: var(--muted); font-size: 10px; letter-spacing: .08em; }
+.user { display: flex; align-items: center; gap: 14px; color: var(--muted); font-size: 11px; letter-spacing: .08em; }
 .user-name { max-width: 96px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .user button {
   padding: 4px 0; color: var(--muted); background: transparent; border: 0; border-bottom: 1px solid transparent;
-  cursor: pointer; font-size: 10px; transition: color .25s var(--ease), border-color .25s var(--ease);
+  cursor: pointer; font-size: 11px; transition: color .25s var(--ease), border-color .25s var(--ease);
 }
 .user button:hover { color: var(--text); border-color: rgba(239, 239, 235, .55); }
 main { padding-top: 0; }
@@ -354,7 +384,7 @@ main { padding-top: 0; }
     scrollbar-width: none;
   }
   .nav-list::-webkit-scrollbar { display: none; }
-  .nav-item { flex: 0 0 auto; gap: 5px; font-size: 9px; }
+  .nav-item { flex: 0 0 auto; gap: 5px; font-size: 11px; }
 }
 @media (max-width: 440px) {
   .nav-index { display: none; }

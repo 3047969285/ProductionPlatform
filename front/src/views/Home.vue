@@ -210,10 +210,10 @@ onUnmounted(() => {
 .o2 { width: 280px; height: 280px; background: #bdbdb7; bottom: 5%; left: -8%; }
 .hero { position: relative; margin-bottom: clamp(30px, 6vh, 64px); padding-bottom: 0; border: 0; }
 .hero::after { display: none; }
-.tag { display: flex; align-items: center; gap: 9px; color: var(--muted); font-size: 8px; letter-spacing: .2em; margin-bottom: 19px; }
+.tag { display: flex; align-items: center; gap: 9px; color: var(--muted); font-size: 11px; letter-spacing: .2em; margin-bottom: 19px; }
 .tag i { width: 25px; height: 1px; background: var(--muted); }
 h1 { font-family: var(--font-display); font-size: clamp(3rem, 6vw, 6rem); font-weight: 400; letter-spacing: -.09em; line-height: .92; margin-bottom: 18px; }
-.desc { color: var(--muted-light); font-size: 9px; letter-spacing: .14em; }
+.desc { color: var(--muted-light); font-size: 11px; letter-spacing: .14em; }
 .grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0; margin-bottom: clamp(48px, 10vh, 100px); border-top: 1px solid rgba(239,239,235,.24); border-bottom: 1px solid rgba(239,239,235,.15); background: transparent; }
 .card { position: relative; min-width: 0; min-height: 142px; padding: 22px 18px 36px 0; color: inherit; background: transparent; border-right: 1px solid rgba(239,239,235,.12); cursor: pointer; text-decoration: none; will-change: transform, opacity; transition: transform .45s var(--ease), background .35s var(--ease); }
 .card:focus-visible { outline: 1px solid rgba(239,239,235,.72); outline-offset: -1px; }
@@ -222,8 +222,8 @@ h1 { font-family: var(--font-display); font-size: clamp(3rem, 6vw, 6rem); font-w
 .card::before { position: absolute; top: -1px; left: 0; width: 24px; height: 1px; background: rgba(239,239,235,.72); content: ""; }
 .card:hover { z-index: 1; background: rgba(255,255,255,.025); transform: translateY(-5px); }
 .num { display: block; font-family: var(--font-display); font-size: clamp(2rem, 4vw, 3.7rem); font-weight: 400; line-height: 1; letter-spacing: -.06em; transition: transform .5s var(--ease), letter-spacing .5s var(--ease); }
-.label { display: block; margin-top: 32px; color: var(--muted-light); font-size: 9px; letter-spacing: .11em; transition: color .35s var(--ease), letter-spacing .5s var(--ease); }
-.card-action { position: absolute; right: 18px; bottom: 16px; display: flex; align-items: center; gap: 7px; color: var(--muted); font-size: 8px; letter-spacing: .06em; transition: color .3s var(--ease); }
+.label { display: block; margin-top: 32px; color: var(--muted-light); font-size: 11px; letter-spacing: .11em; transition: color .35s var(--ease), letter-spacing .5s var(--ease); }
+.card-action { position: absolute; right: 18px; bottom: 16px; display: flex; align-items: center; gap: 7px; color: var(--muted); font-size: 11px; letter-spacing: .06em; transition: color .3s var(--ease); }
 .card-action i { color: var(--muted-light); font-size: 11px; font-style: normal; transition: transform .3s var(--ease); }
 .card:hover .num { transform: translateY(-3px); letter-spacing: -.04em; }
 .card:hover .label { color: var(--text); letter-spacing: .16em; }
@@ -231,9 +231,9 @@ h1 { font-family: var(--font-display); font-size: clamp(3rem, 6vw, 6rem); font-w
 .card:hover .card-action i { transform: translate(2px, -2px); }
 .recent { max-width: 1000px; margin-bottom: 32px; }
 .recent-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; margin-bottom: 18px; }
-.recent-kicker { margin-bottom: 6px; color: var(--muted); font-size: 8px; letter-spacing: .16em; }
+.recent-kicker { margin-bottom: 6px; color: var(--muted); font-size: 11px; letter-spacing: .16em; }
 .recent-head h2 { font-family: var(--font-display); font-size: clamp(1.5rem, 2.8vw, 2.2rem); font-weight: 400; letter-spacing: -.04em; }
-.recent-head a { display: inline-block; color: var(--muted); text-decoration: none; font-size: 9px; letter-spacing: .12em; transition: color .25s ease, transform .35s var(--ease); }
+.recent-head a { display: inline-block; color: var(--muted); text-decoration: none; font-size: 11px; letter-spacing: .12em; transition: color .25s ease, transform .35s var(--ease); }
 .recent-head a:hover { color: var(--text); transform: translateX(4px); }
 .list { overflow: hidden; border-top: 1px solid rgba(239,239,235,.18); background: transparent; }
 .list li { border-bottom: 1px solid rgba(239,239,235,.12); }
@@ -242,12 +242,12 @@ h1 { font-family: var(--font-display); font-size: clamp(3rem, 6vw, 6rem); font-w
 .recent-row:focus-visible { outline: 1px solid rgba(239,239,235,.72); outline-offset: -1px; }
 .recent-copy { display: block; min-width: 0; }
 .recent-copy strong { display: block; overflow: hidden; color: var(--text); font-weight: 500; text-overflow: ellipsis; white-space: nowrap; }
-.recent-copy small { display: block; margin-top: 4px; overflow: hidden; color: var(--muted); font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
-.recent-open { display: flex; justify-content: flex-end; gap: 8px; color: var(--muted); font-size: 9px; letter-spacing: .08em; transition: color .25s ease; }
+.recent-copy small { display: block; margin-top: 4px; overflow: hidden; color: var(--muted); font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+.recent-open { display: flex; justify-content: flex-end; gap: 8px; color: var(--muted); font-size: 11px; letter-spacing: .08em; transition: color .25s ease; }
 .recent-open i { color: var(--muted-light); font-size: 12px; font-style: normal; transition: transform .3s var(--ease); }
 .recent-row:hover .recent-open { color: var(--text); }
 .recent-row:hover .recent-open i { transform: translate(2px, -2px); }
-.no { color: var(--muted-light); font-size: 8px; letter-spacing: .14em; }
+.no { color: var(--muted-light); font-size: 11px; letter-spacing: .14em; }
 .status-panel { display: flex; min-height: 150px; align-items: center; gap: 18px; padding: 26px 0; border-top: 1px solid rgba(239,239,235,.18); border-bottom: 1px solid rgba(239,239,235,.12); color: var(--muted-light); }
 .status-mark { display: grid; width: 42px; height: 42px; flex: 0 0 auto; place-items: center; border: 1px solid rgba(239,239,235,.25); border-radius: 50%; color: var(--text); font-family: var(--font-display); font-size: 18px; }
 .status-panel h2 { margin: 0 0 8px; color: var(--text); font-size: 15px; font-weight: 500; }

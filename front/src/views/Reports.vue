@@ -364,7 +364,6 @@ onMounted(load)
       <section class="card hero-card span-full">
         <div>
           <p class="eyebrow">实际数据看板</p>
-          <h2>{{ boardTitle }}</h2>
           <p class="hero-copy">{{ boardDescription }}</p>
         </div>
         <div class="hero-signal">
@@ -629,7 +628,7 @@ onMounted(load)
 .span-2 { grid-column: span 2; }
 .card { min-width: 0; padding: 20px; background: rgba(12, 12, 12, .78); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: none; }
 .hero-card { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; min-height: 168px; background: linear-gradient(135deg, rgba(255,255,255,.07), rgba(12,12,12,.72)); }
-.eyebrow { margin-bottom: 8px; color: var(--accent); font-size: 10px; letter-spacing: .16em; text-transform: uppercase; }
+.eyebrow { margin-bottom: 8px; color: var(--accent); font-size: 11px; letter-spacing: .16em; text-transform: uppercase; }
 .hero-card h2 { max-width: 820px; font-family: var(--font-display); font-size: clamp(2rem, 4vw, 4.2rem); font-weight: 400; letter-spacing: -.06em; line-height: .98; }
 .hero-copy { max-width: 680px; margin-top: 14px; color: var(--muted); font-size: 13px; }
 .hero-signal { display: flex; flex-direction: column; align-items: flex-end; flex: 0 0 auto; color: var(--muted); }
@@ -665,11 +664,11 @@ onMounted(load)
 .sprint-load-track span { height: 100%; transform-origin: left center; animation: wb-grow-x .8s var(--ease) both; }
 .sprint-task-fill { background: var(--cyan); }
 .sprint-bug-fill { background: var(--pink); }
-.sprint-load-row small { display: block; margin-top: 4px; color: var(--muted); font-size: 10px; }
+.sprint-load-row small { display: block; margin-top: 4px; color: var(--muted); font-size: 11px; }
 .sprint-load-row small span { padding: 0 3px; color: var(--muted-light); }
 .table-frame { margin-top: 4px; }
 .completion-empty { color: var(--muted); font-size: 11px; }
-.trend-legend { display: flex; align-items: center; gap: 14px; color: var(--muted); font-size: 10px; }
+.trend-legend { display: flex; align-items: center; gap: 14px; color: var(--muted); font-size: 11px; }
 .trend-legend > span { display: inline-flex; align-items: center; gap: 6px; }
 .trend-legend-dot { width: 7px; height: 7px; border-radius: 50%; }
 .trend-legend-dot--requirement { background: var(--cyan); }
@@ -682,7 +681,7 @@ onMounted(load)
 .trend-part--requirement { border-radius: 3px 3px 0 0; background: var(--cyan); }
 .trend-part--bug { border-radius: 3px 3px 0 0; background: var(--pink); }
 .trend-zero { display: block; width: 100%; height: 2px; background: rgba(234, 238, 222, .18); }
-.trend-axis { display: flex; justify-content: space-between; margin-top: 7px; color: var(--muted-light); font-size: 10px; font-variant-numeric: tabular-nums; }
+.trend-axis { display: flex; justify-content: space-between; margin-top: 7px; color: var(--muted-light); font-size: 11px; font-variant-numeric: tabular-nums; }
 .focus-block { padding: 16px; border: 1px solid var(--border); background: rgba(255, 255, 255, .025); }
 .focus-title { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .focus-block p { min-height: 36px; margin: 14px 0; color: var(--muted); font-size: 12px; }

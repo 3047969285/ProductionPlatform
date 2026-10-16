@@ -406,15 +406,15 @@ onUnmounted(() => {
 .palette-input::placeholder { color: var(--muted-light); }
 .palette-esc {
   flex: 0 0 auto; padding: 4px 9px; border: 1px solid rgba(238, 238, 234, .22); border-radius: 6px;
-  color: var(--muted-light); background: transparent; cursor: pointer; font-size: 8px; letter-spacing: .14em;
+  color: var(--muted-light); background: transparent; cursor: pointer; font-size: 11px; letter-spacing: .14em;
   transition: color .2s ease, border-color .2s ease;
 }
 .palette-esc:hover { color: var(--text); border-color: rgba(238, 238, 234, .55); }
-.palette-crumb { display: flex; align-items: baseline; gap: 9px; padding: 11px 20px 0; color: var(--muted-light); font-size: 8px; letter-spacing: .16em; }
+.palette-crumb { display: flex; align-items: baseline; gap: 9px; padding: 11px 20px 0; color: var(--muted-light); font-size: 11px; letter-spacing: .16em; }
 .palette-crumb strong { color: var(--text); font-family: var(--font-display); font-size: 14px; font-weight: 400; letter-spacing: -.01em; }
 .palette-body { flex: 1; min-height: 0; overflow-y: auto; padding: 8px 9px 12px; }
 .palette-group + .palette-group { margin-top: 4px; }
-.palette-group-label { padding: 11px 11px 6px; color: var(--muted-light); font-size: 8px; letter-spacing: .2em; }
+.palette-group-label { padding: 11px 11px 6px; color: var(--muted-light); font-size: 11px; letter-spacing: .2em; }
 .palette-item {
   display: grid; width: 100%; grid-template-columns: 22px minmax(0, 1fr) auto;
   align-items: center; gap: 12px; padding: 10px 11px;
@@ -426,16 +426,16 @@ onUnmounted(() => {
 .palette-icon { color: var(--muted-light); font-size: 12px; text-align: center; }
 .palette-item.active .palette-icon { color: var(--text); }
 .palette-label { overflow: hidden; font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
-.palette-hint { display: inline-flex; align-items: center; gap: 8px; color: var(--muted-light); font-size: 8.5px; letter-spacing: .11em; white-space: nowrap; }
+.palette-hint { display: inline-flex; align-items: center; gap: 8px; color: var(--muted-light); font-size: 11px; letter-spacing: .11em; white-space: nowrap; }
 .palette-drill { color: var(--muted-light); font-style: normal; transition: transform .2s ease, color .2s ease; }
 .palette-item.active .palette-drill { color: var(--text); transform: translateX(2px); }
 .palette-state { padding: 26px 12px; color: var(--muted-light); font-size: 11px; text-align: center; }
 .palette-state--warn { color: var(--muted); }
-.palette-note { padding: 12px 11px 4px; color: var(--muted-light); font-size: 10px; letter-spacing: .08em; }
+.palette-note { padding: 12px 11px 4px; color: var(--muted-light); font-size: 11px; letter-spacing: .08em; }
 .palette-foot {
   display: flex; align-items: center; justify-content: space-between; gap: 14px;
   padding: 10px 18px; border-top: 1px solid rgba(238, 238, 234, .12);
-  color: var(--muted-light); font-size: 8px; letter-spacing: .14em;
+  color: var(--muted-light); font-size: 11px; letter-spacing: .14em;
 }
 .palette-foot b { color: var(--muted); font-weight: 500; }
 .palette-foot-brand { letter-spacing: .18em; }
@@ -446,6 +446,6 @@ onUnmounted(() => {
 @media (max-width: 620px) {
   .palette-root { padding: 6vh 12px 24px; }
   .palette-foot-brand { display: none; }
-  .palette-hint { font-size: 8px; }
+  .palette-hint { font-size: 11px; }
 }
 </style>

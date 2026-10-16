@@ -124,7 +124,7 @@ onUnmounted(() => {
   box-shadow: var(--shadow-sm);
 }
 .stage-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 22px; }
-.eyebrow { color: var(--accent); font-size: 10px; font-weight: 700; letter-spacing: .18em; margin-bottom: 7px; }
+.eyebrow { color: var(--accent); font-size: 11px; font-weight: 700; letter-spacing: .18em; margin-bottom: 7px; }
 h2 { font-family: var(--font-display); font-size: clamp(1.45rem, 2vw, 2rem); font-weight: 400; letter-spacing: -.04em; margin-bottom: 4px; }
 .stage-heading p:last-child { color: var(--muted); font-size: 13px; }
 .stage-counter { display: flex; align-items: baseline; gap: 4px; color: var(--muted-light); }

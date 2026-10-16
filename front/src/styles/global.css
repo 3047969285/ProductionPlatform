@@ -248,9 +248,8 @@ body .el-input, body .el-textarea {
   body::after { right: -18vw; bottom: 14vh; width: 58vw; height: 58vw; }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
-}
+/* 是否降级动效由应用内开关决定（见 motionPreference.js），不再直接跟随系统设置 */
+:root[data-reduce-motion] *, :root[data-reduce-motion] *::before, :root[data-reduce-motion] *::after { scroll-behavior: auto !important; animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
 
 /* Portfolio canvas: monochrome, open space, and a low-contrast perspective floor. */
 /* 同样用 :root:root —— 两块变量表的先后关系必须保留，否则上面的旧色板会反压这一块。 */
@@ -509,16 +508,14 @@ a:active > .wb-arrow { transform: translate(3px, -3px); }
   box-shadow: inset 0 -1px 0 rgba(238, 238, 234, .2);
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .wb-glow::after { display: none; }
-  .wb-ripple-layer { display: none; }
-  .wb-press.is-pressed { transform: none !important; }
-  .scroll-progress { display: none; }
-  .wb-spotlight { display: none; }
-  .wb-arrow, button:hover > .wb-arrow, a:hover > .wb-arrow { transition: none; transform: none; }
-  .dialog-fade-enter-active .el-dialog,
-  .msgbox-fade-enter-active .el-message-box { animation: none; }
-}
+:root[data-reduce-motion] .wb-glow::after { display: none; }
+:root[data-reduce-motion] .wb-ripple-layer { display: none; }
+:root[data-reduce-motion] .wb-press.is-pressed { transform: none !important; }
+:root[data-reduce-motion] .scroll-progress { display: none; }
+:root[data-reduce-motion] .wb-spotlight { display: none; }
+:root[data-reduce-motion] .wb-arrow, :root[data-reduce-motion] button:hover > .wb-arrow, :root[data-reduce-motion] a:hover > .wb-arrow { transition: none; transform: none; }
+:root[data-reduce-motion] .dialog-fade-enter-active .el-dialog,
+:root[data-reduce-motion] .msgbox-fade-enter-active .el-message-box { animation: none; }
 .layout .table-frame {
   border-color: rgba(238, 238, 234, .16);
   border-radius: 12px;
@@ -572,3 +569,10 @@ body .el-loading-mask { background: rgba(0, 0, 0, .75); }
     overflow-y: hidden;
   }
 }
+
+/* ── 常驻动态层（见 src/ambient.js）───────────────────── */
+.ambient-canvas { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+.split-mask { display: inline-block; overflow: hidden; padding-bottom: .12em; margin-bottom: -.12em; vertical-align: top; }
+.split-char { display: inline-block; will-change: transform; }
+.metric-card, .card, .cockpit-section, .stat, .timeline-item, .report-card { transform-style: preserve-3d; }
+:root[data-reduce-motion] .ambient-canvas { display: none; }
