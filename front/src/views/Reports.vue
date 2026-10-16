@@ -1,6 +1,6 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
-import { RouterLink } from 'vue-router'
+import { RouterLink, useRoute, useRouter } from 'vue-router'
 import PageShell from '../components/PageShell.vue'
 import api from '../api'
 import {
@@ -15,10 +15,12 @@ import {
   testPlanStatus,
 } from '../constants'
 
+const route = useRoute()
+const router = useRouter()
 const loading = ref(false)
 const loadError = ref(false)
 const projects = ref([])
-const selectedProjectId = ref('all')
+const selectedProjectId = ref(typeof route.query.projectId === 'string' ? route.query.projectId : 'all')
 const globalData = ref({
   status: {},
   severity: [],
@@ -125,6 +127,10 @@ async function load() {
       const nextProjects = await loadProjects()
       if (sequence !== loadSequence) return
       projects.value = nextProjects
+    }
+    if (selectedProjectId.value !== 'all' && !projects.value.some((item) => String(item.id) === selectedProjectId.value)) {
+      selectedProjectId.value = 'all'
+      return
     }
 
     const allProjects = isAllProjects.value
@@ -315,8 +321,17 @@ const maxRisk = computed(() => Math.max(1, ...globalRiskRows.value.map((row) => 
 const maxTrend = computed(() => Math.max(1, ...trendRows.value.map((row) => row.total)))
 const maxSprintLoad = computed(() => Math.max(1, ...globalSprintRows.value.map((row) => row.total)))
 
-watch(selectedProjectId, () => {
+watch(selectedProjectId, (value) => {
+  const query = { ...route.query }
+  if (value === 'all') delete query.projectId
+  else query.projectId = value
+  if (query.projectId !== route.query.projectId) router.replace({ query })
   if (projects.value.length) load()
+})
+
+watch(() => route.query.projectId, (value) => {
+  const nextProjectId = typeof value === 'string' ? value : 'all'
+  if (nextProjectId !== selectedProjectId.value) selectedProjectId.value = nextProjectId
 })
 
 onMounted(load)
@@ -537,11 +552,18 @@ onMounted(load)
           </div>
           <ul v-if="projectActivity.length" class="activity-list">
             <li v-for="item in projectActivity" :key="item.id">
-              <span class="activity-kind">{{ item.kind }}</span>
-              <span class="activity-title">{{ item.title }}</span>
-              <span class="activity-meta">{{ item.meta }}</span>
-              <span class="activity-time">{{ formatDate(item.time) }}</span>
-              <span class="badge" :class="badgeClass(item.type, item.status)">{{ item.statusLabel }}</span>
+              <RouterLink
+                class="activity-row"
+                :to="{ path: `/projects/${selectedProjectId}`, query: { tab: item.type } }"
+                :aria-label="`查看${item.kind}：${item.title}，进入对应工作台`"
+              >
+                <span class="activity-kind">{{ item.kind }}</span>
+                <span class="activity-title">{{ item.title }}</span>
+                <span class="activity-meta">{{ item.meta }}</span>
+                <span class="activity-time">{{ formatDate(item.time) }}</span>
+                <span class="badge" :class="badgeClass(item.type, item.status)">{{ item.statusLabel }}</span>
+                <span class="activity-link-arrow" aria-hidden="true">→</span>
+              </RouterLink>
             </li>
           </ul>
           <p v-else class="empty">这个项目还没有需求、任务或缺陷记录</p>
@@ -554,10 +576,17 @@ onMounted(load)
           </div>
           <ul v-if="projectRisks.length" class="risk-list">
             <li v-for="bug in projectRisks" :key="bug.id">
-              <span class="risk-dot" :class="badgeClass('severity', bug.severity)" />
-              <span class="risk-title">{{ bug.title }}</span>
-              <span class="badge" :class="badgeClass('severity', bug.severity)">{{ bugSeverity[bug.severity] || bug.severity }}</span>
-              <small>{{ bug.assignee || '未指派' }}</small>
+              <RouterLink
+                class="risk-row"
+                :to="{ path: `/projects/${selectedProjectId}`, query: { tab: 'bug' } }"
+                :aria-label="`查看缺陷：${bug.title}，进入缺陷工作台`"
+              >
+                <span class="risk-dot" :class="badgeClass('severity', bug.severity)" />
+                <span class="risk-title">{{ bug.title }}</span>
+                <span class="badge" :class="badgeClass('severity', bug.severity)">{{ bugSeverity[bug.severity] || bug.severity }}</span>
+                <small>{{ bug.assignee || '未指派' }}</small>
+                <span class="activity-link-arrow" aria-hidden="true">→</span>
+              </RouterLink>
             </li>
           </ul>
           <p v-else class="empty">当前没有未关闭缺陷</p>
@@ -659,13 +688,16 @@ onMounted(load)
 .focus-block p { min-height: 36px; margin: 14px 0; color: var(--muted); font-size: 12px; }
 .focus-block small { display: block; margin-top: 9px; color: var(--muted-light); font-size: 11px; }
 .activity-list, .risk-list { display: flex; flex-direction: column; gap: 0; border-top: 1px solid var(--border); }
-.activity-list li, .risk-list li { display: grid; align-items: center; gap: 12px; padding: 13px 0; border-bottom: 1px solid var(--border); transition: background .3s var(--ease), box-shadow .3s var(--ease), border-color .3s var(--ease); }
-.activity-list li:hover, .risk-list li:hover { background: rgba(255, 255, 255, .026); box-shadow: inset 2px 0 0 rgba(239, 239, 235, .42); border-bottom-color: var(--border-strong); }
-.activity-list li { grid-template-columns: 42px minmax(0, 1.4fr) minmax(130px, 1fr) 120px auto; }
+.activity-list li, .risk-list li { border-bottom: 1px solid var(--border); }
+.activity-row, .risk-row { display: grid; align-items: center; gap: 12px; margin: 0 -10px; padding: 13px 10px; border-radius: 5px; color: inherit; text-decoration: none; transition: transform .3s var(--ease), background .3s var(--ease), box-shadow .3s var(--ease); }
+.activity-row { grid-template-columns: 42px minmax(0, 1.4fr) minmax(130px, 1fr) 120px auto 14px; }
+.risk-row { grid-template-columns: 8px minmax(0, 1fr) auto 70px 14px; }
+.activity-row:hover, .risk-row:hover, .activity-row:focus-visible, .risk-row:focus-visible { transform: translateX(3px); background: rgba(255, 255, 255, .026); box-shadow: inset 2px 0 0 rgba(239, 239, 235, .42); }
 .activity-kind { color: var(--cyan); font-size: 11px; }
 .activity-title, .risk-title { overflow: hidden; color: var(--text); text-overflow: ellipsis; white-space: nowrap; }
 .activity-meta, .activity-time, .risk-list small { overflow: hidden; color: var(--muted); font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
-.risk-list li { grid-template-columns: 8px minmax(0, 1fr) auto 70px; }
+.activity-link-arrow { color: var(--muted); opacity: .45; transform: translateX(-3px); transition: color .22s var(--ease), opacity .22s var(--ease), transform .22s var(--ease); }
+.activity-row:hover .activity-link-arrow, .risk-row:hover .activity-link-arrow, .activity-row:focus-visible .activity-link-arrow, .risk-row:focus-visible .activity-link-arrow { color: var(--accent); opacity: 1; transform: translateX(0); }
 .risk-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); }
 .risk-dot.pink { background: var(--pink); box-shadow: 0 0 12px rgba(239, 239, 235, .3); }
 .risk-dot.cyan { background: var(--cyan); }
@@ -704,7 +736,7 @@ onMounted(load)
   .hero-card { align-items: flex-start; flex-direction: column; }
   .hero-signal { align-items: flex-start; }
   .metric-grid, .status-grid, .member-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .activity-list li { grid-template-columns: 42px minmax(0, 1fr) auto; }
+  .activity-row { grid-template-columns: 42px minmax(0, 1fr) auto 14px; }
   .activity-meta, .activity-time { display: none; }
   .report-actions { width: 100%; }
   .project-select { flex: 1; }
@@ -715,8 +747,8 @@ onMounted(load)
   .span-2, .span-full { grid-column: auto; }
   .section-head { flex-direction: column; gap: 5px; }
   .section-note { white-space: normal; }
-  .activity-list li { grid-template-columns: 38px minmax(0, 1fr) auto; gap: 8px; }
-  .risk-list li { grid-template-columns: 8px minmax(0, 1fr) auto; }
+  .activity-row { grid-template-columns: 38px minmax(0, 1fr) auto 14px; gap: 8px; }
+  .risk-row { grid-template-columns: 8px minmax(0, 1fr) auto 14px; gap: 8px; }
   .risk-list small { display: none; }
   .delivery-row { grid-template-columns: 62px minmax(0, 1fr); }
   .delivery-row em { grid-column: 2; }
