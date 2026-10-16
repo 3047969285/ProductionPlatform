@@ -91,4 +91,20 @@ public interface SprintMapper {
      * @return 状态与数量映射
      */
     List<Map<String, Object>> countBugsByStatus(Long sprintId);
+
+    /**
+     * 迭代内已完成任务的完成日期
+     *
+     * @param sprintId 迭代编号
+     * @return 完成日期列表
+     */
+    List<java.time.LocalDate> doneTaskDates(Long sprintId);
+
+    /**
+     * 迭代内已解决或已关闭缺陷的完成日期
+     *
+     * @param sprintId 迭代编号
+     * @return 完成日期列表
+     */
+    List<java.time.LocalDate> doneBugDates(Long sprintId);
 }

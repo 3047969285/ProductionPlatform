@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import api from '../api'
 import { sprintStatus, badgeClass } from '../constants'
@@ -74,19 +74,28 @@ async function showBurndown(row) {
   finally { burnLoading.value = false }
 }
 
-// 极简 SVG 燃尽图：横轴日期、纵轴剩余数
-function burnSvg() {
+// SVG 燃尽图：横轴日期、纵轴剩余数。实际线只画到今天（后端对未来日期返回 null）。
+const burnChart = computed(() => {
   if (!burn.value || !burn.value.labels?.length) return null
   const { labels, ideal, actual } = burn.value
-  const W = 640, H = 240, pad = 36
-  const maxY = Math.max(...ideal, ...actual, 1)
-  const stepX = (W - pad * 2) / Math.max(labels.length - 1, 1)
-  const pt = (arr, i) => `${pad + i * stepX},${H - pad - (arr[i] / maxY) * (H - pad * 2)}`
-  const idealPath = ideal.map((_, i) => pt(ideal, i)).join(' L ')
-  const actualPath = actual.map((_, i) => pt(actual, i)).join(' L ')
-  return { W, H, pad, labels, idealPath, actualPath, maxY }
-}
-
+  const W = 640, H = 260, padX = 40, padTop = 18, padBottom = 34
+  const maxY = Math.max(...ideal, ...actual.filter((v) => v != null), 1)
+  const stepX = (W - padX * 2) / Math.max(labels.length - 1, 1)
+  const x = (i) => padX + i * stepX
+  const y = (v) => H - padBottom - (v / maxY) * (H - padTop - padBottom)
+  const idealPath = ideal.map((v, i) => `${x(i)},${y(v)}`).join(' L ')
+  const actualPoints = actual.map((v, i) => (v == null ? null : { x: x(i), y: y(v), v, label: labels[i] })).filter(Boolean)
+  const actualPath = actualPoints.map((p) => `${p.x},${p.y}`).join(' L ')
+  const ticks = Array.from({ length: 5 }, (_, k) => {
+    const v = Math.round((maxY * k) / 4)
+    return { v, y: y(v) }
+  })
+  // 日期标签最多显示 8 个，避免长迭代挤成一团
+  const every = Math.max(1, Math.ceil(labels.length / 8))
+  const xLabels = labels.map((l, i) => ({ text: l.slice(5), x: x(i), show: i % every === 0 || i === labels.length - 1 }))
+  const last = actualPoints[actualPoints.length - 1] || null
+  return { W, H, padX, padBottom, idealPath, actualPath, actualPoints, ticks, xLabels, last }
+})
 onMounted(load)
 watch(() => props.projectId, load)
 </script>
@@ -144,20 +153,25 @@ watch(() => props.projectId, load)
 
     <el-dialog v-model="burnDialog" title="燃尽图" width="720px" destroy-on-close>
       <div v-loading="burnLoading" style="min-height: 260px">
-        <template v-if="burnSvg()">
-          <p class="burn-tip">完成 {{ burn.done }}/{{ burn.total }}（{{ burn.progress }}%）</p>
-          <svg :viewBox="`0 0 ${burnSvg().W} ${burnSvg().H}`" class="burn-svg">
-            <line v-for="i in 5" :key="i" :x1="burnSvg().pad" :x2="burnSvg().W - burnSvg().pad"
-                  :y1="burnSvg().H - burnSvg().pad - (i / 5) * (burnSvg().H - burnSvg().pad * 2)"
-                  :y2="burnSvg().H - burnSvg().pad - (i / 5) * (burnSvg().H - burnSvg().pad * 2)"
-                  stroke="rgba(255,255,255,0.08)" stroke-width="1" />
-            <path :d="'M' + burnSvg().idealPath" fill="none" stroke="var(--purple)" stroke-width="2" stroke-dasharray="4 4" />
-            <path :d="'M' + burnSvg().actualPath" fill="none" stroke="var(--cyan)" stroke-width="2.5" />
-            <text v-for="(l, i) in burnSvg().labels" :key="i" :x="burnSvg().pad + i * burnSvg().stepX"
-                  :y="burnSvg().H - 8" font-size="10" fill="rgba(255,255,255,0.4)" text-anchor="middle">{{ l.slice(5) }}</text>
+        <template v-if="burnChart">
+          <p class="burn-tip">
+            完成 {{ burn.done }}/{{ burn.total }}（{{ burn.progress }}%）
+            <span v-if="burnChart.last"> · 今日剩余 {{ burnChart.last.v }}</span>
+          </p>
+          <svg :viewBox="`0 0 ${burnChart.W} ${burnChart.H}`" class="burn-svg" role="img" aria-label="迭代燃尽图">
+            <g v-for="t in burnChart.ticks" :key="t.v">
+              <line :x1="burnChart.padX" :x2="burnChart.W - burnChart.padX" :y1="t.y" :y2="t.y" stroke="rgba(255,255,255,0.08)" stroke-width="1" />
+              <text :x="burnChart.padX - 8" :y="t.y + 3" font-size="10" fill="rgba(255,255,255,0.4)" text-anchor="end">{{ t.v }}</text>
+            </g>
+            <path :d="'M' + burnChart.idealPath" fill="none" stroke="var(--purple)" stroke-width="2" stroke-dasharray="4 4" />
+            <path v-if="burnChart.actualPath" :d="'M' + burnChart.actualPath" fill="none" stroke="var(--cyan)" stroke-width="2.5" stroke-linejoin="round" />
+            <circle v-for="p in burnChart.actualPoints" :key="p.label" :cx="p.x" :cy="p.y" r="3" fill="var(--cyan)"><title>{{ p.label }}：剩余 {{ p.v }}</title></circle>
+            <template v-for="l in burnChart.xLabels" :key="l.text">
+              <text v-if="l.show" :x="l.x" :y="burnChart.H - 10" font-size="10" fill="rgba(255,255,255,0.4)" text-anchor="middle">{{ l.text }}</text>
+            </template>
           </svg>
-        </template>
-        <p v-else-if="!burnLoading" class="empty">该迭代暂无燃尽数据</p>
+          <p class="burn-legend"><i class="ideal" />理想剩余 <i class="real" />实际剩余（按任务和缺陷的真实完成日期）</p>
+        </template>        <p v-else-if="!burnLoading" class="empty">该迭代暂无燃尽数据</p>
       </div>
     </el-dialog>
   </div>
@@ -166,6 +180,10 @@ watch(() => props.projectId, load)
 <style scoped>
 .toolbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
 .mini { font-size: 12px; color: var(--muted); }
+.burn-legend { display: flex; align-items: center; gap: 8px; margin-top: 6px; color: var(--muted); font-size: 12px; }
+.burn-legend i { display: inline-block; width: 18px; height: 0; border-top: 2px solid; }
+.burn-legend i.ideal { border-top-style: dashed; border-color: var(--purple); }
+.burn-legend i.real { margin-left: 10px; border-color: var(--cyan); }
 .burn-tip { margin-bottom: 8px; color: var(--muted); font-size: 14px; }
 .burn-svg { width: 100%; height: auto; }
 .empty { color: var(--muted); text-align: center; padding: 60px 0; }

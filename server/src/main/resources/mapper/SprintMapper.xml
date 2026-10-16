@@ -57,4 +57,14 @@
         SELECT status, COUNT(*) AS cnt FROM bug WHERE sprint_id = #{sprintId} GROUP BY status
     </select>
 
+    <!-- 迭代内已完成任务的完成日期（无完成时间时回退到最后更新时间） -->
+    <select id="doneTaskDates" resultType="java.time.LocalDate">
+        SELECT DATE(COALESCE(resolved_at, updated_at)) FROM task WHERE sprint_id = #{sprintId} AND status = 'done'
+    </select>
+
+    <!-- 迭代内已解决或已关闭缺陷的完成日期 -->
+    <select id="doneBugDates" resultType="java.time.LocalDate">
+        SELECT DATE(COALESCE(resolved_at, updated_at)) FROM bug WHERE sprint_id = #{sprintId} AND status IN ('resolved', 'closed')
+    </select>
+
 </mapper>

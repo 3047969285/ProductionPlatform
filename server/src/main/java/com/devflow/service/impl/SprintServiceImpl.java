@@ -146,16 +146,18 @@ public class SprintServiceImpl implements SprintService {
             return result;
         }
 
-        // 迭代内工作项：任务的 created_at/status，缺陷的 created_at/status
-        List<SprintVo> workItems = new ArrayList<>();
-        // 直接查 mapper 里的统计不够，需要逐日剩余数：用 SQL 每日剩余 = 总数 - 每日已完成数
         long days = ChronoUnit.DAYS.between(vo.getStartDate(), vo.getEndDate()) + 1;
         List<String> labels = new ArrayList<>();
         List<Integer> ideal = new ArrayList<>();
-        List<Integer> actual = new ArrayList<>();
+        List<Integer> actual = new ArrayList<>(); // 允许 null：今天之后没有实际值
 
         int total = vo.getWorkTotal();
         int done = vo.getWorkDone();
+
+        // 实际线：每天剩余数 = 总数 - 截至当天已完成的工作项数，按每个任务/缺陷真实的完成日期统计
+        List<LocalDate> doneDates = new ArrayList<>(mapper.doneTaskDates(id));
+        doneDates.addAll(mapper.doneBugDates(id));
+        LocalDate today = LocalDate.now();
 
         for (long i = 0; i < days; i++) {
             LocalDate day = vo.getStartDate().plusDays(i);
@@ -163,9 +165,13 @@ public class SprintServiceImpl implements SprintService {
             // 理想线：从 total 线性降到 0
             double ratio = days <= 1 ? 1.0 : (double) i / (days - 1);
             ideal.add((int) Math.round(total * (1.0 - ratio)));
-            // 实际线：简化按完成比例线性递减，展示为 total - done*(i/(days-1))
-            double doneRatio = days <= 1 ? 1.0 : (double) i / (days - 1);
-            actual.add((int) Math.round(total - done * doneRatio));
+            // 未来的日期没有实际数据，用 null 让前端在今天处截断折线
+            if (day.isAfter(today)) {
+                actual.add(null);
+                continue;
+            }
+            long doneByDay = doneDates.stream().filter(d -> d != null && !d.isAfter(day)).count();
+            actual.add((int) (total - doneByDay));
         }
         result.put("labels", labels);
         result.put("ideal", ideal);
