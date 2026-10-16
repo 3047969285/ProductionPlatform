@@ -63,6 +63,7 @@ function isDoneTask(item) {
 }
 
 function isOverdue(item) {
+  if (item?.status === 'overdue') return true
   if (!item?.dueDate || item.status === 'done') return false
   const due = new Date(`${item.dueDate}T23:59:59`)
   return !Number.isNaN(due.getTime()) && due < today.value
@@ -83,14 +84,45 @@ const overdueMilestones = computed(() => milestones.value.filter(isOverdue))
 const pendingTasks = computed(() => tasks.value.filter((item) => item.status !== 'done'))
 const unassignedTasks = computed(() => pendingTasks.value.filter((item) => !item.assignee))
 const latestRelease = computed(() => releases.value[0])
+const nextMilestone = computed(() => milestones.value
+  .filter((item) => item.status !== 'done' && !isOverdue(item))
+  .sort((a, b) => {
+    const aDate = a.dueDate ? String(a.dueDate) : '9999-12-31'
+    const bDate = b.dueDate ? String(b.dueDate) : '9999-12-31'
+    return aDate.localeCompare(bDate)
+  })[0])
+const completedMilestones = computed(() => milestones.value.filter((item) => item.status === 'done').length)
 
-const progress = computed(() => {
-  const total = requirements.value.length + tasks.value.length + bugs.value.length
-  if (!total) return 0
-  const done = requirements.value.filter(isDoneRequirement).length
-    + tasks.value.filter(isDoneTask).length
-    + bugs.value.filter(isClosedBug).length
-  return Math.round(done / total * 100)
+const deliveryWorkTotal = computed(() => requirements.value.length + tasks.value.length)
+const deliveryWorkDone = computed(() => requirements.value.filter(isDoneRequirement).length
+  + tasks.value.filter(isDoneTask).length)
+const progress = computed(() => deliveryWorkTotal.value
+  ? Math.round(deliveryWorkDone.value / deliveryWorkTotal.value * 100)
+  : null)
+
+const milestoneMetric = computed(() => {
+  if (overdueMilestones.value.length) {
+    return {
+      value: '逾期',
+      note: `${overdueMilestones.value.length} 个节点需要调整`,
+      tone: 'pink',
+    }
+  }
+  if (nextMilestone.value) {
+    return {
+      value: nextMilestone.value.dueDate ? formatShortDate(nextMilestone.value.dueDate) : '待定',
+      note: `下个：${nextMilestone.value.name || '未命名里程碑'}`,
+      tone: 'green',
+    }
+  }
+  if (milestones.value.length && completedMilestones.value === milestones.value.length) {
+    return {
+      value: '已完成',
+      note: `${completedMilestones.value} 个节点全部完成`,
+      tone: 'green',
+    }
+  }
+  return { value: '未设置', note: '暂无可跟踪的交付节点', tone: 'muted' }
 })
 
 const health = computed(() => {
@@ -107,10 +139,17 @@ const health = computed(() => {
 })
 
 const stats = computed(() => [
-  { key: 'progress', label: '交付进度', value: progress.value, suffix: '%', note: '综合完成度', tone: 'blue' },
-  { key: 'tasks', label: '待办任务', value: pendingTasks.value.length, note: `${tasks.value.filter(isDoneTask).length} 项完成`, tone: 'purple' },
-  { key: 'bugs', label: '待处理缺陷', value: openBugs.value.length, note: `${seriousBugs.value.length} 项高优`, tone: 'pink' },
-  { key: 'milestones', label: '下个里程碑', value: overdueMilestones.value.length ? '逾期' : (milestones.value.length ? '按计划' : '未设置'), note: overdueMilestones.value.length ? '需要调整' : '发布前设置', tone: overdueMilestones.value.length ? 'pink' : 'green' },
+  {
+    key: 'progress', label: '交付进度', value: progress.value ?? '—',
+    suffix: progress.value === null ? '' : '%',
+    note: deliveryWorkTotal.value
+      ? `${deliveryWorkDone.value} / ${deliveryWorkTotal.value} 项需求与任务完成`
+      : '录入需求或任务后计算',
+    tone: 'blue', tab: 'req',
+  },
+  { key: 'tasks', label: '待办任务', value: pendingTasks.value.length, note: `${tasks.value.filter(isDoneTask).length} 项完成`, tone: 'purple', tab: 'task' },
+  { key: 'bugs', label: '待处理缺陷', value: openBugs.value.length, note: `${seriousBugs.value.length} 项高优`, tone: 'pink', tab: 'bug' },
+  { key: 'milestones', label: '下个里程碑', ...milestoneMetric.value, tab: 'release' },
 ])
 
 const nextActions = computed(() => {
@@ -175,6 +214,11 @@ const timeline = computed(() => [
 function formatDate(value) {
   if (!value) return '未设置'
   return String(value).slice(0, 10)
+}
+
+function formatShortDate(value) {
+  const date = formatDate(value)
+  return date.length >= 10 ? date.slice(5).replace('-', '/') : date
 }
 
 async function load(showLoading = true) {
@@ -274,11 +318,18 @@ onUnmounted(() => {
     </section>
 
     <section class="stats" aria-label="交付概览">
-      <article v-for="item in stats" :key="item.key" class="stat-card" :class="item.tone">
+      <button
+        v-for="item in stats"
+        :key="item.key"
+        class="stat-card"
+        :class="item.tone"
+        type="button"
+        @click="go(item.tab)"
+      >
         <span class="stat-label">{{ item.label }}</span>
         <strong v-count="{ value: item.value, suffix: item.suffix }">{{ item.value }}</strong>
         <small>{{ item.note }}</small>
-      </article>
+      </button>
     </section>
 
     <section class="cockpit-section action-section">
@@ -398,10 +449,13 @@ onUnmounted(() => {
 .health.warning .health-dot { background: var(--orange); box-shadow: 0 0 0 5px rgba(255,159,10,.14); }
 .health.danger .health-dot { background: var(--pink); box-shadow: 0 0 0 5px rgba(255,55,95,.12); }
 .stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
-.stat-card { min-height: 118px; padding: 16px; border: 1px solid var(--border); border-radius: var(--radius); background: rgba(23, 27, 25, .84); box-shadow: var(--shadow-sm); border-top: 1px solid var(--accent); }
+.stat-card { position: relative; width: 100%; min-height: 118px; padding: 16px; border: 1px solid var(--border); border-top: 1px solid var(--accent); border-radius: var(--radius); background: rgba(23, 27, 25, .84); box-shadow: var(--shadow-sm); color: var(--text); font: inherit; text-align: left; cursor: pointer; transition: transform .25s var(--ease), border-color .25s var(--ease), box-shadow .25s var(--ease), background .25s var(--ease); }
+.stat-card:hover { transform: translateY(-3px); border-color: var(--border-strong); background: rgba(29, 34, 31, .96); box-shadow: var(--shadow-md); }
+.stat-card:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 .stat-card.purple { border-top-color: var(--purple); }
 .stat-card.pink { border-top-color: var(--pink); }
 .stat-card.green { border-top-color: var(--lime); }
+.stat-card.muted { border-top-color: var(--muted); }
 .stat-label, .stat-card small { display: block; color: var(--muted); }
 .stat-label { font-size: 13px; margin-bottom: 8px; }
 .stat-card strong { display: block; font-family: var(--font-display); font-size: 1.75rem; line-height: 1.1; margin-bottom: 8px; }
