@@ -102,7 +102,7 @@ watch(() => route.path, async (path, previousPath) => {
   routeAnimationContext?.revert()
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
   routeAnimationContext = gsap.context(() => {
-    const duration = reduced ? .01 : 1
+    const duration = reduced ? .01 : .62
     const timeline = gsap.timeline({ onComplete: () => { routeTransitioning.value = false } })
     timeline
       .fromTo('.route-transition__veil', { scale: .001 }, { scale: 1, duration: duration * .36, ease: 'power4.in' })

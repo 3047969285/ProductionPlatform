@@ -583,3 +583,15 @@ body .el-loading-mask { background: rgba(0, 0, 0, .75); }
 @keyframes wb-bar-glow { 0%, 100% { filter: brightness(1); } 50% { filter: brightness(1.7); } }
 @keyframes wb-text-glow { 0%, 100% { text-shadow: 0 0 0 rgba(214, 232, 196, 0); } 50% { text-shadow: 0 0 22px rgba(214, 232, 196, .45); } }
 .layout .badge::before, .layout .timeline-dot { animation: wb-pulse-dot 2.4s ease-in-out infinite; }
+
+/* 丝滑的悬停 / 按下反馈：统一用指数缓出曲线，只过渡 transform、颜色、边框、阴影 */
+:root { --ease-smooth: cubic-bezier(.22, 1, .36, 1); }
+.layout .el-button, .layout button, .layout a { transition-timing-function: var(--ease-smooth); }
+.layout .el-button:not(.is-disabled):active, .layout .create-button:active, .layout .nav-search:active { transform: scale(.96); }
+.layout .metric-card, .layout .stat-card, .layout .card, .layout .timeline-item, .layout .nav-item {
+  transition: transform .6s var(--ease-smooth), border-color .4s var(--ease-smooth), background-color .4s var(--ease-smooth), box-shadow .5s var(--ease-smooth), color .3s var(--ease-smooth);
+}
+.layout .card:hover, .layout .metric-card:hover, .layout .stat-card:hover { box-shadow: 0 18px 50px -24px rgba(214, 232, 196, .22); border-color: rgba(239, 239, 235, .28); }
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+.lenis.lenis-stopped { overflow: hidden; }

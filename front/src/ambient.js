@@ -1,5 +1,9 @@
 import { gsap } from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import Lenis from 'lenis'
 import { prefersReducedMotion } from './motion'
+
+gsap.registerPlugin(ScrollTrigger)
 
 // 全站常驻的动态层：粒子星网背景、卡片 3D 倾斜、磁吸按钮。
 // 鼠标光斑和顶部滚动进度条已由 interactions.js 提供，这里不重复。页面一打开就在动，不需要任何点击。
@@ -198,13 +202,29 @@ export function startAmbient() {
     document.documentElement.removeEventListener('pointerleave', onLeave)
   })
 
+  /* ── 惯性平滑滚动：滚轮滚动带阻尼，和 ScrollTrigger 同步 ───────── */
+  const lenis = new Lenis({
+    lerp: 0.085,
+    wheelMultiplier: 0.95,
+    smoothWheel: true,
+    // 弹窗、下拉、表格、编辑器等自带滚动的区域保持原生滚动，避免被整页平滑滚动抢走滚轮
+    prevent: (node) => !!node.closest?.('.el-overlay, .el-popper, .el-scrollbar, .el-table__body-wrapper, textarea, [contenteditable], .ql-editor'),
+  })
+  lenis.on('scroll', ScrollTrigger.update)
+  const tick = (time) => lenis.raf(time * 1000)
+  gsap.ticker.add(tick)
+  gsap.ticker.lagSmoothing(0)
+  disposers.push(() => {
+    gsap.ticker.remove(tick)
+    lenis.destroy()
+  })
   disposers.push(startEnterMotion())
 
   return () => disposers.splice(0).forEach((dispose) => dispose())
 }
 
 /* ── 内容区进场：任何卡片 / 区块进入视口都带模糊 + 遮罩展开入场 ──────────
-   只动 filter 与 clip-path，不碰 transform / opacity，避免和各页自己的 v-reveal 打架。 */
+   只用 transform / opacity（GPU 合成，不触发重排，比 blur 丝滑）；已被 v-reveal 接管的元素会跳过，避免两套动画打架。 */
 const ENTER_SELECTOR = [
   '.metric-card', '.stat-card', '.card', '.cockpit-section', '.cockpit-hero', '.hero-card',
   '.timeline-item', '.report-card', '.table-frame', '.kanban', '.load-error',
@@ -213,8 +233,8 @@ const ENTER_SELECTOR = [
 function startEnterMotion() {
   if (typeof IntersectionObserver === 'undefined') return () => {}
   const seen = new WeakSet()
-  const from = { filter: 'blur(14px)', clipPath: 'inset(0 0 100% 0 round 10px)' }
-  const to = { filter: 'blur(0px)', clipPath: 'inset(0 0 0% 0 round 10px)', duration: 0.95, stagger: 0.07, ease: 'power3.out', clearProps: 'filter,clipPath' }
+  const from = { autoAlpha: 0, y: 28, scale: 0.985 }
+  const to = { autoAlpha: 1, y: 0, scale: 1, duration: 0.8, stagger: 0.06, ease: 'expo.out', clearProps: 'opacity,visibility,transform' }
 
   const io = new IntersectionObserver((entries) => {
     const batch = entries.filter((entry) => entry.isIntersecting).map((entry) => entry.target)
@@ -229,6 +249,7 @@ function startEnterMotion() {
     document.querySelectorAll(ENTER_SELECTOR).forEach((el) => {
       if (seen.has(el)) return
       seen.add(el)
+      if (el.closest('[data-reveal-owned]') || getComputedStyle(el).opacity !== '1') return
       const rect = el.getBoundingClientRect()
       // 已经在首屏里的先藏起来，避免内容闪一下再播入场
       if (rect.top < window.innerHeight && rect.bottom > 0) gsap.set(el, from)
