@@ -1,5 +1,6 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
+import { RouterLink } from 'vue-router'
 import PageShell from '../components/PageShell.vue'
 import api from '../api'
 import {
@@ -407,7 +408,20 @@ onMounted(load)
           </div>
           <div class="table-frame">
             <el-table :data="globalProjectRows" size="small" stripe>
-              <el-table-column prop="projectName" label="项目" min-width="180" />
+              <el-table-column label="项目" min-width="180">
+                <template #default="{ row }">
+                  <RouterLink
+                    v-if="row.projectId != null"
+                    class="project-link"
+                    :to="`/projects/${row.projectId}`"
+                    :aria-label="`打开${row.projectName}的项目交付驾驶舱`"
+                  >
+                    <span class="project-link-label">{{ row.projectName }}</span>
+                    <span class="project-link-arrow" aria-hidden="true">→</span>
+                  </RouterLink>
+                  <span v-else>{{ row.projectName }}</span>
+                </template>
+              </el-table-column>
               <el-table-column prop="reqCnt" label="需求" width="90" />
               <el-table-column prop="taskCnt" label="任务" width="90" />
               <el-table-column prop="bugCnt" label="缺陷" width="90" />
@@ -669,6 +683,12 @@ onMounted(load)
 .empty { padding: 24px 0; color: var(--muted); text-align: center; font-size: 12px; }
 .report-actions { display: flex; align-items: center; gap: 8px; }
 .project-select { width: 180px; }
+.project-link { display: inline-flex; max-width: 100%; align-items: center; gap: 8px; color: var(--text); font-weight: 600; text-decoration: none; transition: color .22s var(--ease); }
+.project-link:hover { color: var(--accent); }
+.project-link:focus-visible { color: var(--accent); }
+.project-link-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.project-link-arrow { color: var(--muted); opacity: .55; transform: translateX(-3px); transition: color .22s var(--ease), opacity .22s var(--ease), transform .22s var(--ease); }
+.project-link:hover .project-link-arrow, .project-link:focus-visible .project-link-arrow { color: var(--accent); opacity: 1; transform: translateX(0); }
 .load-error { display: flex; min-height: 180px; align-items: center; gap: 18px; padding: 28px; border: 1px solid var(--border); border-radius: var(--radius-lg); background: rgba(255,255,255,.018); }
 .error-mark { display: grid; width: 42px; height: 42px; flex: 0 0 auto; place-items: center; border: 1px solid var(--border); border-radius: 50%; color: var(--accent); font-family: var(--font-display); font-size: 18px; }
 .load-error h2 { margin: 0 0 8px; font-size: 15px; font-weight: 500; }
