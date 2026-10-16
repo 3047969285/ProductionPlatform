@@ -7,7 +7,7 @@ import { bugSeverity, bugStatus, milestoneStatus, releaseEnv, releaseStatus, tas
 import { getDeliveryRecommendation } from '../deliveryRecommendation'
 
 const props = defineProps({ projectId: { type: Number, required: true } })
-const emit = defineEmits(['navigate', 'edit-item'])
+const emit = defineEmits(['navigate', 'edit-item', 'edit-delivery-node'])
 
 const root = ref(null)
 const loading = ref(false)
@@ -205,6 +205,8 @@ const releaseSummary = computed(() => {
 const timeline = computed(() => [
   ...milestones.value.slice(0, 3).map((item) => ({
     key: `m-${item.id}`,
+    kind: 'milestone',
+    id: item.id,
     type: '里程碑',
     title: item.name,
     date: item.dueDate,
@@ -213,6 +215,8 @@ const timeline = computed(() => [
   })),
   ...releases.value.slice(0, 2).map((item) => ({
     key: `r-${item.id}`,
+    kind: 'release',
+    id: item.id,
     type: '发布',
     title: item.version,
     date: item.releasedAt || item.createdAt,
@@ -270,6 +274,10 @@ function activateAction(item) {
     return
   }
   go(item.tab)
+}
+
+function editTimelineItem(item) {
+  emit('edit-delivery-node', item.kind, item.id)
 }
 
 function setupAnimations() {
@@ -408,11 +416,11 @@ onUnmounted(() => {
         <el-button text @click="go('release')">管理交付节点 →</el-button>
       </div>
       <div class="timeline">
-        <div v-for="item in timeline" :key="item.key" class="timeline-item">
+        <button v-for="item in timeline" :key="item.key" class="timeline-item" type="button" :aria-label="`编辑${item.type}：${item.title}`" @click="editTimelineItem(item)">
           <span class="timeline-dot" :class="item.tone" />
           <div><small>{{ item.type }} · {{ formatDate(item.date) }}</small><strong>{{ item.title }}</strong></div>
           <span class="badge" :class="item.tone === 'danger' ? 'pink' : item.tone === 'good' ? 'lime' : 'cyan'">{{ item.status }}</span>
-        </div>
+        </button>
       </div>
     </section>
 
@@ -495,8 +503,10 @@ onUnmounted(() => {
 .pulse-row strong { max-width: 62%; font-size: 13px; text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .dangerText { color: var(--pink); }
 .timeline { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
-.timeline-item { position: relative; min-height: 84px; padding: 10px 10px 8px 15px; border-left: 1px solid var(--border-strong); transition: border-color .35s var(--ease), transform .4s var(--ease); }
+.timeline-item { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; width: 100%; position: relative; min-height: 84px; padding: 10px 10px 8px 15px; border: 0; border-left: 1px solid var(--border-strong); background: transparent; color: inherit; font: inherit; text-align: left; cursor: pointer; transition: border-color .35s var(--ease), transform .4s var(--ease); }
 .timeline-item:hover { border-left-color: rgba(239, 239, 235, .62); transform: translateY(-3px); }
+.timeline-item:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+.timeline-item > div { flex: 1; min-width: 0; }
 .timeline-dot { position: absolute; left: -5px; top: 12px; width: 9px; height: 9px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 4px rgba(239, 239, 235, .1); transition: box-shadow .4s var(--ease); }
 .timeline-item:hover .timeline-dot { box-shadow: 0 0 0 8px rgba(239, 239, 235, .09); }
 .timeline-dot.good { background: var(--lime); box-shadow: 0 0 0 4px rgba(52,199,89,.12); }
@@ -504,7 +514,7 @@ onUnmounted(() => {
 .timeline-item small, .timeline-item strong { display: block; }
 .timeline-item small { color: var(--muted); font-size: 11px; margin-bottom: 5px; }
 .timeline-item strong { font-size: 13px; margin-bottom: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.timeline-item .badge { font-size: 11px; padding: 2px 8px; }
+.timeline-item .badge { flex: 0 0 auto; font-size: 11px; padding: 2px 8px; }
 .load-alert { margin-top: 0; }
 @media (max-width: 980px) {
   .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }

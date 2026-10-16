@@ -48,6 +48,7 @@ const detailVisible = ref(false)
 const detailType = ref('test')
 const detailId = ref(null)
 const requestedWorkItem = ref(null)
+const requestedDeliveryNode = ref(null)
 let projectRequestId = 0
 let testRequestId = 0
 let opsRequestId = 0
@@ -213,6 +214,19 @@ function clearRequestedWorkItem(type, id) {
   }
 }
 
+function openRecommendedDeliveryEditor(type, id) {
+  const nodeId = Number(id)
+  if (!['milestone', 'release'].includes(type) || !Number.isInteger(nodeId) || nodeId < 1) return
+  requestedDeliveryNode.value = { type, id: nodeId }
+  selectTab('release')
+}
+
+function clearRequestedDeliveryNode(type, id) {
+  if (requestedDeliveryNode.value?.type === type && requestedDeliveryNode.value.id === Number(id)) {
+    requestedDeliveryNode.value = null
+  }
+}
+
 function onTabChange(name) {
   if (name === 'test-items') loadTests()
   if (name === 'ops') loadOps()
@@ -237,6 +251,7 @@ function selectTab(name) {
 watch(projectId, (nextProjectId, previousProjectId) => {
   if (nextProjectId === previousProjectId) return
   requestedWorkItem.value = null
+  requestedDeliveryNode.value = null
   project.value = null
   projectError.value = false
   tests.value = []
@@ -313,7 +328,7 @@ onMounted(() => {
         <Transition name="stage-panel" mode="out-in">
         <!-- 交付驾驶舱：项目进入后的默认入口 -->
         <section v-if="tab === 'cockpit'" key="cockpit">
-          <DeliveryCockpit :project-id="projectId" @navigate="selectTab" @edit-item="openRecommendedEditor" />
+          <DeliveryCockpit :project-id="projectId" @navigate="selectTab" @edit-item="openRecommendedEditor" @edit-delivery-node="openRecommendedDeliveryEditor" />
         </section>
 
         <!-- 需求 -->
@@ -386,7 +401,7 @@ onMounted(() => {
 
         <!-- 发布 -->
         <section v-else-if="tab === 'release'" key="release">
-          <ReleasePanel :project-id="projectId" />
+          <ReleasePanel :project-id="projectId" :initial-edit-type="requestedDeliveryNode?.type" :initial-edit-id="requestedDeliveryNode?.id" @initial-edit-resolved="clearRequestedDeliveryNode" />
         </section>
 
         <!-- 成员 -->

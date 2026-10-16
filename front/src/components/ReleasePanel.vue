@@ -4,9 +4,14 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import api from '../api'
 import { milestoneStatus, releaseStatus, releaseEnv, badgeClass } from '../constants'
 
-const props = defineProps({ projectId: { type: Number, required: true } })
+const props = defineProps({
+  projectId: { type: Number, required: true },
+  initialEditType: { type: String, default: null },
+  initialEditId: { type: Number, default: null },
+})
+const emit = defineEmits(['initial-edit-resolved'])
 
-const sub = ref('milestones')
+const sub = ref(props.initialEditType === 'release' ? 'releases' : 'milestones')
 const milestones = ref([])
 const msLoading = ref(false)
 const msDialog = ref(false)
@@ -22,16 +27,44 @@ const relSaving = ref(false)
 const relForm = ref({})
 
 async function loadMilestones() {
+  const initialEditType = props.initialEditType
+  const initialEditId = props.initialEditId
   msLoading.value = true
-  try { milestones.value = (await api.get('/milestones', { params: { projectId: props.projectId } })).data }
-  catch (e) { ElMessage.error(e.message) }
+  try {
+    milestones.value = (await api.get('/milestones', { params: { projectId: props.projectId } })).data
+    if (initialEditType === 'milestone' && initialEditId != null && initialEditType === props.initialEditType && initialEditId === props.initialEditId) {
+      const target = milestones.value.find((item) => item.id === initialEditId)
+      if (target) openMsEdit(target)
+      else ElMessage.info('该里程碑已不存在，请刷新列表后重试')
+      emit('initial-edit-resolved', initialEditType, initialEditId)
+    }
+  } catch (e) {
+    ElMessage.error(e.message)
+    if (initialEditType === 'milestone' && initialEditId != null && initialEditType === props.initialEditType && initialEditId === props.initialEditId) {
+      emit('initial-edit-resolved', initialEditType, initialEditId)
+    }
+  }
   finally { msLoading.value = false }
 }
 
 async function loadReleases() {
+  const initialEditType = props.initialEditType
+  const initialEditId = props.initialEditId
   relLoading.value = true
-  try { releases.value = (await api.get('/releases', { params: { projectId: props.projectId } })).data }
-  catch (e) { ElMessage.error(e.message) }
+  try {
+    releases.value = (await api.get('/releases', { params: { projectId: props.projectId } })).data
+    if (initialEditType === 'release' && initialEditId != null && initialEditType === props.initialEditType && initialEditId === props.initialEditId) {
+      const target = releases.value.find((item) => item.id === initialEditId)
+      if (target) openRelEdit(target)
+      else ElMessage.info('该发布记录已不存在，请刷新列表后重试')
+      emit('initial-edit-resolved', initialEditType, initialEditId)
+    }
+  } catch (e) {
+    ElMessage.error(e.message)
+    if (initialEditType === 'release' && initialEditId != null && initialEditType === props.initialEditType && initialEditId === props.initialEditId) {
+      emit('initial-edit-resolved', initialEditType, initialEditId)
+    }
+  }
   finally { relLoading.value = false }
 }
 
@@ -118,7 +151,10 @@ async function removeRel(id) {
   }
 }
 
-onMounted(loadMilestones)
+onMounted(() => {
+  if (props.initialEditType === 'release') loadReleases()
+  else loadMilestones()
+})
 watch(() => props.projectId, () => { loadMilestones(); if (sub.value === 'releases') loadReleases() })
 </script>
 
