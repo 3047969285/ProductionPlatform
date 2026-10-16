@@ -4,12 +4,13 @@
     <section class="hero">
       <p class="tag"><i />00 / DELIVERY</p>
       <h1>交付总览</h1>
-      <p class="desc">需求 / 开发 / 测试 / 部署</p>
+      <p class="desc">项目交付与协作数据实时汇总</p>
     </section>
     <section v-if="!loading && !loadError" class="grid">
-      <RouterLink v-for="c in cards" :key="c.label" :to="c.to" class="card" :aria-label="`${c.label} ${c.value}，查看相关页面`">
+      <RouterLink v-for="c in cards" :key="c.label" :to="c.to" class="card" :aria-label="`${c.label} ${c.value}，${c.action}`">
         <span class="num" :style="{ color: c.color }" v-count="c.value">{{ c.value }}</span>
         <span class="label">{{ c.label }}</span>
+        <span class="card-action" aria-hidden="true">{{ c.action }} <i>↗</i></span>
       </RouterLink>
     </section>
     <section v-else-if="loading" class="status-panel" aria-live="polite">
@@ -71,12 +72,12 @@ const cards = computed(() => {
   const d = data.value
   if (!d) return []
   return [
-    { label: '项目', value: d.projects ?? 0, color: '#fff', to: '/projects' },
-    { label: '需求', value: d.requirements?.total ?? 0, color: 'var(--cyan)', to: '/reports' },
-    { label: '接口', value: d.apis ?? 0, color: 'var(--purple)', to: '/reports' },
-    { label: '测试中', value: d.tests?.running ?? 0, color: 'var(--cyan)', to: '/reports' },
-    { label: '运维待处理', value: d.ops?.open ?? 0, color: 'var(--pink)', to: '/reports' },
-    { label: '活跃团队', value: d.teams?.active ?? 0, color: 'var(--lime)', to: '/teams' },
+    { label: '项目', value: d.projects ?? 0, color: '#fff', to: '/projects', action: '查看项目' },
+    { label: '需求总数', value: d.requirements?.total ?? 0, color: 'var(--cyan)', to: '/reports', action: '看需求统计' },
+    { label: '接口文档', value: d.apis ?? 0, color: 'var(--purple)', to: '/projects', action: '先选项目' },
+    { label: '执行中验证任务', value: d.tests?.running ?? 0, color: 'var(--cyan)', to: '/projects', action: '先选项目' },
+    { label: '待处理运维问题', value: d.ops?.open ?? 0, color: 'var(--pink)', to: '/projects', action: '先选项目' },
+    { label: '活跃团队', value: d.teams?.active ?? 0, color: 'var(--lime)', to: '/teams', action: '看协作团队' },
   ]
 })
 
@@ -195,9 +196,9 @@ onUnmounted(() => {
 .tag { display: flex; align-items: center; gap: 9px; color: var(--muted); font-size: 8px; letter-spacing: .2em; margin-bottom: 19px; }
 .tag i { width: 25px; height: 1px; background: var(--muted); }
 h1 { font-family: var(--font-display); font-size: clamp(3rem, 6vw, 6rem); font-weight: 400; letter-spacing: -.09em; line-height: .92; margin-bottom: 18px; }
-.desc { color: var(--muted-light); font-size: 9px; letter-spacing: .2em; }
+.desc { color: var(--muted-light); font-size: 9px; letter-spacing: .14em; }
 .grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 0; margin-bottom: clamp(48px, 10vh, 100px); border-top: 1px solid rgba(239,239,235,.24); border-bottom: 1px solid rgba(239,239,235,.15); background: transparent; }
-.card { position: relative; min-width: 0; min-height: 142px; padding: 22px 18px 18px 0; color: inherit; background: transparent; border-right: 1px solid rgba(239,239,235,.12); cursor: pointer; text-decoration: none; will-change: transform, opacity; transition: transform .45s var(--ease), background .35s var(--ease); }
+.card { position: relative; min-width: 0; min-height: 142px; padding: 22px 18px 36px 0; color: inherit; background: transparent; border-right: 1px solid rgba(239,239,235,.12); cursor: pointer; text-decoration: none; will-change: transform, opacity; transition: transform .45s var(--ease), background .35s var(--ease); }
 .card:focus-visible { outline: 1px solid rgba(239,239,235,.72); outline-offset: -1px; }
 .card + .card { padding-left: 18px; }
 .card:last-child { border-right: 0; }
@@ -205,8 +206,12 @@ h1 { font-family: var(--font-display); font-size: clamp(3rem, 6vw, 6rem); font-w
 .card:hover { z-index: 1; background: rgba(255,255,255,.025); transform: translateY(-5px); }
 .num { display: block; font-family: var(--font-display); font-size: clamp(2rem, 4vw, 3.7rem); font-weight: 400; line-height: 1; letter-spacing: -.06em; transition: transform .5s var(--ease), letter-spacing .5s var(--ease); }
 .label { display: block; margin-top: 32px; color: var(--muted-light); font-size: 9px; letter-spacing: .11em; transition: color .35s var(--ease), letter-spacing .5s var(--ease); }
+.card-action { position: absolute; right: 18px; bottom: 16px; display: flex; align-items: center; gap: 7px; color: var(--muted); font-size: 8px; letter-spacing: .06em; transition: color .3s var(--ease); }
+.card-action i { color: var(--muted-light); font-size: 11px; font-style: normal; transition: transform .3s var(--ease); }
 .card:hover .num { transform: translateY(-3px); letter-spacing: -.04em; }
 .card:hover .label { color: var(--text); letter-spacing: .16em; }
+.card:hover .card-action { color: var(--text); }
+.card:hover .card-action i { transform: translate(2px, -2px); }
 .recent { max-width: 1000px; margin-bottom: 32px; }
 .recent-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; margin-bottom: 18px; }
 .recent-kicker { margin-bottom: 6px; color: var(--muted); font-size: 8px; letter-spacing: .16em; }
