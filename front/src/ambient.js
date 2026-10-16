@@ -202,6 +202,22 @@ export function startAmbient() {
     document.documentElement.removeEventListener('pointerleave', onLeave)
   })
 
+  /* ── 背景柔光：两团绿金色光晕缓慢漂移 ───────────────────── */
+  const orbs = ['sage', 'amber'].map((tone) => {
+    const el = document.createElement('div')
+    el.className = `ambient-orb ${tone}`
+    el.setAttribute('aria-hidden', 'true')
+    document.body.prepend(el)
+    return el
+  })
+  const orbTweens = orbs.map((el, i) => gsap.to(el, {
+    x: i ? -90 : 110, y: i ? -70 : 80, scale: i ? 1.12 : 1.18,
+    duration: 16 + i * 5, repeat: -1, yoyo: true, ease: 'sine.inOut',
+  }))
+  disposers.push(() => {
+    orbTweens.forEach((tween) => tween.kill())
+    orbs.forEach((el) => el.remove())
+  })
   /* ── 惯性平滑滚动：滚轮滚动带阻尼，和 ScrollTrigger 同步 ───────── */
   const lenis = new Lenis({
     lerp: 0.085,

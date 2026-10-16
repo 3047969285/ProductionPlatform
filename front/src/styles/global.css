@@ -595,3 +595,59 @@ body .el-loading-mask { background: rgba(0, 0, 0, .75); }
 html.lenis, html.lenis body { height: auto; }
 .lenis.lenis-smooth { scroll-behavior: auto !important; }
 .lenis.lenis-stopped { overflow: hidden; }
+
+/* ── 质感层：克制的绿金点缀、柔光、渐变字、彩色状态点 ─────────────────────
+   整体仍是黑底 + 灰白排版，只在“数据 / 状态 / 强调”处加一点色，让层次更清楚。 */
+:root {
+  --sage: #cbd276;
+  --sage-glow: rgba(203, 210, 118, .16);
+  --amber: #e0b073;
+  --sky: #8fb8de;
+  --rose: #e08f82;
+  --mint: #9fd6a8;
+  --violet: #b2aee6;
+  --surface-grad: linear-gradient(180deg, rgba(255, 255, 255, .045), rgba(255, 255, 255, .012));
+}
+::selection { background: rgba(203, 210, 118, .28); color: #fff; }
+* { scrollbar-width: thin; scrollbar-color: rgba(239, 239, 235, .22) transparent; }
+
+/* 背景里缓慢漂移的两团柔光（见 ambient.js） */
+.ambient-orb { position: fixed; z-index: 0; border-radius: 50%; pointer-events: none; filter: blur(90px); opacity: .5; will-change: transform; }
+.ambient-orb.sage { top: -14vmax; left: -10vmax; width: 46vmax; height: 46vmax; background: radial-gradient(circle, rgba(203, 210, 118, .14), transparent 66%); }
+.ambient-orb.amber { right: -14vmax; bottom: -18vmax; width: 52vmax; height: 52vmax; background: radial-gradient(circle, rgba(224, 176, 115, .10), transparent 66%); }
+:root[data-reduce-motion] .ambient-orb { animation: none; }
+
+/* 大标题与大数字：自上而下的渐变，避免纯灰白的平 */
+.split-char { background: linear-gradient(180deg, #ffffff 25%, rgba(237, 240, 228, .58) 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+:root .home .num, :root .layout .metric-value, :root .layout .stat-card strong, :root .layout .hero-signal strong {
+  background: linear-gradient(180deg, #ffffff 30%, var(--sage) 140%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+}
+
+/* 状态徽标：文字保持低调，只让小圆点带色并给边框淡淡的底色 */
+.layout .badge { background: rgba(239, 239, 235, .05); border-color: rgba(239, 239, 235, .2); color: var(--muted); }
+.layout .badge::before { width: 6px; height: 6px; background: var(--badge-dot, rgba(239, 239, 235, .55)); box-shadow: 0 0 8px var(--badge-dot, transparent); }
+.layout .badge.cyan { --badge-dot: var(--sky); }
+.layout .badge.purple { --badge-dot: var(--violet); }
+.layout .badge.pink { --badge-dot: var(--rose); }
+.layout .badge.lime { --badge-dot: var(--mint); }
+.layout .badge.orange { --badge-dot: var(--amber); }
+
+/* 面板与卡片：顶部一道高光 + 轻渐变，立体一点 */
+:root .layout .metric-card, :root .layout .stat-card, :root .layout .cockpit-section, :root .layout .cockpit-hero, :root .layout .next-item {
+  background-image: var(--surface-grad);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .07);
+}
+:root .layout .metric-card:hover, :root .layout .stat-card:hover { border-color: rgba(203, 210, 118, .4); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .1), 0 18px 50px -26px rgba(203, 210, 118, .35); }
+
+/* 首页指标卡顶部短线：悬停时拉满并变成点缀色 */
+.home .card::before { background: var(--sage); width: 24px; transition: width .6s var(--ease-smooth, cubic-bezier(.22, 1, .36, 1)); }
+.home .card:hover::before { width: 100%; }
+
+/* 主按钮与导航激活项的柔光 */
+.layout .el-button--primary:not(.is-disabled):hover { box-shadow: 0 8px 28px -10px rgba(203, 210, 118, .6); }
+.layout .nav-item.active { text-shadow: 0 0 18px rgba(203, 210, 118, .45); }
+.layout .nav-rail { background: linear-gradient(90deg, transparent, var(--sage), transparent); height: 2px; }
+.layout .el-table .el-table__row { transition: background-color .3s var(--ease-smooth, ease); }
+.layout .el-table--enable-row-hover .el-table__body tr:hover > td.el-table__cell { background: rgba(203, 210, 118, .05); }
+.home .num { font-size: clamp(2.6rem, 5vw, 4.8rem); }
+.ambient-orb { opacity: .85; }
