@@ -5,6 +5,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { gsap } from 'gsap'
 import PageShell from '../components/PageShell.vue'
 import api from '../api'
+import { stageDefinitions, validTabs } from '../stages'
 
 const route = useRoute()
 const router = useRouter()
@@ -52,6 +53,12 @@ const filteredList = computed(() => {
   const value = keyword.value.trim().toLowerCase()
   if (!value) return list.value
   return list.value.filter((project) => `${project.code} ${project.name} ${project.description || ''}`.toLowerCase().includes(value))
+})
+
+const destinationTab = computed(() => {
+  const tab = route.query.tab
+  if (typeof tab !== 'string' || !validTabs.has(tab)) return ''
+  return stageDefinitions.flatMap((stage) => stage.tabs).find((item) => item.key === tab)?.label || ''
 })
 
 watch(filteredList, () => { activeIndex.value = 0 })
@@ -104,16 +111,18 @@ function activateCard(index, id) {
 
 function openProject(id) {
   if (openingProject.value || deletingProjectId.value !== null) return
+  const destination = { path: '/projects/' + id }
+  if (typeof route.query.tab === 'string' && validTabs.has(route.query.tab)) destination.query = { tab: route.query.tab }
   const selectedCard = root.value?.querySelector('.project-card.selected')
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
   if (!selectedCard || reduced) {
-    router.push('/projects/' + id)
+    router.push(destination)
     return
   }
 
   openingProject.value = true
   openingContext = gsap.context(() => {
-    gsap.timeline({ onComplete: () => router.push('/projects/' + id) })
+    gsap.timeline({ onComplete: () => router.push(destination) })
       .to(selectedCard.querySelector('.project-cover'), { scale: 1.06, y: -6, duration: .22, ease: 'power3.out' })
       .to(selectedCard.querySelector('.project-cover'), { scale: 1.12, y: -14, autoAlpha: 0, duration: .3, ease: 'power4.in' })
       .to(selectedCard.querySelector('.project-info'), { y: 18, autoAlpha: 0, duration: .3, ease: 'power3.in' }, '<')
@@ -302,7 +311,7 @@ onUnmounted(() => {
           <button type="button" aria-label="上一个项目" :disabled="deletingProjectId !== null" @click="moveTo(activeIndex - 1)">←</button>
           <button type="button" aria-label="下一个项目" :disabled="deletingProjectId !== null" @click="moveTo(activeIndex + 1)">→</button>
         </div>
-        <span class="gallery-hint">选择项目以打开交付驾驶舱</span>
+        <span class="gallery-hint">{{ destinationTab ? `选择项目后进入${destinationTab}` : '选择项目以打开交付驾驶舱' }}</span>
       </div>
     </div>
 

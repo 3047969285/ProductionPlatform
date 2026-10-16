@@ -74,9 +74,9 @@ const cards = computed(() => {
   return [
     { label: '项目', value: d.projects ?? 0, color: '#fff', to: '/projects', action: '查看项目' },
     { label: '需求总数', value: d.requirements?.total ?? 0, color: 'var(--cyan)', to: '/reports', action: '看需求统计' },
-    { label: '接口文档', value: d.apis ?? 0, color: 'var(--purple)', to: '/projects', action: '先选项目' },
-    { label: '执行中验证任务', value: d.tests?.running ?? 0, color: 'var(--cyan)', to: '/projects', action: '先选项目' },
-    { label: '待处理运维问题', value: d.ops?.open ?? 0, color: 'var(--pink)', to: '/projects', action: '先选项目' },
+    { label: '接口文档', value: d.apis ?? 0, color: 'var(--purple)', to: { path: '/projects', query: { tab: 'api' } }, action: '选项目后打开接口' },
+    { label: '执行中验证任务', value: d.tests?.running ?? 0, color: 'var(--cyan)', to: { path: '/projects', query: { tab: 'test-items' } }, action: '选项目后打开验证任务' },
+    { label: '待处理运维问题', value: d.ops?.open ?? 0, color: 'var(--pink)', to: { path: '/projects', query: { tab: 'ops' } }, action: '选项目后打开运维问题' },
     { label: '活跃团队', value: d.teams?.active ?? 0, color: 'var(--lime)', to: '/teams', action: '看协作团队' },
   ]
 })
