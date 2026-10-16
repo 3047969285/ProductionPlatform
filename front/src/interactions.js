@@ -341,7 +341,7 @@ export function useInteractions(options = {}) {
 export function createSpotlight(options = {}) {
   const noop = { destroy() {} }
   if (typeof window === 'undefined' || typeof document === 'undefined') return noop
-  if (prefersReducedMotion()) return noop
+  const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)')
   // 触屏设备没有指针悬停，直接不装。
   if (window.matchMedia?.('(hover: none)').matches) return noop
 
@@ -372,6 +372,7 @@ export function createSpotlight(options = {}) {
   }
 
   const move = (event) => {
+    if (reducedMotion?.matches) { leave(); return }
     target = { x: event.clientX, y: event.clientY }
     if (!on) { on = true; node.classList.add('is-on') }
     if (!frame) frame = requestAnimationFrame(tick)
@@ -382,16 +383,23 @@ export function createSpotlight(options = {}) {
     if (frame) { cancelAnimationFrame(frame); frame = 0 }
     target = null
   }
+  const onMotionPreferenceChange = (event) => {
+    if (event.matches) leave()
+  }
 
   window.addEventListener('pointermove', move, { passive: true })
   window.addEventListener('blur', leave)
   document.addEventListener('pointerleave', leave)
+  if (reducedMotion?.addEventListener) reducedMotion.addEventListener('change', onMotionPreferenceChange)
+  else reducedMotion?.addListener?.(onMotionPreferenceChange)
 
   return {
     destroy() {
       window.removeEventListener('pointermove', move)
       window.removeEventListener('blur', leave)
       document.removeEventListener('pointerleave', leave)
+      if (reducedMotion?.removeEventListener) reducedMotion.removeEventListener('change', onMotionPreferenceChange)
+      else reducedMotion?.removeListener?.(onMotionPreferenceChange)
       if (frame) cancelAnimationFrame(frame)
       node.remove()
     },
