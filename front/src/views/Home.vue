@@ -1,16 +1,12 @@
 <template>
   <div ref="root" class="home">
-    <div class="bg" aria-hidden="true"><div class="orb o1" /><div class="orb o2" /></div>
     <section class="hero">
-      <p class="tag"><i />00 / DELIVERY</p>
       <h1>交付总览</h1>
-      <p class="desc">项目交付五阶段，实时汇总</p>
     </section>
     <section v-if="!loading && !loadError" class="grid">
       <RouterLink v-for="c in cards" :key="c.label" :to="c.to" class="card" :aria-label="`${c.label} ${c.value}，${c.action}`">
         <span class="num" :style="{ color: c.color }" v-count="c.value">{{ c.value }}</span>
         <span class="label">{{ c.label }}</span>
-        <span class="card-action" aria-hidden="true">{{ c.action }} <i>↗</i></span>
       </RouterLink>
     </section>
     <section v-else-if="loading" class="status-panel" aria-live="polite">
@@ -25,8 +21,7 @@
 
     <section v-if="!loading && !loadError && recentReqs.length" class="recent">
       <div class="recent-head">
-        <div><p class="recent-kicker">LIVE / REQUIREMENTS</p><h2>最近更新的需求</h2></div>
-        <RouterLink to="/reports">交付看板 <span class="wb-arrow" aria-hidden="true">↗</span></RouterLink>
+        <h2>最近更新的需求</h2>
       </div>
       <ul class="list">
         <li v-for="r in recentReqs" :key="r.id">
@@ -41,7 +36,6 @@
               <small>{{ r.projectName || '所属项目' }}<template v-if="recentDate(r)"> · {{ recentDate(r) }}</template></small>
             </span>
             <span class="badge" :class="badgeClass('req', r.status)">{{ reqStatus[r.status] || r.status || '待确认' }}</span>
-            <span class="recent-open" aria-hidden="true">打开 <i>↗</i></span>
           </RouterLink>
         </li>
       </ul>

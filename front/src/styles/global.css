@@ -582,9 +582,4 @@ body .el-loading-mask { background: rgba(0, 0, 0, .75); }
 @keyframes wb-pulse-dot { 0%, 100% { opacity: 1; scale: 1; } 50% { opacity: .4; scale: 1.5; } }
 @keyframes wb-bar-glow { 0%, 100% { filter: brightness(1); } 50% { filter: brightness(1.7); } }
 @keyframes wb-text-glow { 0%, 100% { text-shadow: 0 0 0 rgba(214, 232, 196, 0); } 50% { text-shadow: 0 0 22px rgba(214, 232, 196, .45); } }
-.layout .metric-card, .layout .stat-card, .layout .hero-card, .layout .cockpit-hero { animation: wb-float 7s ease-in-out infinite; }
-.layout .metric-card:nth-child(2n), .layout .stat-card:nth-child(2n) { animation-delay: -2.3s; }
-.layout .metric-card:nth-child(3n), .layout .stat-card:nth-child(3n) { animation-delay: -4.6s; }
-.layout .bar-fill, .layout .el-progress-bar__inner, .layout .trend-part { animation: wb-bar-glow 3.4s ease-in-out infinite; }
 .layout .badge::before, .layout .timeline-dot { animation: wb-pulse-dot 2.4s ease-in-out infinite; }
-.layout .hero-signal strong, .layout .stat-card strong, .layout .metric-value { animation: wb-text-glow 4.5s ease-in-out infinite; }

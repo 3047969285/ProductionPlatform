@@ -305,10 +305,6 @@ onMounted(() => {
       <div class="project-body">
       <!-- 当前阶段的工作台导航 -->
       <aside v-reveal="{ blocks: '.phase-menu-head, .phase-hint', rows: '.nav-item' }" class="side-nav">
-        <div class="phase-menu-head">
-          <span class="phase-number">{{ String(stageDefinitions.findIndex((stage) => stage.key === activeStageKey) + 1).padStart(2, '0') }}</span>
-          <div><strong>{{ activeStage.label }}</strong><small>ACTIVE</small></div>
-        </div>
         <button
           v-for="it in activeStageTabs"
           :key="it.key"
@@ -320,7 +316,6 @@ onMounted(() => {
           <span>{{ it.label }}</span>
           <span v-if="tab === it.key" class="nav-arrow">→</span>
         </button>
-        <p class="phase-hint">{{ activeStage.short }}</p>
       </aside>
 
       <!-- 右侧内容区 -->

@@ -84,13 +84,8 @@ onUnmounted(() => {
   <section ref="root" class="stage-nav" aria-label="项目交付阶段">
     <div class="stage-heading">
       <div>
-        <p class="eyebrow">DELIVERY FLOW</p>
         <h2>{{ activeStage?.label || '交付流程' }}</h2>
         <p>{{ activeStage?.description }}</p>
-      </div>
-      <div class="stage-counter">
-        <strong>{{ String(activeIndex + 1).padStart(2, '0') }}</strong>
-        <span>/ {{ String(stages.length).padStart(2, '0') }}</span>
       </div>
     </div>
 

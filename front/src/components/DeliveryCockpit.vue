@@ -330,7 +330,6 @@ onUnmounted(() => {
   <div ref="root" class="cockpit" v-loading="loading">
     <section class="cockpit-hero">
       <div>
-        <p class="eyebrow">PDE DELIVERY COCKPIT</p>
         <h2>交付驾驶舱</h2>
         <p class="hero-copy">状态 / 下一步</p>
       </div>
@@ -362,7 +361,6 @@ onUnmounted(() => {
       <section class="cockpit-section next-section">
         <div class="section-heading">
           <div>
-            <p class="eyebrow">PROJECT FLOW / LIVE</p>
             <h3>交付下一步</h3>
           </div>
           <div class="section-tools">
@@ -394,7 +392,6 @@ onUnmounted(() => {
       <section class="cockpit-section status-section">
         <div class="section-heading">
           <div>
-            <p class="eyebrow">DELIVERY PULSE</p>
             <h3>节奏</h3>
           </div>
         </div>
@@ -410,7 +407,6 @@ onUnmounted(() => {
     <section v-if="timeline.length" class="cockpit-section timeline-section">
       <div class="section-heading">
         <div>
-          <p class="eyebrow">MILESTONES & RELEASES</p>
           <h3>节点</h3>
         </div>
         <el-button text @click="go('release')">管理交付节点 →</el-button>

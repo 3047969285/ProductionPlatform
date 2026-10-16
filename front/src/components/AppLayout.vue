@@ -202,12 +202,11 @@ onUnmounted(() => {
     <header class="nav">
       <RouterLink to="/" class="brand" aria-label="DevFlow 总览">
         <span class="brand-mark">DF</span>
-        <span class="brand-copy"><strong>DEVFLOW</strong><small>PDE / DELIVERY</small></span>
+        <span class="brand-copy"><strong>DEVFLOW</strong></span>
       </RouterLink>
       <nav ref="navList" class="nav-list" aria-label="主导航">
         <span ref="navRail" class="nav-rail" aria-hidden="true" />
         <RouterLink v-for="(l, index) in visibleLinks" :key="l.to" :to="l.to" class="nav-item" :class="{ active: isActive(l) }">
-          <span class="nav-index">{{ String(index + 1).padStart(2, '0') }}</span>
           <span>{{ l.label }}</span>
         </RouterLink>
       </nav>
