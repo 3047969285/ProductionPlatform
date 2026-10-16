@@ -5,8 +5,6 @@ const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     { path: '/login', component: () => import('../views/Login.vue'), meta: { guest: true } },
-    { path: '/gpt-history', name: 'gpt-history', component: () => import('../views/GptHistory.vue') },
-    { path: '/contest/:pathMatch(.*)*', redirect: '/' },
     {
       path: '/',
       component: () => import('../components/AppLayout.vue'),
@@ -20,6 +18,7 @@ const router = createRouter({
         { path: 'users', component: () => import('../views/Users.vue'), meta: { admin: true } },
       ],
     },
+    { path: '/:pathMatch(.*)*', redirect: '/' },
   ],
 })
 

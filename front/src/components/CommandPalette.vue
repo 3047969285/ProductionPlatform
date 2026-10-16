@@ -79,7 +79,6 @@ const pageCommands = [
   { id: 'nav-teams', label: '团队', hint: '03 / TEAMS', icon: '◎', keywords: 'teams tuandui', to: '/teams' },
   { id: 'nav-reports', label: '报表', hint: '04 / REPORTS', icon: '▤', keywords: 'reports baobiao chart', to: '/reports' },
   { id: 'nav-users', label: '用户', hint: '05 / USERS', icon: '☰', keywords: 'users yonghu admin', to: '/users', admin: true },
-  { id: 'nav-history', label: 'AI 记录', hint: 'GPT HISTORY', icon: '✦', keywords: 'gpt history jilu ai', to: '/gpt-history' },
 ].map((item) => ({ ...item, group: '导航' }))
 
 const actionCommands = computed(() => [
