@@ -4,6 +4,7 @@ import { ElMessage } from 'element-plus'
 import { gsap } from 'gsap'
 import api from '../api'
 import { bugSeverity, bugStatus, milestoneStatus, releaseEnv, releaseStatus, taskStatus } from '../constants'
+import { getDeliveryRecommendation } from '../deliveryRecommendation'
 
 const props = defineProps({ projectId: { type: Number, required: true } })
 const emit = defineEmits(['navigate'])
@@ -152,6 +153,15 @@ const stats = computed(() => [
   { key: 'milestones', label: '下个里程碑', ...milestoneMetric.value, tab: 'release' },
 ])
 
+const workflowRecommendation = computed(() => getDeliveryRecommendation({
+  requirements: requirements.value,
+  tasks: tasks.value,
+  sprints: sprints.value,
+  testPlans: testPlans.value,
+  releases: releases.value,
+  unavailable: errors.value.map(({ key }) => key),
+}))
+
 const nextActions = computed(() => {
   const actions = []
   seriousBugs.value.slice(0, 2).forEach((item) => actions.push({
@@ -175,13 +185,9 @@ const nextActions = computed(() => {
     description: `状态：${taskStatus[item.status] || item.status}`,
     tab: 'task',
   }))
-  if (!activeSprint.value && tasks.value.length) actions.push({
-    key: 'sprint',
-    tone: 'neutral',
-    title: '启动一个迭代，把任务放进计划',
-    description: '没有进行中的迭代，交付节奏不容易跟踪',
-    tab: 'sprint',
-  })
+  if (workflowRecommendation.value && !actions.some((item) => item.tab === workflowRecommendation.value.tab)) {
+    actions.push(workflowRecommendation.value)
+  }
   return actions.slice(0, 4)
 })
 
@@ -332,57 +338,36 @@ onUnmounted(() => {
       </button>
     </section>
 
-    <section class="cockpit-section action-section">
-      <div class="section-heading">
-        <div>
-          <p class="eyebrow">QUICK START</p>
-          <h3>下一步</h3>
-        </div>
-        <el-button text @click="load(false)" :loading="refreshing">重新读取</el-button>
-      </div>
-      <div class="action-grid">
-        <button class="action-card" type="button" @click="go('req')">
-          <span class="action-icon blue">＋</span>
-          <span><strong>录入需求</strong><small>写清目标</small></span>
-          <span class="action-arrow">→</span>
-        </button>
-        <button class="action-card" type="button" @click="go('task')">
-          <span class="action-icon purple">✓</span>
-          <span><strong>拆成任务</strong><small>分配工作</small></span>
-          <span class="action-arrow">→</span>
-        </button>
-        <button class="action-card" type="button" @click="go('test')">
-          <span class="action-icon green">⌁</span>
-          <span><strong>开始验证</strong><small>确认质量</small></span>
-          <span class="action-arrow">→</span>
-        </button>
-        <button class="action-card" type="button" @click="go('release')">
-          <span class="action-icon orange">↑</span>
-          <span><strong>准备发布</strong><small>记录上线</small></span>
-          <span class="action-arrow">→</span>
-        </button>
-      </div>
-    </section>
-
     <div class="cockpit-columns">
       <section class="cockpit-section next-section">
         <div class="section-heading">
           <div>
-            <p class="eyebrow">NEXT ACTION</p>
-            <h3>待处理</h3>
+            <p class="eyebrow">PROJECT FLOW / LIVE</p>
+            <h3>交付下一步</h3>
           </div>
-          <span class="section-count">{{ nextActions.length }}</span>
+          <div class="section-tools">
+            <span class="section-count" :aria-label="`${nextActions.length} 条建议`">{{ nextActions.length }}</span>
+            <el-button text @click="load(false)" :loading="refreshing">刷新</el-button>
+          </div>
         </div>
         <div v-if="nextActions.length" class="next-list">
-          <button v-for="item in nextActions" :key="item.key" class="next-item" :class="item.tone" type="button" @click="go(item.tab)">
+          <button v-for="item in nextActions" :key="item.key" class="next-item" :class="[item.tone, { 'is-featured': item.featured }]" type="button" @click="go(item.tab)">
             <span class="next-marker" />
-            <span class="next-copy"><strong>{{ item.title }}</strong><small>{{ item.description }}</small></span>
+            <span class="next-copy">
+              <small v-if="item.stage" class="next-stage">{{ item.stage }} · 建议下一步</small>
+              <strong>{{ item.title }}</strong>
+              <small>{{ item.description }}</small>
+            </span>
             <span class="action-arrow">→</span>
           </button>
         </div>
+        <div v-else-if="errors.length" class="all-clear incomplete">
+          <span>!</span>
+          <div><strong>数据未完整，暂不能判断</strong><small>刷新成功后会给出对应阶段建议</small></div>
+        </div>
         <div v-else class="all-clear">
           <span>✓</span>
-          <div><strong>没有明显阻塞</strong><small>继续推进</small></div>
+          <div><strong>当前没有待处理事项</strong><small>交付数据已完整读取</small></div>
         </div>
       </section>
 
@@ -463,29 +448,28 @@ onUnmounted(() => {
 .cockpit-section { padding: 18px; border: 1px solid var(--border); border-radius: var(--radius-lg); background: rgba(23, 27, 25, .78); box-shadow: var(--shadow-sm); }
 .section-heading { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 14px; }
 .section-heading h3 { font-size: 17px; font-weight: 700; }
+.section-tools { display: flex; align-items: center; gap: 8px; }
 .section-count { display: inline-grid; place-items: center; min-width: 26px; height: 26px; padding: 0 8px; border: 1px solid var(--border-strong); border-radius: 999px; color: var(--accent); background: rgba(239, 239, 235, .08); font-size: 13px; font-weight: 700; }
-.action-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
-.action-card, .next-item { width: 100%; border: 1px solid var(--border); background: var(--surface); text-align: left; cursor: pointer; font: inherit; transition: transform .25s var(--ease), border-color .25s var(--ease), box-shadow .25s var(--ease); }
-.action-card { display: grid; grid-template-columns: 34px 1fr 18px; gap: 10px; align-items: center; padding: 13px; border-radius: 14px; }
-.action-card:hover, .next-item:hover { transform: translateY(-2px); border-color: rgba(239, 239, 235, .5); box-shadow: var(--shadow-md); }
-.action-card strong, .action-card small, .next-copy strong, .next-copy small { display: block; }
-.action-card strong { font-size: 14px; margin-bottom: 3px; }
-.action-card small, .next-copy small { color: var(--muted); font-size: 12px; line-height: 1.45; }
-.action-icon { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 10px; font-size: 20px; font-weight: 700; }
-.action-icon.blue { color: var(--accent); background: rgba(239, 239, 235, .1); }
-.action-icon.purple { color: var(--purple); background: rgba(94,92,230,.1); }
-.action-icon.green { color: #248a3d; background: rgba(52,199,89,.12); }
-.action-icon.orange { color: #a86500; background: rgba(255,159,10,.14); }
+.next-item { width: 100%; border: 1px solid var(--border); background: var(--surface); text-align: left; cursor: pointer; font: inherit; transition: transform .25s var(--ease), border-color .25s var(--ease), box-shadow .25s var(--ease), background .25s var(--ease); }
+.next-item:hover { transform: translateY(-2px); border-color: rgba(239, 239, 235, .5); box-shadow: var(--shadow-md); }
+.next-item.is-featured { border-color: rgba(239, 239, 235, .24); background: linear-gradient(115deg, rgba(239, 239, 235, .08), var(--surface) 68%); }
+.next-item.is-featured:hover { border-color: var(--accent); }
+.next-copy strong, .next-copy small { display: block; }
+.next-copy { min-width: 0; }
+.next-copy strong { margin-bottom: 2px; font-size: 14px; line-height: 1.35; overflow-wrap: anywhere; }
+.next-copy small { color: var(--muted); font-size: 12px; line-height: 1.45; }
+.next-stage { width: fit-content; margin-bottom: 3px; color: var(--accent) !important; font-size: 10px !important; letter-spacing: .1em; }
 .action-arrow { color: var(--muted-light); font-size: 18px; transition: transform .2s var(--ease); }
-.action-card:hover .action-arrow, .next-item:hover .action-arrow { transform: translateX(3px); color: var(--accent); }
+.next-item:hover .action-arrow { transform: translateX(3px); color: var(--accent); }
 .cockpit-columns { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(300px, .85fr); gap: 16px; }
 .next-list { display: flex; flex-direction: column; gap: 8px; }
 .next-item { display: grid; grid-template-columns: 10px 1fr 18px; gap: 10px; align-items: center; padding: 12px; border-radius: 12px; }
 .next-marker { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 4px rgba(239, 239, 235, .1); }
 .next-item.warning .next-marker { background: var(--orange); box-shadow: 0 0 0 4px rgba(255,159,10,.13); }
 .next-item.danger .next-marker { background: var(--pink); box-shadow: 0 0 0 4px rgba(255,55,95,.12); }
-.next-copy strong { font-size: 14px; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .all-clear { display: flex; gap: 12px; align-items: center; min-height: 134px; padding: 16px; border-radius: 12px; background: rgba(52,199,89,.08); color: #248a3d; }
+.all-clear.incomplete { color: var(--orange); background: rgba(255,159,10,.08); }
+.all-clear.incomplete > span { background: rgba(255,159,10,.15); }
 .all-clear > span { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: rgba(52,199,89,.15); font-weight: 700; }
 .all-clear strong, .all-clear small { display: block; }
 .all-clear strong { font-size: 14px; }
@@ -511,13 +495,13 @@ onUnmounted(() => {
 .timeline-item .badge { font-size: 11px; padding: 2px 8px; }
 .load-alert { margin-top: 0; }
 @media (max-width: 980px) {
-  .stats, .action-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .timeline { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 @media (max-width: 700px) {
   .cockpit-hero { flex-direction: column; }
   .health { width: 100%; }
-  .stats, .action-grid, .cockpit-columns, .timeline { grid-template-columns: 1fr; }
+  .stats, .cockpit-columns, .timeline { grid-template-columns: 1fr; }
   .timeline-item { min-height: auto; }
 }
 </style>
