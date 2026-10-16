@@ -47,6 +47,7 @@ const opsSaving = ref(false)
 const detailVisible = ref(false)
 const detailType = ref('test')
 const detailId = ref(null)
+const requestedWorkItem = ref(null)
 let projectRequestId = 0
 let testRequestId = 0
 let opsRequestId = 0
@@ -199,6 +200,19 @@ function openDetail(type, id) {
   detailVisible.value = true
 }
 
+function openRecommendedEditor(type, id) {
+  const workId = Number(id)
+  if (!['task', 'bug'].includes(type) || !Number.isInteger(workId) || workId < 1) return
+  requestedWorkItem.value = { type, id: workId }
+  selectTab(type)
+}
+
+function clearRequestedWorkItem(type, id) {
+  if (requestedWorkItem.value?.type === type && requestedWorkItem.value.id === Number(id)) {
+    requestedWorkItem.value = null
+  }
+}
+
 function onTabChange(name) {
   if (name === 'test-items') loadTests()
   if (name === 'ops') loadOps()
@@ -222,6 +236,7 @@ function selectTab(name) {
 
 watch(projectId, (nextProjectId, previousProjectId) => {
   if (nextProjectId === previousProjectId) return
+  requestedWorkItem.value = null
   project.value = null
   projectError.value = false
   tests.value = []
@@ -298,7 +313,7 @@ onMounted(() => {
         <Transition name="stage-panel" mode="out-in">
         <!-- 交付驾驶舱：项目进入后的默认入口 -->
         <section v-if="tab === 'cockpit'" key="cockpit">
-          <DeliveryCockpit :project-id="projectId" @navigate="selectTab" />
+          <DeliveryCockpit :project-id="projectId" @navigate="selectTab" @edit-item="openRecommendedEditor" />
         </section>
 
         <!-- 需求 -->
@@ -313,12 +328,12 @@ onMounted(() => {
 
         <!-- 任务 -->
         <section v-else-if="tab === 'task'" key="task">
-          <TaskPanel :project-id="projectId" />
+          <TaskPanel :project-id="projectId" :initial-edit-id="requestedWorkItem?.type === 'task' ? requestedWorkItem.id : null" @initial-edit-resolved="clearRequestedWorkItem('task', $event)" />
         </section>
 
         <!-- 缺陷 -->
         <section v-else-if="tab === 'bug'" key="bug">
-          <BugPanel :project-id="projectId" />
+          <BugPanel :project-id="projectId" :initial-edit-id="requestedWorkItem?.type === 'bug' ? requestedWorkItem.id : null" @initial-edit-resolved="clearRequestedWorkItem('bug', $event)" />
         </section>
 
         <!-- 看板 -->

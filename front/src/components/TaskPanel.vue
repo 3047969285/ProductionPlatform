@@ -6,7 +6,11 @@ import WorkItemDetail from './WorkItemDetail.vue'
 import RichEditor from './RichEditor.vue'
 import { taskStatus, reqPriority, badgeClass } from '../constants'
 
-const props = defineProps({ projectId: { type: Number, required: true } })
+const props = defineProps({
+  projectId: { type: Number, required: true },
+  initialEditId: { type: Number, default: null },
+})
+const emit = defineEmits(['initial-edit-resolved'])
 
 const list = ref([])
 const loading = ref(false)
@@ -25,9 +29,20 @@ async function loadSprints() {
 }
 
 async function load() {
+  const initialEditId = props.initialEditId
   loading.value = true
-  try { list.value = (await api.get('/tasks', { params: { projectId: props.projectId } })).data }
-  catch (e) { ElMessage.error(e.message) }
+  try {
+    list.value = (await api.get('/tasks', { params: { projectId: props.projectId } })).data
+    if (initialEditId != null && initialEditId === props.initialEditId) {
+      const target = list.value.find((item) => item.id === initialEditId)
+      if (target) openEdit(target)
+      else ElMessage.info('该任务已不存在，请刷新列表后重试')
+      emit('initial-edit-resolved', initialEditId)
+    }
+  } catch (e) {
+    ElMessage.error(e.message)
+    if (initialEditId != null && initialEditId === props.initialEditId) emit('initial-edit-resolved', initialEditId)
+  }
   finally { loading.value = false }
 }
 

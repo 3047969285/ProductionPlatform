@@ -7,7 +7,7 @@ import { bugSeverity, bugStatus, milestoneStatus, releaseEnv, releaseStatus, tas
 import { getDeliveryRecommendation } from '../deliveryRecommendation'
 
 const props = defineProps({ projectId: { type: Number, required: true } })
-const emit = defineEmits(['navigate'])
+const emit = defineEmits(['navigate', 'edit-item'])
 
 const root = ref(null)
 const loading = ref(false)
@@ -166,6 +166,8 @@ const nextActions = computed(() => {
   const actions = []
   seriousBugs.value.slice(0, 2).forEach((item) => actions.push({
     key: `bug-${item.id}`,
+    workType: 'bug',
+    workId: item.id,
     tone: item.severity === 'critical' ? 'danger' : 'warning',
     title: `处理${bugSeverity[item.severity] || ''}缺陷：${item.title}`,
     description: item.assignee ? `负责人：${item.assignee}` : '还没有负责人，建议先指派处理人',
@@ -180,6 +182,8 @@ const nextActions = computed(() => {
   }))
   unassignedTasks.value.slice(0, 2).forEach((item) => actions.push({
     key: `task-${item.id}`,
+    workType: 'task',
+    workId: item.id,
     tone: 'neutral',
     title: `给任务补负责人：${item.title}`,
     description: `状态：${taskStatus[item.status] || item.status}`,
@@ -258,6 +262,14 @@ async function load(showLoading = true) {
 
 function go(tab) {
   emit('navigate', tab)
+}
+
+function activateAction(item) {
+  if (item.workType && item.workId != null) {
+    emit('edit-item', item.workType, item.workId)
+    return
+  }
+  go(item.tab)
 }
 
 function setupAnimations() {
@@ -351,7 +363,7 @@ onUnmounted(() => {
           </div>
         </div>
         <div v-if="nextActions.length" class="next-list">
-          <button v-for="item in nextActions" :key="item.key" class="next-item" :class="[item.tone, { 'is-featured': item.featured }]" type="button" @click="go(item.tab)">
+          <button v-for="item in nextActions" :key="item.key" class="next-item" :class="[item.tone, { 'is-featured': item.featured }]" type="button" @click="activateAction(item)">
             <span class="next-marker" />
             <span class="next-copy">
               <small v-if="item.stage" class="next-stage">{{ item.stage }} · 建议下一步</small>
