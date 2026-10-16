@@ -105,11 +105,19 @@ function moveTo(index) {
 }
 
 function activateCard(index, id) {
-  if (index !== activeIndex.value) moveTo(index)
-  else openProject(id)
+  if (openingProject.value || deletingProjectId.value !== null) return
+  if (index !== activeIndex.value) {
+    moveTo(index)
+    nextTick(() => {
+      if (activeIndex.value !== index || filteredList.value[index]?.id !== id) return
+      openProject(id, .32)
+    })
+    return
+  }
+  openProject(id)
 }
 
-function openProject(id) {
+function openProject(id, leadIn = 0) {
   if (openingProject.value || deletingProjectId.value !== null) return
   const destination = { path: '/projects/' + id }
   if (typeof route.query.tab === 'string' && validTabs.has(route.query.tab)) destination.query = { tab: route.query.tab }
@@ -123,7 +131,7 @@ function openProject(id) {
   openingProject.value = true
   openingContext = gsap.context(() => {
     gsap.timeline({ onComplete: () => router.push(destination) })
-      .to(selectedCard.querySelector('.project-cover'), { scale: 1.06, y: -6, duration: .22, ease: 'power3.out' })
+      .to(selectedCard.querySelector('.project-cover'), { scale: 1.06, y: -6, duration: .22, ease: 'power3.out' }, leadIn)
       .to(selectedCard.querySelector('.project-cover'), { scale: 1.12, y: -14, autoAlpha: 0, duration: .3, ease: 'power4.in' })
       .to(selectedCard.querySelector('.project-info'), { y: 18, autoAlpha: 0, duration: .3, ease: 'power3.in' }, '<')
   }, root.value)
