@@ -164,7 +164,7 @@ ul, ol { margin: 0; padding: 0; list-style: none; }
   padding: 3px 9px;
   color: var(--accent);
   background: rgba(239, 239, 235, .08);
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.2;
   white-space: nowrap;
 }
@@ -658,3 +658,15 @@ html.lenis, html.lenis body { height: auto; }
 .layout .el-table td.el-table__cell .el-button:hover { color: var(--text); background: rgba(239, 239, 235, .08); }
 .layout .el-table td.el-table__cell .el-button--danger { color: rgba(224, 143, 130, .75); }
 .layout .el-table td.el-table__cell .el-button--danger:hover { color: #fff; background: rgba(224, 143, 130, .22); }
+
+/* 清晰度：提高次级文字的对比度（原先 .36 / .62 的灰在黑底上偏暗，小字不易辨认） */
+:root:root { --muted: rgba(239, 239, 235, .74); --muted-light: rgba(239, 239, 235, .54); --border: rgba(238, 238, 234, .17); }
+body { font-size: 14px; line-height: 1.55; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+.layout .el-table th.el-table__cell { color: rgba(239, 239, 235, .66); font-weight: 500; }
+.layout .el-table td.el-table__cell { color: rgba(239, 239, 235, .92); }
+.layout .el-table td.el-table__cell, .layout .el-table th.el-table__cell { padding-top: 9px; padding-bottom: 9px; }
+
+.layout .el-table td.el-table__cell .cell { white-space: nowrap; }
+.layout .el-table td.el-table__cell .el-button { white-space: nowrap; }
+
+:root .home h1 { font-size: clamp(1.9rem, 3.4vw, 3.2rem); }

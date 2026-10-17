@@ -103,7 +103,7 @@ onUnmounted(() => context?.revert())
   margin-bottom: clamp(10px, 2vh, 16px);
   flex-wrap: wrap;
 }
-.tag { display: flex; align-items: center; gap: 9px; color: var(--muted); font-size: 11px; font-weight: 500; letter-spacing: .2em; margin-bottom: 6px; }
+.tag { display: flex; align-items: center; gap: 9px; color: var(--muted); font-size: 12px; font-weight: 500; letter-spacing: .2em; margin-bottom: 6px; }
 .tag i { width: 24px; height: 1px; background: var(--muted); }
 h1 { font-family: var(--font-display); font-size: clamp(1.9rem, 3.4vw, 3.2rem); font-weight: 400; letter-spacing: -.07em; line-height: .95; }
 .page-action { display: flex; align-items: center; }

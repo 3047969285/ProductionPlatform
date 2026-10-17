@@ -291,7 +291,7 @@ onUnmounted(() => {
   position: relative; z-index: 4;
   display: flex; align-items: center; justify-content: space-between; gap: 16px;
   padding: 0 clamp(22px, 4.4vw, 64px) clamp(22px, 4vh, 38px);
-  color: var(--muted-light); font-size: 11px; letter-spacing: .16em;
+  color: var(--muted-light); font-size: 12px; letter-spacing: .16em;
 }
 
 /* ---------- 登录卡片 ---------- */
@@ -306,9 +306,9 @@ onUnmounted(() => {
   backdrop-filter: blur(20px);
 }
 .card-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
-.card-top p { color: var(--accent); font-size: 11px; letter-spacing: .2em; }
+.card-top p { color: var(--accent); font-size: 12px; letter-spacing: .2em; }
 .card-top span { color: var(--muted-light); font-size: 18px; }
-.login-card label { display: flex; flex-direction: column; gap: 7px; color: var(--muted); font-size: 11px; letter-spacing: .08em; }
+.login-card label { display: flex; flex-direction: column; gap: 7px; color: var(--muted); font-size: 12px; letter-spacing: .08em; }
 .login-card :deep(.el-input__inner:autofill),
 .login-card :deep(.el-input__inner:-webkit-autofill),
 .login-card :deep(.el-input__inner:-webkit-autofill:hover),
@@ -322,14 +322,14 @@ onUnmounted(() => {
 .btn { margin-top: 8px; padding: 14px 16px; color: #11140f; background: var(--accent); border: 1px solid var(--accent); border-radius: var(--radius); cursor: pointer; font-size: 13px; letter-spacing: .08em; transition: background .25s var(--ease), transform .25s var(--ease), box-shadow .25s var(--ease); }
 .btn:hover:not(:disabled) { background: #fff; box-shadow: 0 10px 26px rgba(239, 239, 235, .16); transform: translateY(-2px); }
 .btn:disabled { cursor: not-allowed; opacity: .55; }
-.login-card footer { display: flex; justify-content: space-between; margin-top: 10px; color: var(--muted-light); font-size: 11px; letter-spacing: .16em; }
+.login-card footer { display: flex; justify-content: space-between; margin-top: 10px; color: var(--muted-light); font-size: 12px; letter-spacing: .16em; }
 
 /* ---------- 场景头部 ---------- */
 .intro-actions { display: flex; align-items: center; gap: clamp(16px, 2vw, 28px); }
-.intro-brand { display: flex; align-items: center; gap: 12px; color: var(--text); font-size: 11px; font-weight: 600; letter-spacing: .14em; }
+.intro-brand { display: flex; align-items: center; gap: 12px; color: var(--text); font-size: 12px; font-weight: 600; letter-spacing: .14em; }
 .intro-brand-mark { display: grid; width: 34px; height: 34px; place-items: center; border: 1px solid rgba(203, 210, 118, .68); color: var(--accent); font-family: var(--font-display); font-size: 19px; font-weight: 400; }
-.intro-brand small { display: block; margin-top: 3px; color: var(--muted-light); font-size: 11px; font-weight: 400; letter-spacing: .16em; }
-.intro-skip { display: inline-flex; align-items: center; gap: 12px; padding: 10px 0 10px 12px; color: var(--muted); background: transparent; border: 0; cursor: pointer; font-size: 11px; letter-spacing: .08em; transition: color .2s ease; }
+.intro-brand small { display: block; margin-top: 3px; color: var(--muted-light); font-size: 12px; font-weight: 400; letter-spacing: .16em; }
+.intro-skip { display: inline-flex; align-items: center; gap: 12px; padding: 10px 0 10px 12px; color: var(--muted); background: transparent; border: 0; cursor: pointer; font-size: 12px; letter-spacing: .08em; transition: color .2s ease; }
 .intro-skip:hover, .intro-skip:focus-visible { color: var(--text); }
 .intro-skip:focus-visible { outline: 1px solid var(--accent); outline-offset: 4px; }
 .intro-skip span { color: var(--accent); font-size: 15px; }
@@ -345,9 +345,9 @@ onUnmounted(() => {
 .intro-work--left > footer { flex-direction: column; align-items: flex-end; justify-content: flex-end; padding-right: 94px; text-align: right; }
 .intro-work--right > header { justify-content: flex-start; padding-left: 94px; }
 .intro-work--right > footer { flex-direction: column; align-items: flex-start; justify-content: flex-end; padding-left: 94px; text-align: left; }
-.intro-work > header { color: var(--muted-light); font-size: 11px; letter-spacing: .18em; }
+.intro-work > header { color: var(--muted-light); font-size: 12px; letter-spacing: .18em; }
 .intro-work > footer strong { font-family: var(--font-display); font-size: clamp(20px, 2.2vw, 30px); font-weight: 400; letter-spacing: -.04em; }
-.intro-work > footer span { color: var(--muted); font-size: 11px; letter-spacing: .08em; }
+.intro-work > footer span { color: var(--muted); font-size: 12px; letter-spacing: .08em; }
 .work-visual { position: absolute; inset: 54px 20px 58px; overflow: hidden; border: 1px solid rgba(237, 240, 228, .1); background: linear-gradient(140deg, rgba(90, 94, 84, .28), rgba(9, 11, 10, .32)); }
 .work-visual::before, .work-visual::after { position: absolute; border: 1px solid rgba(237, 240, 228, .2); border-radius: 50%; content: ""; }
 .work-visual::before { top: 10%; right: 8%; width: 54%; aspect-ratio: 1; box-shadow: 0 0 0 14px rgba(237, 240, 228, .025), inset 0 0 42px rgba(203, 210, 118, .08); }
@@ -367,7 +367,7 @@ onUnmounted(() => {
 
 /* ---------- 场景标题（开场与登录态共用） ---------- */
 .intro-copy { position: relative; z-index: 3; width: min(88vw, 620px); text-align: center; }
-.intro-kicker { color: var(--accent); font-size: 11px; font-weight: 600; letter-spacing: .24em; }
+.intro-kicker { color: var(--accent); font-size: 12px; font-weight: 600; letter-spacing: .24em; }
 .intro-copy h2 { margin-top: 16px; color: var(--text); font-family: var(--font-display); font-size: clamp(30px, 4.4vw, 56px); font-weight: 400; letter-spacing: -.045em; line-height: 1.18; }
 .intro-copy h2 span { color: var(--accent); }
 .intro-caption { margin-top: 12px; color: var(--muted); font-size: 12px; letter-spacing: .14em; }
@@ -379,7 +379,7 @@ onUnmounted(() => {
   .intro-floor { opacity: .14; background-size: 46px 46px; }
   .intro-composition { top: 45%; width: min(112vw, 680px); }
   .intro-copy h2 { margin-top: 12px; font-size: clamp(28px, 8.4vw, 42px); }
-  .intro-caption { margin-top: 8px; font-size: 11px; }
+  .intro-caption { margin-top: 8px; font-size: 12px; }
   .intro-grid { background-size: 48px 48px; }
   .login-card { padding: 24px 22px; gap: 15px; }
 }
@@ -397,10 +397,10 @@ onUnmounted(() => {
   .intro-copy h2 { font-size: clamp(24px, 3vw, 34px); }
 }
 @media (max-width: 360px) {
-  .intro-brand { gap: 8px; font-size: 11px; letter-spacing: .1em; }
+  .intro-brand { gap: 8px; font-size: 12px; letter-spacing: .1em; }
   .intro-brand small { display: none; }
   .intro-actions { gap: 8px; }
-  .intro-skip { gap: 6px; font-size: 11px; letter-spacing: 0; white-space: nowrap; }
+  .intro-skip { gap: 6px; font-size: 12px; letter-spacing: 0; white-space: nowrap; }
 }
 :root[data-reduce-motion] .intro-skip, :root[data-reduce-motion] .btn { transition: none; }
 </style>

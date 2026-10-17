@@ -111,7 +111,7 @@ onMounted(load)
 .role-column { width: 20%; }
 .actions-column { width: 32%; }
 .users-table th, .users-table td { padding: 15px 18px; border-bottom: 1px solid var(--border); }
-.users-table th { color: var(--muted); background: rgba(255, 255, 255, .025); font-size: 11px; font-weight: 500; }
+.users-table th { color: var(--muted); background: rgba(255, 255, 255, .025); font-size: 12px; font-weight: 500; }
 .users-table td { color: var(--text); font-size: 12px; }
 .users-table tbody tr { transition: background .25s var(--ease); }
 .users-table tbody tr:hover { background: rgba(203, 210, 118, .045); }

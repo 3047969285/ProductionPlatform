@@ -5,7 +5,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { gsap } from 'gsap'
 import PageShell from '../components/PageShell.vue'
 import api from '../api'
-import { stageDefinitions, validTabs } from '../stages'
+import { validTabs } from '../stages'
 
 const route = useRoute()
 const router = useRouter()
@@ -21,13 +21,9 @@ const saving = ref(false)
 const loadError = ref(false)
 const dialog = ref(false)
 const editing = ref(false)
-const openingProject = ref(false)
 const deletingProjectId = ref(null)
 const form = ref({ code: '', name: '', description: '', techStack: '', deliveryType: 'SaaS' })
-const activeIndex = ref(0)
-const viewportWidth = ref(window.innerWidth)
 let context
-let openingContext
 let hasEntered = false
 
 async function load() {
@@ -52,17 +48,10 @@ async function load() {
 const filteredList = computed(() => {
   const value = keyword.value.trim().toLowerCase()
   if (!value) return list.value
-  return list.value.filter((project) => `${project.code} ${project.name} ${project.description || ''}`.toLowerCase().includes(value))
+  return list.value.filter((project) => `${project.code} ${project.name} ${project.description || ''} ${project.techStack || ''}`.toLowerCase().includes(value))
 })
 
-const destinationTab = computed(() => {
-  const tab = route.query.tab
-  if (typeof tab !== 'string' || !validTabs.has(tab)) return ''
-  return stageDefinitions.flatMap((stage) => stage.tabs).find((item) => item.key === tab)?.label || ''
-})
-
-watch(filteredList, () => { activeIndex.value = 0 })
-
+// 卡片依次入场（只在第一次载入时播放）
 watch(loading, async (isLoading) => {
   if (isLoading || hasEntered) return
   await nextTick()
@@ -70,86 +59,16 @@ watch(loading, async (isLoading) => {
   if (!cards?.length) return
   hasEntered = true
   context = gsap.context(() => {
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    gsap.fromTo(cards,
-      { autoAlpha: 0, y: reduced ? 0 : 24, rotateX: reduced ? 0 : 2 },
-      { autoAlpha: 1, y: 0, rotateX: 0, duration: reduced ? 0 : .85, stagger: reduced ? 0 : .09, ease: 'power3.out' },
-    )
+    gsap.from(cards, { autoAlpha: 0, y: 26, scale: 0.97, duration: 0.7, stagger: 0.07, ease: 'expo.out', clearProps: 'opacity,visibility,transform' })
   }, root.value)
 })
 
-function cardStyle(index) {
-  const delta = index - activeIndex.value
-  const mobile = viewportWidth.value < 700
-  const mobileWidth = viewportWidth.value < 421 ? .82 : .8
-  const cardWidth = mobile
-    ? Math.min(viewportWidth.value * mobileWidth, 540)
-    : Math.min(viewportWidth.value * (viewportWidth.value <= 900 ? .6 : .43), 650)
-  const gap = mobile ? 18 : 34
-  const angle = delta === 0 ? 0 : -Math.sign(delta) * Math.min(Math.abs(delta) * 5, 13)
-  const scale = delta === 0 ? 1 : Math.max(.78, 1 - Math.abs(delta) * .075)
-  const depth = delta === 0 ? 0 : -Math.min(Math.abs(delta) * 82, 220)
-  return {
-    transform: 'translate3d(calc(-50% + ' + delta * (cardWidth + gap) + 'px), -50%, ' + depth + 'px) rotateY(' + angle + 'deg) scale(' + scale + ')',
-    opacity: Math.abs(delta) > 2 ? 0 : Math.max(.35, 1 - Math.abs(delta) * .28),
-    zIndex: 10 - Math.abs(delta),
-    pointerEvents: Math.abs(delta) > 2 ? 'none' : 'auto',
-  }
-}
-
-function moveTo(index) {
-  if (openingProject.value || deletingProjectId.value !== null) return
-  const count = filteredList.value.length
-  if (!count) return
-  activeIndex.value = (index + count) % count
-}
-
-function activateCard(index, id) {
-  if (openingProject.value || deletingProjectId.value !== null) return
-  if (index !== activeIndex.value) {
-    moveTo(index)
-    nextTick(() => {
-      if (activeIndex.value !== index || filteredList.value[index]?.id !== id) return
-      openProject(id, .32)
-    })
-    return
-  }
-  openProject(id)
-}
-
-function openProject(id, leadIn = 0) {
-  if (openingProject.value || deletingProjectId.value !== null) return
+function openProject(id) {
+  if (deletingProjectId.value !== null) return
   const destination = { path: '/projects/' + id }
   if (typeof route.query.tab === 'string' && validTabs.has(route.query.tab)) destination.query = { tab: route.query.tab }
-  const selectedCard = root.value?.querySelector('.project-card.selected')
-  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  if (!selectedCard || reduced) {
-    router.push(destination)
-    return
-  }
-
-  openingProject.value = true
-  openingContext = gsap.context(() => {
-    gsap.timeline({ onComplete: () => router.push(destination) })
-      .to(selectedCard.querySelector('.project-cover'), { scale: 1.06, y: -6, duration: .22, ease: 'power3.out' }, leadIn)
-      .to(selectedCard.querySelector('.project-cover'), { scale: 1.12, y: -14, autoAlpha: 0, duration: .3, ease: 'power4.in' })
-      .to(selectedCard.querySelector('.project-info'), { y: 18, autoAlpha: 0, duration: .3, ease: 'power3.in' }, '<')
-  }, root.value)
+  router.push(destination)
 }
-
-function handleGalleryKey(event) {
-  if (event.target !== event.currentTarget && event.target.closest('button, a, input, textarea, select, [contenteditable="true"]')) return
-  if (openingProject.value || deletingProjectId.value !== null) { event.preventDefault(); return }
-  if (event.key === 'ArrowLeft') { event.preventDefault(); moveTo(activeIndex.value - 1) }
-  if (event.key === 'ArrowRight') { event.preventDefault(); moveTo(activeIndex.value + 1) }
-  if (event.key === 'Enter') {
-    event.preventDefault()
-    const selected = filteredList.value[activeIndex.value]
-    if (selected) openProject(selected.id)
-  }
-}
-
-function syncViewport() { viewportWidth.value = window.innerWidth }
 
 function workFor(project) {
   return workSummary.value.find((item) => Number(item.projectId) === Number(project.id)) || {}
@@ -168,8 +87,8 @@ function completionRate(project) {
 
 function completionLabel(project) {
   const rate = completionRate(project)
-  if (rate !== null) return `需求完成率 ${rate}%`
-  if (!completionSummaryAvailable.value || Number(workFor(project).reqCnt || 0) > 0) return '需求完成率 —'
+  if (rate !== null) return `完成 ${rate}%`
+  if (!completionSummaryAvailable.value || Number(workFor(project).reqCnt || 0) > 0) return '完成 —'
   return '暂无需求'
 }
 
@@ -242,14 +161,11 @@ async function remove(id) {
 }
 
 onMounted(() => {
-  window.addEventListener('resize', syncViewport, { passive: true })
   load()
   consumeNewQuery()
 })
 
 onUnmounted(() => {
-  window.removeEventListener('resize', syncViewport)
-  openingContext?.revert()
   context?.revert()
 })
 </script>
@@ -260,12 +176,13 @@ onUnmounted(() => {
       <div class="project-tools">
         <label class="search-wrap">
           <span aria-hidden="true">⌕</span>
-          <input v-model="keyword" type="search" placeholder="搜索项目" aria-label="搜索项目" :disabled="openingProject || deletingProjectId !== null" />
+          <input v-model="keyword" type="search" placeholder="搜索项目" aria-label="搜索项目" :disabled="deletingProjectId !== null" />
         </label>
-        <button class="create-button wb-press" type="button" :disabled="openingProject || deletingProjectId !== null || saving" @click="openAdd"><span class="wb-arrow" aria-hidden="true">＋</span> 新建</button>
+        <button class="create-button wb-press" type="button" :disabled="deletingProjectId !== null || saving" @click="openAdd"><span class="wb-arrow" aria-hidden="true">＋</span> 新建</button>
       </div>
     </template>
-    <div ref="root" v-loading="loading" class="gallery-layout" :class="{ opening: openingProject, deleting: deletingProjectId !== null }" >
+
+    <div ref="root" v-loading="loading" class="project-grid-wrap" :class="{ deleting: deletingProjectId !== null }">
       <div v-if="!loading && !loadError && unavailableSummaryLabels.length" class="summary-warning" role="status">
         <span>项目已加载；{{ unavailableSummaryLabels.join('、') }}暂不可用</span>
         <el-button link size="small" :disabled="loading || deletingProjectId !== null" @click="load">重试统计</el-button>
@@ -274,30 +191,29 @@ onUnmounted(() => {
         <span>项目列表读取失败</span>
         <el-button link @click="load">重新加载</el-button>
       </div>
-      <div v-if="!loadError && filteredList.length" class="gallery-stage" tabindex="0" aria-label="项目画廊，使用左右方向键切换，按回车打开当前项目" :aria-busy="openingProject || deletingProjectId !== null" @keydown="handleGalleryKey">
+
+      <div v-if="!loadError && (filteredList.length || !loading)" class="project-grid">
         <article
           v-for="(p, index) in filteredList"
           :key="p.id"
           class="project-card"
-          :class="{ selected: index === activeIndex }"
-          :style="cardStyle(index)"
-          :aria-current="index === activeIndex ? 'true' : undefined"
-          :aria-hidden="Math.abs(index - activeIndex) > 2 ? 'true' : undefined"
-          :inert="Math.abs(index - activeIndex) > 2"
-          @click="activateCard(index, p.id)"
+          tabindex="0"
+          :aria-label="`打开项目 ${p.name}`"
+          @click="openProject(p.id)"
+          @keydown.enter.self="openProject(p.id)"
         >
           <div class="project-cover" :class="'cover-' + (index % 4)">
             <div class="cover-topline"><span>{{ p.code }}</span><span>{{ p.deliveryType || '' }}</span></div>
             <div class="cover-art" aria-hidden="true"><i /><i /><i /></div>
-            <button type="button" class="cover-title" :disabled="deletingProjectId !== null" @click.stop="activateCard(index, p.id)">{{ p.name }}</button>
+            <h2 class="cover-title">{{ p.name }}</h2>
             <div class="cover-bottom"><span>{{ p.techStack || '' }}</span></div>
           </div>
           <div class="project-info">
             <div class="project-heading">
-              <div><span class="project-hint">{{ deliveryHint(p) }}</span></div>
-              <div v-if="index === activeIndex" class="card-actions" @click.stop>
+              <span class="project-hint">{{ deliveryHint(p) }}</span>
+              <div class="card-actions" @click.stop>
                 <button type="button" aria-label="编辑项目" :disabled="deletingProjectId !== null" @click="openEdit(p)">编辑</button>
-                <button type="button" aria-label="删除项目" :disabled="deletingProjectId !== null" @click="remove(p.id)">{{ deletingProjectId === p.id ? '处理中…' : '删除' }}</button>
+                <button type="button" class="danger" aria-label="删除项目" :disabled="deletingProjectId !== null" @click="remove(p.id)">{{ deletingProjectId === p.id ? '处理中…' : '删除' }}</button>
               </div>
             </div>
             <p class="project-description">{{ p.description || '暂无描述' }}</p>
@@ -307,18 +223,16 @@ onUnmounted(() => {
               <span>缺陷 <b>{{ workSummaryAvailable ? workFor(p).bugCnt || 0 : '—' }}</b></span>
               <span class="project-progress">{{ completionLabel(p) }}</span>
             </div>
-            <div v-if="completionRate(p) !== null" class="progress-track"><i :style="{ width: completionRate(p) + '%' }" /></div>
+            <div class="progress-track"><i :style="{ width: (completionRate(p) ?? 0) + '%' }" /></div>
           </div>
         </article>
+
+        <button v-if="!keyword" type="button" class="project-card project-new" :disabled="deletingProjectId !== null || saving" @click="openAdd">
+          <span class="plus" aria-hidden="true">＋</span>
+          <span>新建项目</span>
+        </button>
       </div>
-      <p v-if="!loadError && !loading && !filteredList.length" class="empty">{{ list.length ? '没有匹配的项目' : '还没有项目' }}</p>
-      <div v-if="!loadError && filteredList.length" class="gallery-controls">
-        <span>{{ String(activeIndex + 1).padStart(2, '0') }} <i /> {{ String(filteredList.length).padStart(2, '0') }}</span>
-        <div class="gallery-arrows">
-          <button type="button" aria-label="上一个项目" :disabled="deletingProjectId !== null" @click="moveTo(activeIndex - 1)">←</button>
-          <button type="button" aria-label="下一个项目" :disabled="deletingProjectId !== null" @click="moveTo(activeIndex + 1)">→</button>
-        </div>
-      </div>
+      <p v-if="!loadError && !loading && !filteredList.length && keyword" class="empty">没有匹配的项目</p>
     </div>
 
     <el-dialog
@@ -349,79 +263,62 @@ onUnmounted(() => {
 .search-wrap { display: flex; width: min(24vw, 250px); align-items: center; gap: 10px; padding: 9px 12px; border-bottom: 1px solid rgba(239,239,235,.3); color: var(--muted); transition: border-color .4s var(--ease), color .4s var(--ease); }
 .search-wrap:focus-within { border-bottom-color: rgba(239,239,235,.78); color: var(--text); }
 .search-wrap > span { font-size: 18px; line-height: 1; }
-.search-wrap input { width: 100%; border: 0; outline: 0; color: var(--text); background: transparent; font: inherit; font-size: 11px; }
+.search-wrap input { width: 100%; border: 0; outline: 0; color: var(--text); background: transparent; font: inherit; font-size: 13px; }
 .search-wrap input::placeholder { color: var(--muted-light); }
-.create-button { padding: 10px 14px; border: 1px solid rgba(239,239,235,.6); border-radius: 999px; color: #080808; background: var(--text); cursor: pointer; font-size: 11px; transition: color .25s ease, background .25s ease, transform .35s var(--ease); }
+.create-button { padding: 10px 14px; border: 1px solid rgba(239,239,235,.6); border-radius: 999px; color: #080808; background: var(--text); cursor: pointer; font-size: 13px; transition: color .25s ease, background .25s ease, transform .35s var(--ease); }
 .create-button:hover { color: var(--text); background: transparent; transform: translateY(-2px); }
-.gallery-layout { min-height: 70vh; }
-.gallery-layout.opening, .gallery-layout.deleting { pointer-events: none; }
-.summary-warning { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0 auto 8px; color: var(--muted-light); font-size: 11px; }
-.gallery-stage { position: relative; height: clamp(420px, 64vh, 700px); overflow: visible; outline: none; perspective: 1500px; transform-style: preserve-3d; }
-.stage-note { position: absolute; top: -19px; left: 0; color: var(--muted-light); font-size: 11px; letter-spacing: .18em; }
-.project-card { position: absolute; top: 50%; left: 50%; display: flex; width: min(50vw, 800px); height: clamp(340px, 58vh, 620px); flex-direction: column; overflow: hidden; border: 1px solid rgba(239,239,235,.16); border-radius: 17px; background: #0d0d0d; box-shadow: 0 28px 80px rgba(0,0,0,.55); cursor: pointer; transform-origin: center center; transition: transform .85s cubic-bezier(.2,.75,.2,1), opacity .55s ease, border-color .5s ease, box-shadow .5s ease; will-change: transform, opacity; }
-.project-card.selected { border-color: rgba(239,239,235,.54); box-shadow: 0 34px 100px rgba(0,0,0,.62); }
-.project-cover { position: relative; display: flex; flex: 1 1 58%; min-height: 54%; flex-direction: column; justify-content: space-between; overflow: hidden; padding: 18px 21px 17px; background: linear-gradient(135deg, #262726, #111212 72%); }
+.create-button:disabled { opacity: .45; cursor: not-allowed; }
+
+/* 铺满整屏的项目网格：项目少时卡片会拉高填满，项目多时自动换行 */
+.project-grid-wrap { min-height: calc(100svh - var(--nav-h) - 124px); display: flex; flex-direction: column; }
+.project-grid-wrap.deleting { pointer-events: none; }
+.project-grid { flex: 1; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 230px), 1fr)); grid-auto-rows: minmax(300px, 1fr); gap: 12px; }
+.summary-warning, .list-error { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; color: var(--muted-light); font-size: 12px; }
+.list-error { min-height: 76px; padding: 16px 20px; border: 1px solid var(--border); color: var(--muted); font-size: 13px; }
+.empty { text-align: center; color: var(--muted); padding: 46px 0; font-size: 13px; }
+
+.project-card { position: relative; display: flex; min-width: 0; flex-direction: column; overflow: hidden; border: 1px solid rgba(239,239,235,.16); border-radius: 14px; background: #0d0d0d; color: inherit; text-align: left; cursor: pointer; outline: none; box-shadow: 0 18px 50px -28px rgba(0,0,0,.8); transition: transform .5s var(--ease-smooth, cubic-bezier(.22,1,.36,1)), border-color .35s ease, box-shadow .5s ease; }
+.project-card:hover, .project-card:focus-visible { transform: translateY(-4px); border-color: rgba(203,210,118,.5); box-shadow: 0 26px 60px -26px rgba(203,210,118,.35); }
+.project-cover { position: relative; display: flex; flex: 1 1 56%; min-height: 150px; flex-direction: column; justify-content: space-between; overflow: hidden; padding: 16px 18px 14px; background: linear-gradient(135deg, #262726, #111212 72%); }
 .project-cover::before { position: absolute; inset: 0; content: ""; opacity: .5; background-image: linear-gradient(rgba(255,255,255,.055) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.055) 1px, transparent 1px); background-size: 35px 35px; mask-image: linear-gradient(135deg, #000, transparent 78%); }
-.cover-1 { background: linear-gradient(135deg, #30302e, #161717 70%); }
-.cover-2 { background: linear-gradient(135deg, #202121, #343331 60%, #151515); }
-.cover-3 { background: linear-gradient(135deg, #333330, #171818 65%); }
-.cover-topline, .cover-bottom { position: relative; z-index: 2; display: flex; justify-content: space-between; color: rgba(245,245,240,.7); font-size: 11px; letter-spacing: .15em; }
-.cover-art { position: absolute; inset: 10% 20%; display: grid; place-items: center; opacity: .86; }
-.cover-art::before, .cover-art::after, .cover-art i { position: absolute; display: block; border: 1px solid rgba(238,238,234,.45); border-radius: 50%; content: ""; }
-.cover-art::before { width: min(26vw, 310px); aspect-ratio: 1; box-shadow: 0 0 90px rgba(238,238,234,.06), inset 0 0 50px rgba(238,238,234,.06); }
-.cover-art::after { width: min(17vw, 210px); aspect-ratio: 1; border-color: rgba(238,238,234,.32); }
-.cover-art i:nth-child(1) { width: 74%; height: 25%; transform: rotate(-24deg); }
-.cover-art i:nth-child(2) { width: 34%; height: 85%; transform: rotate(38deg); }
-.cover-art i:nth-child(3) { width: 6px; height: 6px; top: 24%; right: 24%; background: #e4e4df; box-shadow: 0 0 24px rgba(255,255,255,.5); }
-.cover-1 .cover-art { transform: rotate(26deg) scale(.8); }
-.cover-1 .cover-art::before { border-radius: 43% 57% 50% 50%; }
-.cover-2 .cover-art { transform: rotate(-18deg) scale(1.15); }
-.cover-2 .cover-art::before { width: 70%; height: 56%; border-radius: 2px; }
-.cover-2 .cover-art::after { width: 45%; height: 80%; border-radius: 2px; }
-.cover-3 .cover-art { transform: rotate(50deg) scale(.9); }
-.cover-title { position: relative; z-index: 2; max-width: 75%; padding: 0; border: 0; color: rgba(245,245,240,.88); background: transparent; text-align: left; font-family: var(--font-display); font-size: clamp(21px, 3vw, 42px); letter-spacing: -.06em; cursor: pointer; transition: letter-spacing .5s var(--ease), color .3s var(--ease); }
-.project-card.selected:hover .cover-title { letter-spacing: -.038em; color: #fff; }
-.cover-title:disabled { cursor: wait; opacity: .55; }
-.project-info { display: flex; min-height: 42%; flex-direction: column; padding: 14px 20px 13px; }
-.project-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.project-code { color: var(--muted); font-size: 11px; letter-spacing: .13em; }
-.project-hint { margin-left: 0; color: var(--muted-light); font-size: 11px; }
-.card-actions { display: flex; gap: 8px; }
-.card-actions button { padding: 5px 8px; border: 1px solid rgba(239,239,235,.18); border-radius: 5px; color: var(--muted); background: transparent; cursor: pointer; font-size: 11px; }
-.card-actions button:hover { border-color: rgba(239,239,235,.65); color: var(--text); }
-.card-actions button:disabled, .gallery-arrows button:disabled { cursor: wait; opacity: .45; }
-.project-description { display: -webkit-box; overflow: hidden; margin-top: 7px; color: var(--muted); font-size: 11px; line-height: 1.5; -webkit-box-orient: vertical; -webkit-line-clamp: 1; }
-.project-stats { display: flex; align-items: center; gap: 15px; margin-top: auto; padding-top: 12px; color: var(--muted-light); font-size: 11px; }
-.project-stats b { margin-left: 4px; color: var(--text); font-size: 11px; font-weight: 500; }
-.project-progress { margin-left: auto; color: var(--text); }
-.progress-track { height: 1px; margin-top: 8px; background: rgba(239,239,235,.13); }
-.progress-track i { display: block; height: 100%; background: rgba(239,239,235,.78); transform-origin: left center; animation: wb-grow-x .85s var(--ease) both; transition: width .7s var(--ease); }
-.gallery-controls { display: grid; grid-template-columns: 100px 100px 1fr; align-items: center; gap: 20px; margin-top: 13px; color: var(--muted); font-size: 11px; letter-spacing: .12em; }
-.gallery-controls > span:first-child { display: inline-flex; align-items: center; gap: 9px; }
-.gallery-controls > span:first-child i { width: 28px; height: 1px; background: rgba(239,239,235,.3); }
-.gallery-arrows { display: flex; gap: 8px; }
-.gallery-arrows button { display: grid; width: 30px; height: 30px; place-items: center; border: 1px solid rgba(239,239,235,.27); border-radius: 50%; color: var(--text); background: transparent; cursor: pointer; transition: color .25s ease, background .25s ease, transform .3s ease; }
-.gallery-arrows button:hover { color: #000; background: var(--text); transform: scale(1.06); }
-.gallery-hint { justify-self: end; color: var(--muted-light); letter-spacing: .08em; }
-.list-error { display: flex; min-height: 76px; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 20px; border: 1px solid var(--border); color: var(--muted); font-size: 11px; }
-.empty { grid-column: 1 / -1; text-align: center; color: var(--muted); padding: 46px 0; font-size: 12px; }
-@media (max-width: 900px) { .project-card { width: min(60vw, 650px); } }
+.cover-1 { background: linear-gradient(135deg, #222a22, #101311 72%); }
+.cover-2 { background: linear-gradient(135deg, #2a2822, #121110 72%); }
+.cover-3 { background: linear-gradient(135deg, #22252a, #101113 72%); }
+.cover-topline, .cover-bottom { position: relative; z-index: 2; display: flex; justify-content: space-between; color: rgba(245,245,240,.72); font-size: 12px; letter-spacing: .12em; }
+.cover-art { position: absolute; top: 50%; right: -8%; width: 58%; aspect-ratio: 1; transform: translateY(-50%); pointer-events: none; }
+.cover-art i { position: absolute; inset: 0; border: 1px solid rgba(239,239,235,.2); border-radius: 50%; transition: transform 1.2s var(--ease-smooth, ease); }
+.cover-art i:nth-child(2) { inset: 12% -10%; transform: rotate(-24deg) scaleY(.5); border-color: rgba(203,210,118,.32); }
+.cover-art i:nth-child(3) { inset: 26%; border-color: rgba(239,239,235,.14); }
+.project-card:hover .cover-art i:nth-child(2) { transform: rotate(-8deg) scaleY(.5); }
+.project-card:hover .cover-art i:nth-child(3) { transform: scale(1.12); }
+.cover-title { position: relative; z-index: 2; margin: 0; max-width: 78%; font-family: var(--font-display); font-size: clamp(1.5rem, 2.4vw, 2.3rem); font-weight: 400; letter-spacing: -.03em; line-height: 1.1; color: var(--text); transition: letter-spacing .5s var(--ease-smooth, ease), color .3s ease; }
+.project-card:hover .cover-title { letter-spacing: -.01em; color: #fff; }
+
+.project-info { display: flex; flex: 1 1 44%; flex-direction: column; gap: 6px; padding: 12px 18px 14px; }
+.project-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 26px; }
+.project-hint { color: var(--muted); font-size: 12px; }
+.card-actions { display: flex; gap: 6px; opacity: 0; transform: translateY(2px); transition: opacity .3s ease, transform .4s var(--ease-smooth, ease); }
+.project-card:hover .card-actions, .project-card:focus-within .card-actions { opacity: 1; transform: none; }
+.card-actions button { padding: 3px 10px; border: 1px solid rgba(239,239,235,.2); border-radius: 6px; color: var(--muted); background: transparent; cursor: pointer; font-size: 12px; transition: color .2s ease, background .2s ease, border-color .2s ease; }
+.card-actions button:hover { color: var(--text); background: rgba(239,239,235,.08); }
+.card-actions button.danger:hover { color: #fff; background: rgba(224,143,130,.25); border-color: rgba(224,143,130,.5); }
+.project-description { display: -webkit-box; overflow: hidden; margin: 0; color: var(--muted); font-size: 13px; line-height: 1.5; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.project-stats { display: flex; align-items: center; gap: 14px; margin-top: auto; color: var(--muted-light); font-size: 12px; }
+.project-stats b { margin-left: 3px; color: var(--text); font-weight: 600; }
+.project-progress { margin-left: auto; color: var(--muted); white-space: nowrap; }
+.progress-track { height: 3px; overflow: hidden; border-radius: 3px; background: rgba(239,239,235,.1); }
+.progress-track i { display: block; height: 100%; border-radius: 3px; background: linear-gradient(90deg, rgba(203,210,118,.5), var(--sage, #cbd276)); transition: width 1s var(--ease-smooth, ease); }
+
+.project-new { align-items: center; justify-content: center; gap: 10px; border-style: dashed; border-color: rgba(239,239,235,.22); background: transparent; box-shadow: none; color: var(--muted); font-size: 14px; }
+.project-new .plus { display: grid; place-items: center; width: 44px; height: 44px; border: 1px solid rgba(239,239,235,.3); border-radius: 50%; font-size: 22px; transition: transform .5s var(--ease-smooth, ease), background .3s ease; }
+.project-new:hover { color: var(--text); }
+.project-new:hover .plus { transform: rotate(90deg) scale(1.08); background: rgba(203,210,118,.15); }
+.project-new:disabled { opacity: .45; cursor: not-allowed; }
+
 @media (max-width: 700px) {
   .project-tools { width: 100%; }
   .search-wrap { flex: 1; width: auto; }
-  .gallery-layout { min-height: 55vh; overflow-x: clip; }
-  .gallery-stage { height: 47vh; min-height: 350px; }
-  .project-card { width: min(80vw, 540px); height: clamp(330px, 43vh, 430px); }
-  .cover-art::before { width: 48vw; }
-  .cover-art::after { width: 31vw; }
-  .project-info { padding: 13px 15px; }
-  .gallery-controls { grid-template-columns: 72px 75px 1fr; gap: 10px; }
-  .gallery-hint { max-width: 140px; text-align: right; line-height: 1.5; }
-}
-@media (max-width: 420px) {
-  .project-card { width: 82vw; height: 340px; }
-  .project-stats { gap: 9px; }
-  .project-stats span { font-size: 11px; }
-  .gallery-controls { grid-template-columns: 58px 70px 1fr; gap: 8px; }
+  .project-grid { grid-template-columns: 1fr; grid-auto-rows: minmax(260px, auto); }
+  .card-actions { opacity: 1; transform: none; }
 }
 </style>

@@ -607,21 +607,21 @@ onMounted(load)
 .span-2 { grid-column: span 2; }
 .card { min-width: 0; padding: 20px; background: rgba(12, 12, 12, .78); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: none; }
 .hero-card { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; min-height: 168px; background: linear-gradient(135deg, rgba(255,255,255,.07), rgba(12,12,12,.72)); }
-.eyebrow { margin-bottom: 8px; color: var(--accent); font-size: 11px; letter-spacing: .16em; text-transform: uppercase; }
+.eyebrow { margin-bottom: 8px; color: var(--accent); font-size: 12px; letter-spacing: .16em; text-transform: uppercase; }
 .hero-card h2 { max-width: 820px; font-family: var(--font-display); font-size: clamp(2rem, 4vw, 4.2rem); font-weight: 400; letter-spacing: -.06em; line-height: .98; }
 .hero-copy { max-width: 680px; margin-top: 14px; color: var(--muted); font-size: 13px; }
 .hero-signal { display: flex; flex-direction: column; align-items: flex-end; flex: 0 0 auto; color: var(--muted); }
 .hero-signal strong { color: var(--accent); font-family: var(--font-display); font-size: 4rem; font-weight: 400; line-height: .9; }
-.hero-signal span { margin-top: 10px; font-size: 11px; letter-spacing: .12em; }
+.hero-signal span { margin-top: 10px; font-size: 12px; letter-spacing: .12em; }
 .metric-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1px; border: 1px solid var(--border); background: var(--border); }
 .metric-card { min-height: 120px; padding: 18px; background: rgba(10, 10, 10, .88); transition: background .35s var(--ease); }
 .metric-card:hover { background: rgba(24, 24, 24, .92); }
 .metric-value { display: block; color: var(--text); font-family: var(--font-display); font-size: 2.2rem; line-height: 1; }
 .metric-label { display: block; margin-top: 18px; color: var(--muted); font-size: 12px; letter-spacing: .08em; }
-.metric-card small { display: block; margin-top: 7px; color: var(--muted-light); font-size: 11px; }
+.metric-card small { display: block; margin-top: 7px; color: var(--muted-light); font-size: 12px; }
 .section-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; margin-bottom: 18px; }
 .section-head h3 { font-size: 17px; font-weight: 600; }
-.section-note { color: var(--muted); font-size: 11px; white-space: nowrap; }
+.section-note { color: var(--muted); font-size: 12px; white-space: nowrap; }
 .status-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
 .type-name { margin-bottom: 10px; color: var(--cyan); font-size: 13px; }
 .bars { display: flex; flex-direction: column; gap: 9px; }
@@ -643,11 +643,11 @@ onMounted(load)
 .sprint-load-track span { height: 100%; transform-origin: left center; animation: wb-grow-x .8s var(--ease) both; }
 .sprint-task-fill { background: var(--cyan); }
 .sprint-bug-fill { background: var(--pink); }
-.sprint-load-row small { display: block; margin-top: 4px; color: var(--muted); font-size: 11px; }
+.sprint-load-row small { display: block; margin-top: 4px; color: var(--muted); font-size: 12px; }
 .sprint-load-row small span { padding: 0 3px; color: var(--muted-light); }
 .table-frame { margin-top: 4px; }
-.completion-empty { color: var(--muted); font-size: 11px; }
-.trend-legend { display: flex; align-items: center; gap: 14px; color: var(--muted); font-size: 11px; }
+.completion-empty { color: var(--muted); font-size: 12px; }
+.trend-legend { display: flex; align-items: center; gap: 14px; color: var(--muted); font-size: 12px; }
 .trend-legend > span { display: inline-flex; align-items: center; gap: 6px; }
 .trend-legend-dot { width: 7px; height: 7px; border-radius: 50%; }
 .trend-legend-dot--requirement { background: var(--cyan); }
@@ -660,20 +660,20 @@ onMounted(load)
 .trend-part--requirement { border-radius: 3px 3px 0 0; background: var(--cyan); }
 .trend-part--bug { border-radius: 3px 3px 0 0; background: var(--pink); }
 .trend-zero { display: block; width: 100%; height: 2px; background: rgba(234, 238, 222, .18); }
-.trend-axis { display: flex; justify-content: space-between; margin-top: 7px; color: var(--muted-light); font-size: 11px; font-variant-numeric: tabular-nums; }
+.trend-axis { display: flex; justify-content: space-between; margin-top: 7px; color: var(--muted-light); font-size: 12px; font-variant-numeric: tabular-nums; }
 .focus-block { padding: 16px; border: 1px solid var(--border); background: rgba(255, 255, 255, .025); }
 .focus-title { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .focus-block p { min-height: 36px; margin: 14px 0; color: var(--muted); font-size: 12px; }
-.focus-block small { display: block; margin-top: 9px; color: var(--muted-light); font-size: 11px; }
+.focus-block small { display: block; margin-top: 9px; color: var(--muted-light); font-size: 12px; }
 .activity-list, .risk-list { display: flex; flex-direction: column; gap: 0; border-top: 1px solid var(--border); }
 .activity-list li, .risk-list li { border-bottom: 1px solid var(--border); }
 .activity-row, .risk-row { display: grid; align-items: center; gap: 12px; margin: 0 -10px; padding: 13px 10px; border-radius: 5px; color: inherit; text-decoration: none; transition: transform .3s var(--ease), background .3s var(--ease), box-shadow .3s var(--ease); }
 .activity-row { grid-template-columns: 42px minmax(0, 1.4fr) minmax(130px, 1fr) 120px auto 14px; }
 .risk-row { grid-template-columns: 8px minmax(0, 1fr) auto 70px 14px; }
 .activity-row:hover, .risk-row:hover, .activity-row:focus-visible, .risk-row:focus-visible { transform: translateX(3px); background: rgba(255, 255, 255, .026); box-shadow: inset 2px 0 0 rgba(239, 239, 235, .42); }
-.activity-kind { color: var(--cyan); font-size: 11px; }
+.activity-kind { color: var(--cyan); font-size: 12px; }
 .activity-title, .risk-title { overflow: hidden; color: var(--text); text-overflow: ellipsis; white-space: nowrap; }
-.activity-meta, .activity-time, .risk-list small { overflow: hidden; color: var(--muted); font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+.activity-meta, .activity-time, .risk-list small { overflow: hidden; color: var(--muted); font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
 .activity-link-arrow { color: var(--muted); opacity: .45; transform: translateX(-3px); transition: color .22s var(--ease), opacity .22s var(--ease), transform .22s var(--ease); }
 .activity-row:hover .activity-link-arrow, .risk-row:hover .activity-link-arrow, .activity-row:focus-visible .activity-link-arrow, .risk-row:focus-visible .activity-link-arrow { color: var(--accent); opacity: 1; transform: translateX(0); }
 .risk-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); }

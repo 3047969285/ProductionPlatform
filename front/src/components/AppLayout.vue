@@ -102,7 +102,7 @@ watch(() => route.path, async (path, previousPath) => {
   routeAnimationContext?.revert()
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
   routeAnimationContext = gsap.context(() => {
-    const duration = reduced ? .01 : .62
+    const duration = reduced ? .01 : .4
     const timeline = gsap.timeline({ onComplete: () => { routeTransitioning.value = false } })
     timeline
       .fromTo('.route-transition__veil', { scale: .001 }, { scale: 1, duration: duration * .36, ease: 'power4.in' })
@@ -261,8 +261,8 @@ onUnmounted(() => {
 .route-transition__rings::after { inset: 25px; border-color: rgba(239, 239, 235, .11); transform: rotate(-31deg); }
 .route-transition__rings i:first-child { inset: 21%; border-color: rgba(239, 239, 235, .28); transform: rotate(42deg); }
 .route-transition__rings i:last-child { inset: 35%; border-color: rgba(239, 239, 235, .13); transform: rotate(-18deg); }
-.route-transition__label { position: absolute; right: clamp(22px, 5.2vw, 84px); bottom: clamp(28px, 7vh, 64px); display: flex; align-items: baseline; gap: 12px; color: rgba(239, 239, 235, .58); font-size: 11px; letter-spacing: .16em; }
-.route-transition__label strong { color: var(--text); font-size: 11px; font-weight: 500; letter-spacing: .08em; }
+.route-transition__label { position: absolute; right: clamp(22px, 5.2vw, 84px); bottom: clamp(28px, 7vh, 64px); display: flex; align-items: baseline; gap: 12px; color: rgba(239, 239, 235, .58); font-size: 12px; letter-spacing: .16em; }
+.route-transition__label strong { color: var(--text); font-size: 12px; font-weight: 500; letter-spacing: .08em; }
 .nav {
   position: fixed; inset: 0 0 auto; z-index: 100;
   height: 56px; display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
@@ -287,8 +287,8 @@ onUnmounted(() => {
   color: var(--text); font-family: var(--font-display); font-size: 13px; letter-spacing: -.04em;
 }
 .brand-copy { display: flex; flex-direction: column; gap: 1px; line-height: 1; }
-.brand-copy strong { font-size: 11px; letter-spacing: .2em; }
-.brand-copy small { color: var(--muted-light); font-size: 11px; letter-spacing: .15em; }
+.brand-copy strong { font-size: 12px; letter-spacing: .2em; }
+.brand-copy small { color: var(--muted-light); font-size: 12px; letter-spacing: .15em; }
 .nav-list {
   position: relative; justify-self: center; min-width: 0;
   display: flex; align-items: center; gap: clamp(15px, 2.1vw, 30px);
@@ -305,7 +305,7 @@ onUnmounted(() => {
 .nav-item {
   position: relative; display: inline-flex; align-items: center; gap: 7px;
   padding: 7px 0; color: rgba(239, 239, 235, .58); text-decoration: none;
-  white-space: nowrap; font-size: 11px; letter-spacing: .08em; transition: color .35s var(--ease);
+  white-space: nowrap; font-size: 12px; letter-spacing: .08em; transition: color .35s var(--ease);
 }
 .nav-item::after {
   position: absolute; right: 0; bottom: 0; left: 0; height: 1px; content: "";
@@ -316,26 +316,26 @@ onUnmounted(() => {
 .nav-item:hover::after { transform: scaleX(1); background: rgba(239, 239, 235, .42); }
 /* 激活态交给 .nav-rail，这里不再自己画一条，否则两条线会重叠。 */
 .nav-item.active::after { transform: scaleX(0); }
-.nav-index { color: rgba(239, 239, 235, .38); font-size: 11px; letter-spacing: .08em; }
+.nav-index { color: rgba(239, 239, 235, .38); font-size: 12px; letter-spacing: .08em; }
 .nav-end { display: flex; align-items: center; justify-self: end; gap: 14px; flex: 0 0 auto; pointer-events: auto; }
 .nav-search {
   display: inline-flex; align-items: center; gap: 8px;
   padding: 6px 12px 6px 10px;
   border: 1px solid rgba(238, 238, 234, .18); border-radius: 999px;
   color: var(--muted); background: transparent; cursor: pointer;
-  font-size: 11px; letter-spacing: .08em; font-family: inherit;
+  font-size: 12px; letter-spacing: .08em; font-family: inherit;
   transition: color .25s var(--ease), border-color .25s var(--ease), background .25s var(--ease);
 }
 .nav-search:hover { color: var(--text); border-color: rgba(238, 238, 234, .5); background: rgba(255, 255, 255, .05); }
 .nav-search-key {
   display: inline-grid; place-items: center; min-width: 26px; height: 18px; padding: 0 5px;
   border: 1px solid rgba(238, 238, 234, .22); border-radius: 5px;
-  color: var(--muted-light); font-size: 11px; letter-spacing: .06em;
+  color: var(--muted-light); font-size: 12px; letter-spacing: .06em;
 }
 .motion-toggle {
   display: grid; place-items: center; width: 24px; height: 24px; padding: 0; cursor: pointer;
   border: 1px solid rgba(238, 238, 234, .22); border-radius: 50%; background: transparent;
-  color: var(--muted); font-size: 11px; font-family: inherit;
+  color: var(--muted); font-size: 12px; font-family: inherit;
   transition: color .25s var(--ease), border-color .25s var(--ease), transform .4s var(--ease);
 }
 .motion-toggle:hover { color: var(--text); border-color: rgba(238, 238, 234, .6); transform: rotate(90deg); }
@@ -349,11 +349,11 @@ onUnmounted(() => {
 .conn:hover i { transform: scale(1.25); }
 @keyframes conn-pulse { 0%, 100% { opacity: 1 } 50% { opacity: .35 } }
 @keyframes conn-ring { 0% { opacity: .5; transform: scale(.45) } 62%, 100% { opacity: 0; transform: scale(1.7) } }
-.user { display: flex; align-items: center; gap: 14px; color: var(--muted); font-size: 11px; letter-spacing: .08em; }
+.user { display: flex; align-items: center; gap: 14px; color: var(--muted); font-size: 12px; letter-spacing: .08em; }
 .user-name { max-width: 96px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .user button {
   padding: 4px 0; color: var(--muted); background: transparent; border: 0; border-bottom: 1px solid transparent;
-  cursor: pointer; font-size: 11px; transition: color .25s var(--ease), border-color .25s var(--ease);
+  cursor: pointer; font-size: 12px; transition: color .25s var(--ease), border-color .25s var(--ease);
 }
 .user button:hover { color: var(--text); border-color: rgba(239, 239, 235, .55); }
 main { padding-top: 0; }
@@ -383,7 +383,7 @@ main { padding-top: 0; }
     scrollbar-width: none;
   }
   .nav-list::-webkit-scrollbar { display: none; }
-  .nav-item { flex: 0 0 auto; gap: 5px; font-size: 11px; }
+  .nav-item { flex: 0 0 auto; gap: 5px; font-size: 12px; }
 }
 @media (max-width: 440px) {
   .nav-index { display: none; }

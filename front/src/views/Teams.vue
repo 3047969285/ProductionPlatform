@@ -101,7 +101,7 @@ onMounted(load)
 .status-column { width: 18%; }
 .actions-column { width: 21%; }
 .teams-table th, .teams-table td { padding: 15px 18px; border-bottom: 1px solid var(--border); }
-.teams-table th { color: var(--muted); background: rgba(255, 255, 255, .025); font-size: 11px; font-weight: 500; }
+.teams-table th { color: var(--muted); background: rgba(255, 255, 255, .025); font-size: 12px; font-weight: 500; }
 .teams-table td { color: var(--text); font-size: 12px; }
 .teams-table tbody tr { transition: background .25s var(--ease); }
 .teams-table tbody tr:hover { background: rgba(203, 210, 118, .045); }

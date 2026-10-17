@@ -223,7 +223,7 @@ onMounted(() => { loadFolders(); loadList() })
           </template>
         </el-table-column>
         <el-table-column prop="owner" label="负责人" width="90" />
-        <el-table-column label="操作" width="110" align="right">
+        <el-table-column label="操作" width="124" align="right">
           <template #default="{ row }">
             <el-button size="default" @click.stop="openEdit(row)">编辑</el-button>
             <el-button size="default" type="danger" @click.stop="remove(row.id)">删除</el-button>

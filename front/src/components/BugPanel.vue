@@ -155,7 +155,7 @@ watch(() => props.projectId, () => { load(); loadSprints() })
       </el-table-column>
       <el-table-column prop="assignee" label="处理人" width="80" />
       <el-table-column prop="fixVersion" label="解决版本" width="90" show-overflow-tooltip />
-      <el-table-column label="操作" width="104" align="right">
+      <el-table-column label="操作" width="124" align="right">
         <template #default="{ row }">
           <el-button size="small" @click.stop="openEdit(row)">编辑</el-button>
           <el-button size="small" type="danger" @click.stop="remove(row.id)">删除</el-button>

@@ -112,7 +112,7 @@ onUnmounted(() => {
   box-shadow: var(--shadow-sm);
 }
 .stage-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 22px; }
-.eyebrow { color: var(--accent); font-size: 11px; font-weight: 700; letter-spacing: .18em; margin-bottom: 7px; }
+.eyebrow { color: var(--accent); font-size: 12px; font-weight: 700; letter-spacing: .18em; margin-bottom: 7px; }
 h2 { font-family: var(--font-display); font-size: clamp(1.45rem, 2vw, 2rem); font-weight: 400; letter-spacing: -.04em; margin-bottom: 4px; }
 .stage-heading p:last-child { color: var(--muted); font-size: 13px; }
 .stage-counter { display: flex; align-items: baseline; gap: 4px; color: var(--muted-light); }
@@ -122,10 +122,10 @@ h2 { font-family: var(--font-display); font-size: clamp(1.45rem, 2vw, 2rem); fon
 .stage-progress { position: absolute; top: 13px; left: 7%; right: 7%; height: 1px; background: rgba(234, 238, 222, .15); z-index: 0; overflow: hidden; }
 .stage-progress-fill { display: block; width: 100%; height: 100%; background: var(--accent); transform: scaleX(0); transform-origin: left center; }
 .stage { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 5px; min-width: 0; border: 0; background: transparent; color: var(--muted); cursor: pointer; font: inherit; text-align: center; }
-.stage-dot { display: grid; place-items: center; width: 28px; height: 28px; border: 1px solid var(--border-strong); border-radius: 50%; background: var(--surface); color: var(--muted); font-size: 11px; font-weight: 700; transition: background .25s var(--ease), border-color .25s var(--ease), color .25s var(--ease), box-shadow .25s var(--ease), transform .25s var(--ease); }
+.stage-dot { display: grid; place-items: center; width: 28px; height: 28px; border: 1px solid var(--border-strong); border-radius: 50%; background: var(--surface); color: var(--muted); font-size: 12px; font-weight: 700; transition: background .25s var(--ease), border-color .25s var(--ease), color .25s var(--ease), box-shadow .25s var(--ease), transform .25s var(--ease); }
 .stage-text strong, .stage-text small { display: block; }
 .stage-text strong { font-size: 14px; color: var(--text); transition: color .25s var(--ease); }
-.stage-text small { margin-top: 2px; color: var(--muted); font-size: 11px; white-space: nowrap; }
+.stage-text small { margin-top: 2px; color: var(--muted); font-size: 12px; white-space: nowrap; }
 .stage:hover .stage-dot { border-color: var(--accent); color: var(--accent); transform: translateY(-1px); }
 .stage.is-active .stage-dot { border-color: var(--accent); background: var(--accent); color: #11140f; box-shadow: 0 0 0 6px rgba(239, 239, 235, .1); }
 .stage.is-active .stage-text strong { color: var(--accent); }

@@ -19,26 +19,44 @@
       <button type="button" class="retry-button wb-press" @click="loadDashboard">重新加载 <span aria-hidden="true">↗</span></button>
     </section>
 
-    <section v-if="!loading && !loadError && recentReqs.length" class="recent">
-      <div class="recent-head">
-        <h2>最近更新的需求</h2>
-      </div>
-      <ul class="list">
-        <li v-for="r in recentReqs" :key="r.id">
-          <RouterLink
-            class="recent-row"
-            :to="requirementTarget(r)"
-            :aria-label="`打开${r.projectName || '项目'}中的需求 ${r.reqNo || ''}：${r.title || '未命名需求'}`"
-          >
-            <span class="no">{{ r.reqNo || '需求' }}</span>
-            <span class="recent-copy">
-              <strong>{{ r.title || '未命名需求' }}</strong>
-              <small>{{ r.projectName || '所属项目' }}<template v-if="recentDate(r)"> · {{ recentDate(r) }}</template></small>
-            </span>
-            <span class="badge" :class="badgeClass('req', r.status)">{{ reqStatus[r.status] || r.status || '待确认' }}</span>
-          </RouterLink>
-        </li>
-      </ul>
+    <section v-if="!loading && !loadError" class="home-body">
+      <section class="recent">
+        <div class="recent-head"><h2>最近更新的需求</h2></div>
+        <ul class="list">
+          <li v-for="r in recentReqs" :key="r.id">
+            <RouterLink
+              class="recent-row"
+              :to="requirementTarget(r)"
+              :aria-label="`打开${r.projectName || '项目'}中的需求 ${r.reqNo || ''}：${r.title || '未命名需求'}`"
+            >
+              <span class="no">{{ r.reqNo || '需求' }}</span>
+              <span class="recent-copy">
+                <strong>{{ r.title || '未命名需求' }}</strong>
+                <small>{{ r.projectName || '所属项目' }}<template v-if="recentDate(r)"> · {{ recentDate(r) }}</template></small>
+              </span>
+              <span class="badge" :class="badgeClass('req', r.status)">{{ reqStatus[r.status] || r.status || '待确认' }}</span>
+            </RouterLink>
+          </li>
+          <li v-if="!recentReqs.length" class="todo-empty">还没有需求</li>
+        </ul>
+      </section>
+
+      <section class="todo" aria-label="待办事项">
+        <div class="recent-head"><h2>待办事项</h2><span class="todo-count">{{ todoItems.length }}</span></div>
+        <ul class="list">
+          <li v-for="item in todoItems" :key="item.key">
+            <RouterLink class="todo-row" :to="item.to">
+              <span class="todo-kind" :class="item.kind">{{ item.kindLabel }}</span>
+              <span class="recent-copy">
+                <strong>{{ item.title }}</strong>
+                <small>{{ item.projectName || '所属项目' }}</small>
+              </span>
+              <span class="badge" :class="item.badge">{{ item.statusLabel }}</span>
+            </RouterLink>
+          </li>
+          <li v-if="!todoItems.length" class="todo-empty">没有待处理的缺陷和任务</li>
+        </ul>
+      </section>
     </section>
   </div>
 </template>
@@ -49,7 +67,7 @@ import { RouterLink } from 'vue-router'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import api from '../api'
-import { reqStatus, badgeClass } from '../constants'
+import { reqStatus, bugStatus, taskStatus, badgeClass } from '../constants'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -59,6 +77,21 @@ const loadError = ref(false)
 const data = ref(null)
 const taskStats = ref(null)
 const recentReqs = computed(() => data.value?.recentRequirements || [])
+const openBugs = ref([])
+const openTasks = ref([])
+
+// 待办：未解决的缺陷在前（按严重度），再接未完成的任务，最多 8 条
+const severityRank = { critical: 0, high: 1, medium: 2, low: 3 }
+const todoItems = computed(() => {
+  const bugs = openBugs.value
+    .filter((b) => b.status !== 'resolved' && b.status !== 'closed')
+    .sort((a, b) => (severityRank[a.severity] ?? 9) - (severityRank[b.severity] ?? 9))
+    .map((b) => ({ key: 'bug-' + b.id, kind: 'bug', kindLabel: '缺陷', title: b.title, projectName: b.projectName, statusLabel: bugStatus[b.status] || b.status, badge: badgeClass('bug', b.status), to: { path: '/projects/' + b.projectId, query: { tab: 'bug' } } }))
+  const tasks = openTasks.value
+    .filter((t) => t.status !== 'done')
+    .map((t) => ({ key: 'task-' + t.id, kind: 'task', kindLabel: '任务', title: t.title, projectName: t.projectName, statusLabel: taskStatus[t.status] || t.status, badge: badgeClass('task', t.status), to: { path: '/projects/' + t.projectId, query: { tab: 'task' } } }))
+  return [...bugs, ...tasks].slice(0, 8)
+})
 let animationContext
 let mediaQuery
 let contentContext
@@ -105,9 +138,7 @@ function setupAnimations() {
       const intro = gsap.timeline({ defaults: { ease: 'power3.out' } })
 
       intro
-        .from('.tag', { autoAlpha: 0, y: 12, duration: duration ?? 0.45 })
-        .from('h1', { autoAlpha: 0, y: 28, duration: duration ?? 0.7, ease: 'power4.out' }, '-=0.2')
-        .from('.desc', { autoAlpha: 0, y: 14, duration: duration ?? 0.5 }, '-=0.3')
+        .from('h1', { autoAlpha: 0, y: 28, duration: duration ?? 0.7, ease: 'power4.out' })
 
       if (!reducedMotion) {
         gsap.to('.o1', { x: 24, y: 18, duration: 8, repeat: -1, yoyo: true, ease: 'sine.inOut' })
@@ -172,10 +203,14 @@ async function loadDashboard() {
   loadError.value = false
   taskStats.value = null
   try {
-    const [dashboard, workStatus] = await Promise.all([
+    const [dashboard, workStatus, bugs, tasks] = await Promise.all([
       api.get('/dashboard'),
       api.get('/reports/status').catch(() => null),
+      api.get('/bugs').catch(() => null),
+      api.get('/tasks').catch(() => null),
     ])
+    openBugs.value = Array.isArray(bugs?.data) ? bugs.data : []
+    openTasks.value = Array.isArray(tasks?.data) ? tasks.data : []
     data.value = dashboard.data
     const taskCounts = workStatus?.data?.task
     taskStats.value = taskCounts && typeof taskCounts === 'object' && !Array.isArray(taskCounts) ? taskCounts : null
@@ -204,10 +239,10 @@ onUnmounted(() => {
 .o2 { width: 280px; height: 280px; background: #bdbdb7; bottom: 5%; left: -8%; }
 .hero { position: relative; margin-bottom: clamp(12px, 2.4vh, 24px); padding-bottom: 0; border: 0; }
 .hero::after { display: none; }
-.tag { display: flex; align-items: center; gap: 9px; color: var(--muted); font-size: 11px; letter-spacing: .2em; margin-bottom: 19px; }
+.tag { display: flex; align-items: center; gap: 9px; color: var(--muted); font-size: 12px; letter-spacing: .2em; margin-bottom: 19px; }
 .tag i { width: 25px; height: 1px; background: var(--muted); }
 h1 { font-family: var(--font-display); font-size: clamp(3rem, 6vw, 6rem); font-weight: 400; letter-spacing: -.09em; line-height: .92; margin-bottom: 18px; }
-.desc { color: var(--muted-light); font-size: 11px; letter-spacing: .14em; }
+.desc { color: var(--muted-light); font-size: 12px; letter-spacing: .14em; }
 .grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0; margin-bottom: clamp(20px, 4vh, 36px); border-top: 1px solid rgba(239,239,235,.24); border-bottom: 1px solid rgba(239,239,235,.15); background: transparent; }
 .card { position: relative; min-width: 0; min-height: clamp(130px, 26vh, 260px); padding: 18px 18px 22px 0; color: inherit; background: transparent; border-right: 1px solid rgba(239,239,235,.12); cursor: pointer; text-decoration: none; will-change: transform, opacity; transition: transform .45s var(--ease), background .35s var(--ease); }
 .card:focus-visible { outline: 1px solid rgba(239,239,235,.72); outline-offset: -1px; }
@@ -216,39 +251,48 @@ h1 { font-family: var(--font-display); font-size: clamp(3rem, 6vw, 6rem); font-w
 .card::before { position: absolute; top: -1px; left: 0; width: 24px; height: 1px; background: rgba(239,239,235,.72); content: ""; }
 .card:hover { z-index: 1; background: rgba(255,255,255,.025); transform: translateY(-5px); }
 .num { display: block; font-family: var(--font-display); font-size: clamp(2rem, 4vw, 3.7rem); font-weight: 400; line-height: 1; letter-spacing: -.06em; transition: transform .5s var(--ease), letter-spacing .5s var(--ease); }
-.label { display: block; margin-top: 18px; color: var(--muted-light); font-size: 11px; letter-spacing: .11em; transition: color .35s var(--ease), letter-spacing .5s var(--ease); }
-.card-action { position: absolute; right: 18px; bottom: 16px; display: flex; align-items: center; gap: 7px; color: var(--muted); font-size: 11px; letter-spacing: .06em; transition: color .3s var(--ease); }
-.card-action i { color: var(--muted-light); font-size: 11px; font-style: normal; transition: transform .3s var(--ease); }
+.label { display: block; margin-top: 18px; color: var(--muted-light); font-size: 12px; letter-spacing: .11em; transition: color .35s var(--ease), letter-spacing .5s var(--ease); }
+.card-action { position: absolute; right: 18px; bottom: 16px; display: flex; align-items: center; gap: 7px; color: var(--muted); font-size: 12px; letter-spacing: .06em; transition: color .3s var(--ease); }
+.card-action i { color: var(--muted-light); font-size: 12px; font-style: normal; transition: transform .3s var(--ease); }
 .card:hover .num { transform: translateY(-3px); letter-spacing: -.04em; }
 .card:hover .label { color: var(--text); letter-spacing: .16em; }
 .card:hover .card-action { color: var(--text); }
 .card:hover .card-action i { transform: translate(2px, -2px); }
 .recent { max-width: none; margin-bottom: 16px; }
 .recent-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; margin-bottom: 18px; }
-.recent-kicker { margin-bottom: 6px; color: var(--muted); font-size: 11px; letter-spacing: .16em; }
+.recent-kicker { margin-bottom: 6px; color: var(--muted); font-size: 12px; letter-spacing: .16em; }
 .recent-head h2 { font-family: var(--font-display); font-size: clamp(1.5rem, 2.8vw, 2.2rem); font-weight: 400; letter-spacing: -.04em; }
-.recent-head a { display: inline-block; color: var(--muted); text-decoration: none; font-size: 11px; letter-spacing: .12em; transition: color .25s ease, transform .35s var(--ease); }
+.recent-head a { display: inline-block; color: var(--muted); text-decoration: none; font-size: 12px; letter-spacing: .12em; transition: color .25s ease, transform .35s var(--ease); }
 .recent-head a:hover { color: var(--text); transform: translateX(4px); }
 .list { overflow: hidden; border-top: 1px solid rgba(239,239,235,.18); background: transparent; }
 .list li { border-bottom: 1px solid rgba(239,239,235,.12); }
-.recent-row { display: grid; grid-template-columns: minmax(110px, .55fr) minmax(0, 1.6fr) auto 72px; gap: 18px; align-items: center; min-height: 68px; padding: 11px 10px; margin: 0 -10px; color: inherit; font-size: 11px; text-decoration: none; transition: background .3s var(--ease), transform .35s var(--ease), box-shadow .3s var(--ease); }
+.recent-row { display: grid; grid-template-columns: minmax(110px, .55fr) minmax(0, 1.6fr) auto 72px; gap: 18px; align-items: center; min-height: 68px; padding: 11px 10px; margin: 0 -10px; color: inherit; font-size: 12px; text-decoration: none; transition: background .3s var(--ease), transform .35s var(--ease), box-shadow .3s var(--ease); }
 .recent-row:hover { background: rgba(255,255,255,.028); box-shadow: inset 2px 0 0 rgba(239,239,235,.5); transform: translateX(4px); }
 .recent-row:focus-visible { outline: 1px solid rgba(239,239,235,.72); outline-offset: -1px; }
 .recent-copy { display: block; min-width: 0; }
 .recent-copy strong { display: block; overflow: hidden; color: var(--text); font-weight: 500; text-overflow: ellipsis; white-space: nowrap; }
-.recent-copy small { display: block; margin-top: 4px; overflow: hidden; color: var(--muted); font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
-.recent-open { display: flex; justify-content: flex-end; gap: 8px; color: var(--muted); font-size: 11px; letter-spacing: .08em; transition: color .25s ease; }
+.recent-copy small { display: block; margin-top: 4px; overflow: hidden; color: var(--muted); font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+.recent-open { display: flex; justify-content: flex-end; gap: 8px; color: var(--muted); font-size: 12px; letter-spacing: .08em; transition: color .25s ease; }
 .recent-open i { color: var(--muted-light); font-size: 12px; font-style: normal; transition: transform .3s var(--ease); }
 .recent-row:hover .recent-open { color: var(--text); }
 .recent-row:hover .recent-open i { transform: translate(2px, -2px); }
-.no { color: var(--muted-light); font-size: 11px; letter-spacing: .14em; }
+.no { color: var(--muted-light); font-size: 12px; letter-spacing: .14em; }
 .status-panel { display: flex; min-height: 150px; align-items: center; gap: 18px; padding: 26px 0; border-top: 1px solid rgba(239,239,235,.18); border-bottom: 1px solid rgba(239,239,235,.12); color: var(--muted-light); }
 .status-mark { display: grid; width: 42px; height: 42px; flex: 0 0 auto; place-items: center; border: 1px solid rgba(239,239,235,.25); border-radius: 50%; color: var(--text); font-family: var(--font-display); font-size: 18px; }
 .status-panel h2 { margin: 0 0 8px; color: var(--text); font-size: 15px; font-weight: 500; }
 .status-panel p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.7; }
-.retry-button { display: inline-flex; align-items: center; gap: 16px; margin-left: auto; padding: 11px 14px; border: 1px solid rgba(239,239,235,.28); border-radius: 999px; color: var(--text); background: transparent; cursor: pointer; font: inherit; font-size: 11px; transition: background .25s ease, border-color .25s ease; }
+.retry-button { display: inline-flex; align-items: center; gap: 16px; margin-left: auto; padding: 11px 14px; border: 1px solid rgba(239,239,235,.28); border-radius: 999px; color: var(--text); background: transparent; cursor: pointer; font: inherit; font-size: 12px; transition: background .25s ease, border-color .25s ease; }
 .retry-button:hover { border-color: rgba(239,239,235,.62); background: rgba(255,255,255,.05); }
-@media (max-width: 900px) { .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.home-body { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: clamp(16px, 2.4vw, 36px); align-items: start; }
+.home-body .recent { margin-bottom: 0; }
+.todo-count { color: var(--muted); font-size: 13px; }
+.todo-row { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 12px 8px; border-bottom: 1px solid rgba(239,239,235,.1); color: inherit; text-decoration: none; transition: background .3s var(--ease), transform .4s var(--ease); }
+.todo-row:hover { background: rgba(255,255,255,.03); transform: translateX(3px); }
+.todo-kind { font-size: 12px; letter-spacing: .08em; color: var(--muted); }
+.todo-kind.bug { color: var(--rose, #e08f82); }
+.todo-kind.task { color: var(--sky, #8fb8de); }
+.todo-empty { padding: 28px 8px; color: var(--muted-light); font-size: 13px; }
+@media (max-width: 1000px) { .home-body { grid-template-columns: 1fr; } }@media (max-width: 900px) { .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 @media (max-width: 540px) {
   .home { padding-top: calc(var(--nav-h) + 28px); padding-bottom: 72px; }
   .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }

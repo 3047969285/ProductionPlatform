@@ -432,7 +432,7 @@ onUnmounted(() => {
   display: flex; justify-content: space-between; align-items: flex-start; gap: 20px;
   padding: 6px 2px 10px;
 }
-.eyebrow { color: var(--accent); font-size: 11px; font-weight: 700; letter-spacing: .16em; margin-bottom: 6px; }
+.eyebrow { color: var(--accent); font-size: 12px; font-weight: 700; letter-spacing: .16em; margin-bottom: 6px; }
 .cockpit h2 { font-family: var(--font-display); font-size: clamp(1.45rem, 3vw, 2rem); letter-spacing: -.03em; margin-bottom: 6px; }
 .hero-copy { color: var(--muted); font-size: 14px; }
 .health { display: flex; align-items: center; gap: 10px; min-width: 190px; padding: 12px 14px; border: 1px solid var(--border); border-radius: var(--radius); background: rgba(23, 27, 25, .78); }
@@ -473,7 +473,7 @@ onUnmounted(() => {
 .next-copy { min-width: 0; }
 .next-copy strong { margin-bottom: 2px; font-size: 14px; line-height: 1.35; overflow-wrap: anywhere; }
 .next-copy small { color: var(--muted); font-size: 12px; line-height: 1.45; }
-.next-stage { width: fit-content; margin-bottom: 3px; color: var(--accent) !important; font-size: 11px !important; letter-spacing: .1em; }
+.next-stage { width: fit-content; margin-bottom: 3px; color: var(--accent) !important; font-size: 12px !important; letter-spacing: .1em; }
 .action-arrow { color: var(--muted-light); font-size: 18px; transition: transform .2s var(--ease); }
 .next-item:hover .action-arrow { transform: translateX(3px); color: var(--accent); }
 .cockpit-columns { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(300px, .85fr); gap: 16px; }
@@ -507,9 +507,9 @@ onUnmounted(() => {
 .timeline-dot.good { background: var(--lime); box-shadow: 0 0 0 4px rgba(52,199,89,.12); }
 .timeline-dot.danger { background: var(--pink); box-shadow: 0 0 0 4px rgba(255,55,95,.12); }
 .timeline-item small, .timeline-item strong { display: block; }
-.timeline-item small { color: var(--muted); font-size: 11px; margin-bottom: 5px; }
+.timeline-item small { color: var(--muted); font-size: 12px; margin-bottom: 5px; }
 .timeline-item strong { font-size: 13px; margin-bottom: 4px; line-height: 1.4; overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow-wrap: anywhere; }
-.timeline-item .badge { flex: 0 0 auto; font-size: 11px; padding: 2px 8px; }
+.timeline-item .badge { flex: 0 0 auto; font-size: 12px; padding: 2px 8px; }
 .load-alert { margin-top: 0; }
 @media (max-width: 980px) {
   .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
