@@ -114,8 +114,8 @@ watch(() => props.projectId, () => { load(); loadUsers() })
     </div>
     <div v-else class="table-frame">
       <el-table :data="list" v-loading="loading" stripe empty-text="暂无成员，可点击上方添加">
-      <el-table-column prop="username" label="用户名" width="140" />
-      <el-table-column prop="nickname" label="昵称" width="140" />
+      <el-table-column prop="username" label="用户名" min-width="110" />
+      <el-table-column prop="nickname" label="昵称" min-width="110" />
       <el-table-column label="项目角色" width="120">
         <template #default="{ row }">
           <span class="badge" :class="badgeClass('member', row.role)">{{ memberRole[row.role] }}</span>
@@ -124,7 +124,7 @@ watch(() => props.projectId, () => { load(); loadUsers() })
       <el-table-column prop="joinedAt" label="加入时间" width="180">
         <template #default="{ row }">{{ (row.joinedAt || '').replace('T', ' ').slice(0, 16) }}</template>
       </el-table-column>
-      <el-table-column label="操作" width="200" fixed="right">
+      <el-table-column label="操作" width="130" align="right">
         <template #default="{ row }">
           <el-button size="small" @click="openEdit(row)">改角色</el-button>
           <el-button size="small" type="danger" @click="remove(row)">移出</el-button>

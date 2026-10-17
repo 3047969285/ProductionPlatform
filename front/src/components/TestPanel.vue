@@ -193,7 +193,7 @@ watch(() => props.projectId, () => { loadCases(); if (sub.value === 'plans') loa
         <div class="table-frame">
           <el-table :data="cases" v-loading="caseLoading" stripe>
           <el-table-column prop="id" label="#" width="60" />
-          <el-table-column prop="title" label="用例标题" min-width="200" show-overflow-tooltip />
+          <el-table-column prop="title" label="用例标题" min-width="140" show-overflow-tooltip />
           <el-table-column label="优先级" width="90">
             <template #default="{ row }">
               <span class="badge" :class="badgeClass('priority', row.priority)">{{ reqPriority[row.priority] }}</span>
@@ -205,7 +205,7 @@ watch(() => props.projectId, () => { loadCases(); if (sub.value === 'plans') loa
             </template>
           </el-table-column>
           <el-table-column prop="owner" label="维护人" width="100" />
-          <el-table-column label="操作" width="160" fixed="right">
+          <el-table-column label="操作" width="130" align="right">
             <template #default="{ row }">
               <el-button size="small" @click="openCaseEdit(row)">编辑</el-button>
               <el-button size="small" type="danger" @click="removeCase(row.id)">删除</el-button>
@@ -228,14 +228,14 @@ watch(() => props.projectId, () => { loadCases(); if (sub.value === 'plans') loa
               <span class="badge" :class="badgeClass('tplan', row.status)">{{ testPlanStatus[row.status] }}</span>
             </template>
           </el-table-column>
-          <el-table-column label="执行进度" width="200">
+          <el-table-column label="执行进度" width="150">
             <template #default="{ row }">
               <el-progress :percentage="row.progress || 0" :stroke-width="8" />
               <span class="mini">通过 {{ row.casePass }} / 失败 {{ row.caseFail }} / 待执行 {{ row.casePending }}</span>
             </template>
           </el-table-column>
           <el-table-column prop="owner" label="负责人" width="100" />
-          <el-table-column label="操作" width="260" fixed="right">
+          <el-table-column label="操作" width="230" align="right">
             <template #default="{ row }">
               <el-button size="small" @click="showPlanCases(row)">执行</el-button>
               <el-button size="small" @click="openPlanEdit(row)">编辑</el-button>
@@ -310,7 +310,7 @@ watch(() => props.projectId, () => { loadCases(); if (sub.value === 'plans') loa
             </el-select>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="90" fixed="right">
+        <el-table-column label="操作" width="90" align="right">
           <template #default="{ row }">
             <el-button size="small" type="danger" @click="removePlanCase(row)">移除</el-button>
           </template>

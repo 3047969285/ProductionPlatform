@@ -107,23 +107,23 @@ watch(() => props.projectId, load)
     </div>
     <div class="table-frame">
       <el-table :data="list" v-loading="loading" stripe>
-      <el-table-column prop="name" label="迭代" min-width="160" />
-      <el-table-column prop="goal" label="目标" min-width="180" show-overflow-tooltip />
-      <el-table-column label="周期" width="200">
-        <template #default="{ row }">{{ row.startDate }} ~ {{ row.endDate }}</template>
+      <el-table-column prop="name" label="迭代" min-width="150" show-overflow-tooltip />
+      <el-table-column prop="goal" label="目标" min-width="90" show-overflow-tooltip />
+      <el-table-column label="周期" width="130">
+        <template #default="{ row }"><span :title="`${row.startDate} ~ ${row.endDate}`">{{ (row.startDate || "").slice(5) }} ~ {{ (row.endDate || "").slice(5) }}</span></template>
       </el-table-column>
-      <el-table-column label="状态" width="100">
+      <el-table-column label="状态" width="90">
         <template #default="{ row }">
           <span class="badge" :class="badgeClass('sprint', row.status)">{{ sprintStatus[row.status] }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="工作项" width="140">
+      <el-table-column label="工作项" width="120">
         <template #default="{ row }">
           <el-progress :percentage="row.progress || 0" :stroke-width="8" />
           <span class="mini">{{ row.workDone }}/{{ row.workTotal }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="操作" width="220" fixed="right">
+      <el-table-column label="操作" width="170" align="right">
         <template #default="{ row }">
           <el-button size="small" @click="showBurndown(row)">燃尽图</el-button>
           <el-button size="small" @click="openEdit(row)">编辑</el-button>

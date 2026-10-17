@@ -167,15 +167,15 @@ watch(() => props.projectId, () => { loadMilestones(); if (sub.value === 'releas
         </div>
         <div class="table-frame">
           <el-table :data="milestones" v-loading="msLoading" stripe>
-          <el-table-column prop="name" label="里程碑" min-width="180" />
-          <el-table-column prop="description" label="描述" min-width="180" show-overflow-tooltip />
+          <el-table-column prop="name" label="里程碑" min-width="120" show-overflow-tooltip />
+          <el-table-column prop="description" label="描述" min-width="100" show-overflow-tooltip />
           <el-table-column prop="dueDate" label="计划日期" width="120" />
           <el-table-column label="状态" width="100">
             <template #default="{ row }">
               <span class="badge" :class="badgeClass('ms', row.status)">{{ milestoneStatus[row.status] }}</span>
             </template>
           </el-table-column>
-          <el-table-column label="操作" width="160" fixed="right">
+          <el-table-column label="操作" width="130" align="right">
             <template #default="{ row }">
               <el-button size="small" @click="openMsEdit(row)">编辑</el-button>
               <el-button size="small" type="danger" @click="removeMs(row.id)">删除</el-button>
@@ -197,17 +197,17 @@ watch(() => props.projectId, () => { loadMilestones(); if (sub.value === 'releas
               <span class="badge" :class="badgeClass('env', row.environment)">{{ releaseEnv[row.environment] }}</span>
             </template>
           </el-table-column>
-          <el-table-column prop="description" label="说明" min-width="200" show-overflow-tooltip />
+          <el-table-column prop="description" label="说明" min-width="110" show-overflow-tooltip />
           <el-table-column label="状态" width="100">
             <template #default="{ row }">
               <span class="badge" :class="badgeClass('rel', row.status)">{{ releaseStatus[row.status] }}</span>
             </template>
           </el-table-column>
           <el-table-column prop="operator" label="操作人" width="100" />
-          <el-table-column label="发布时间" width="160">
+          <el-table-column label="发布时间" width="150">
             <template #default="{ row }">{{ (row.releasedAt || '').replace('T', ' ').slice(0, 16) || '—' }}</template>
           </el-table-column>
-          <el-table-column label="操作" width="160" fixed="right">
+          <el-table-column label="操作" width="130" align="right">
             <template #default="{ row }">
               <el-button size="small" @click="openRelEdit(row)">编辑</el-button>
               <el-button size="small" type="danger" @click="removeRel(row.id)">删除</el-button>
