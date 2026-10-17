@@ -132,6 +132,9 @@ public class BugServiceImpl implements BugService {
      */
     @Override
     public boolean updateStatus(Long id, String status) {
+        if (!java.util.Set.of("open", "fixing", "resolved", "closed", "reopened").contains(status)) {
+            throw new IllegalArgumentException("缺陷状态不合法");
+        }
         boolean resolved = "resolved".equals(status) || "closed".equals(status);
         LocalDateTime resolvedAt = resolved ? LocalDateTime.now() : null;
         return mapper.updateStatus(id, status, resolvedAt) > 0;

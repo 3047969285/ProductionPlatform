@@ -47,12 +47,12 @@
         UPDATE task
         SET sprint_id = #{sprintId}, title = #{title}, content = #{content}, priority = #{priority},
             status = #{status}, assignee = #{assignee}, creator = #{creator}, estimate_hours = #{estimateHours},
-            resolved_at = #{resolvedAt}, updated_at = #{updatedAt}
+            resolved_at = CASE WHEN #{resolvedAt} IS NULL THEN NULL ELSE COALESCE(resolved_at, #{resolvedAt}) END, updated_at = #{updatedAt}
         WHERE id = #{id}
     </update>
 
     <update id="updateStatus">
-        UPDATE task SET status = #{status}, resolved_at = #{resolvedAt}, updated_at = NOW() WHERE id = #{id}
+        UPDATE task SET status = #{status}, resolved_at = CASE WHEN #{resolvedAt} IS NULL THEN NULL ELSE COALESCE(resolved_at, #{resolvedAt}) END, updated_at = NOW() WHERE id = #{id}
     </update>
 
     <delete id="deleteById">

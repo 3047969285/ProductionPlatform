@@ -89,7 +89,10 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ApiResult<Void> handleDataIntegrity(DataIntegrityViolationException e, HttpServletRequest request) {
-        String message = "存在关联数据无法删除，请先清理子项或文件夹内容";
+        // 只有删除操作才是“有关联数据”；新增/修改触发的约束错误是数据本身不合法（如项目不存在、字段过长）
+        String message = "DELETE".equalsIgnoreCase(request.getMethod())
+                ? "存在关联数据无法删除，请先清理子项或文件夹内容"
+                : "数据不合法：关联对象不存在或字段内容过长，请检查后重试";
         logWarn(request, ResultCode.BAD_REQUEST.getCode(), message, e);
         return ApiResult.of(ResultCode.BAD_REQUEST.getCode(), message);
     }

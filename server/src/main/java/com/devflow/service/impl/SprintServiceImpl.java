@@ -97,6 +97,9 @@ public class SprintServiceImpl implements SprintService {
      */
     @Override
     public boolean save(SprintDto dto, boolean isNew) {
+        if (dto.getStartDate() != null && dto.getEndDate() != null && dto.getEndDate().isBefore(dto.getStartDate())) {
+            throw new IllegalArgumentException("结束日期不能早于开始日期");
+        }
         Sprint s = new Sprint();
         s.setId(dto.getId());
         s.setProjectId(dto.getProjectId());

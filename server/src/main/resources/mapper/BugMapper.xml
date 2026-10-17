@@ -48,12 +48,12 @@
             severity = #{severity}, priority = #{priority}, status = #{status},
             steps = #{steps}, expected_result = #{expectedResult}, actual_result = #{actualResult},
             assignee = #{assignee}, reporter = #{reporter}, fix_version = #{fixVersion},
-            resolved_at = #{resolvedAt}, updated_at = #{updatedAt}
+            resolved_at = CASE WHEN #{resolvedAt} IS NULL THEN NULL ELSE COALESCE(resolved_at, #{resolvedAt}) END, updated_at = #{updatedAt}
         WHERE id = #{id}
     </update>
 
     <update id="updateStatus">
-        UPDATE bug SET status = #{status}, resolved_at = #{resolvedAt}, updated_at = NOW() WHERE id = #{id}
+        UPDATE bug SET status = #{status}, resolved_at = CASE WHEN #{resolvedAt} IS NULL THEN NULL ELSE COALESCE(resolved_at, #{resolvedAt}) END, updated_at = NOW() WHERE id = #{id}
     </update>
 
     <delete id="deleteById">

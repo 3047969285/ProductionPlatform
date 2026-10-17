@@ -124,6 +124,9 @@ public class TaskServiceImpl implements TaskService {
      */
     @Override
     public boolean updateStatus(Long id, String status) {
+        if (!java.util.Set.of("todo", "doing", "done").contains(status)) {
+            throw new IllegalArgumentException("任务状态只能是 todo、doing 或 done");
+        }
         LocalDateTime resolvedAt = "done".equals(status) ? LocalDateTime.now() : null;
         return mapper.updateStatus(id, status, resolvedAt) > 0;
     }

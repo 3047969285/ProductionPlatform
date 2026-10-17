@@ -118,6 +118,9 @@ public class RequirementServiceImpl implements RequirementService {
      */
     @Override
     public boolean updateStatus(Long id, String status) {
+        if (!java.util.Set.of("draft", "review", "approved", "developing", "done", "rejected").contains(status)) {
+            throw new IllegalArgumentException("需求状态不合法");
+        }
         return mapper.updateStatus(id, status) > 0;
     }
 

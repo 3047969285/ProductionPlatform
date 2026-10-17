@@ -15,7 +15,6 @@ const introPhase = ref(true)
 const loginReady = ref(false)
 const loading = ref(false)
 const form = ref({ username: '', password: '' })
-const prefersReducedMotion = ref(false)
 
 let introTimeline
 let transitionTimeline
@@ -140,19 +139,12 @@ function startIntroAnimation() {
     .call(enterLogin, [], 1.66)
 }
 
-function playIntroAnimation() {
-  prefersReducedMotion.value = false
-  reducedMotion = false
-  startIntroAnimation()
-}
-
 onMounted(() => {
   window.addEventListener('keydown', handleKeydown)
   if (!root.value) return
   nextTick(() => introSkipButton.value?.focus({ preventScroll: true }))
 
   reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  prefersReducedMotion.value = reducedMotion
 
   if (reducedMotion) {
     // 减少动效：圆环静态留在背景，直接进入登录态
@@ -183,12 +175,10 @@ onUnmounted(() => {
       <div class="intro-floor" />
 
       <article class="intro-work intro-work--left">
-        <header><span>01 / DISCOVERY</span><span>PDE / FLOW</span></header>
         <div class="work-visual work-visual--left"><i /><i /><i /></div>
         <footer><strong>需求定义</strong><span>目标 · 范围 · 验收</span></footer>
       </article>
       <article class="intro-work intro-work--right">
-        <header><span>04 / DELIVERY</span><span>BUILD / QA</span></header>
         <div class="work-visual work-visual--right"><i /><i /><i /></div>
         <footer><strong>稳定交付</strong><span>构建 · 测试 · 部署</span></footer>
       </article>
@@ -245,17 +235,15 @@ onUnmounted(() => {
     <header class="scene-header">
       <div class="intro-brand" aria-label="DevFlow">
         <span class="intro-brand-mark">D</span>
-        <span>DEVFLOW<small>PRODUCTION / DELIVERY</small></span>
+        <span>DEVFLOW</span>
       </div>
       <div class="intro-actions">
-        <button v-if="prefersReducedMotion" class="intro-play" type="button" @click="playIntroAnimation">播放开场 <span aria-hidden="true">↗</span></button>
         <button v-show="introPhase" ref="introSkipButton" class="intro-skip" type="button" @click="skipIntro">跳过动画 <span aria-hidden="true">↗</span></button>
       </div>
     </header>
 
     <main class="scene-stage">
       <section class="intro-copy">
-        <p class="intro-kicker">PRODUCTION / DELIVERY / LIVE</p>
         <h2 id="intro-title">从想法，<span>到交付。</span></h2>
         <p class="intro-caption">让每一步，都清晰向前。</p>
       </section>
@@ -266,15 +254,12 @@ onUnmounted(() => {
         :aria-hidden="introPhase ? 'true' : undefined"
         @submit.prevent="submit"
       >
-        <header class="card-top"><p>01 / IDENTITY</p><span aria-hidden="true">↗</span></header>
         <label>账号<el-input v-model="form.username" placeholder="输入账号" size="large" autocomplete="username" /></label>
         <label>密码<el-input v-model="form.password" type="password" placeholder="输入密码" size="large" show-password autocomplete="current-password" /></label>
         <button type="submit" class="btn" :disabled="loading">{{ loading ? '验证中…' : '进入系统 ↗' }}</button>
-        <footer><span>DEVFLOW</span><span>SECURE ENTRY</span></footer>
       </form>
     </main>
 
-    <footer class="scene-footer"><span>DEVFLOW / 01</span><span>研发交付平台</span></footer>
   </div>
 </template>
 
@@ -348,10 +333,6 @@ onUnmounted(() => {
 .intro-skip:hover, .intro-skip:focus-visible { color: var(--text); }
 .intro-skip:focus-visible { outline: 1px solid var(--accent); outline-offset: 4px; }
 .intro-skip span { color: var(--accent); font-size: 15px; }
-.intro-play { display: inline-flex; align-items: center; gap: 10px; padding: 10px 0; color: var(--accent); background: transparent; border: 0; cursor: pointer; font-size: 11px; letter-spacing: .08em; transition: color .2s ease; }
-.intro-play:hover, .intro-play:focus-visible { color: var(--text); }
-.intro-play:focus-visible { outline: 1px solid var(--accent); outline-offset: 4px; }
-.intro-play span { font-size: 15px; }
 
 /* ---------- 背景元素 ---------- */
 .intro-grid { position: absolute; z-index: 0; inset: 0; opacity: .2; background-image: linear-gradient(rgba(234, 238, 222, .05) 1px, transparent 1px), linear-gradient(90deg, rgba(234, 238, 222, .05) 1px, transparent 1px); background-size: 72px 72px; mask-image: radial-gradient(ellipse at center, black, transparent 75%); }
@@ -419,7 +400,7 @@ onUnmounted(() => {
   .intro-brand { gap: 8px; font-size: 11px; letter-spacing: .1em; }
   .intro-brand small { display: none; }
   .intro-actions { gap: 8px; }
-  .intro-play, .intro-skip { gap: 6px; font-size: 11px; letter-spacing: 0; white-space: nowrap; }
+  .intro-skip { gap: 6px; font-size: 11px; letter-spacing: 0; white-space: nowrap; }
 }
-:root[data-reduce-motion] .intro-skip, :root[data-reduce-motion] .intro-play, :root[data-reduce-motion] .btn { transition: none; }
+:root[data-reduce-motion] .intro-skip, :root[data-reduce-motion] .btn { transition: none; }
 </style>
