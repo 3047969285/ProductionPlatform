@@ -208,25 +208,23 @@ onMounted(() => { loadFolders(); loadList() })
         @row-click="openDetail"
         class="clickable-table"
       >
-        <el-table-column :prop="noField" label="编号" width="140" />
-        <el-table-column prop="title" label="标题" min-width="180" show-overflow-tooltip />
+        <el-table-column :prop="noField" label="编号" width="110" />
+        <el-table-column prop="title" label="标题" min-width="140" show-overflow-tooltip />
         <el-table-column v-if="isApi" prop="method" label="方法" width="90" />
         <el-table-column v-if="isApi" prop="path" label="路径" min-width="140" show-overflow-tooltip />
-        <el-table-column v-if="!isApi" label="优先级" width="90">
+        <el-table-column v-if="!isApi" label="优先级" width="80">
           <template #default="{ row }">
             <span class="badge" :class="badgeClass('priority', row.priority)">{{ reqPriority[row.priority] }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="状态" width="100">
+        <el-table-column label="状态" width="96">
           <template #default="{ row }">
             <span class="badge" :class="badgeClass(isApi ? 'api' : 'req', row.status)">{{ statusMap[row.status] }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="proposer" label="提出人" width="100" />
-        <el-table-column prop="owner" label="负责人" width="100" />
-        <el-table-column label="操作" width="220" fixed="right">
+        <el-table-column prop="owner" label="负责人" width="90" />
+        <el-table-column label="操作" width="110" align="right">
           <template #default="{ row }">
-            <el-button size="default" @click.stop="openDetail(row)">详情</el-button>
             <el-button size="default" @click.stop="openEdit(row)">编辑</el-button>
             <el-button size="default" type="danger" @click.stop="remove(row.id)">删除</el-button>
           </template>
@@ -236,7 +234,7 @@ onMounted(() => { loadFolders(); loadList() })
 
     <el-dialog v-model="dialog" :title="editing ? '编辑' : '新增'" width="640px" destroy-on-close :close-on-click-modal="!saving" :close-on-press-escape="!saving" :show-close="!saving">
       <el-form label-width="80px" size="default" :disabled="saving">
-        <el-form-item label="标题"><el-input v-model="form.title" /></el-form-item>
+        <el-form-item label="标题"><el-input v-model="form.title" maxlength="200" show-word-limit /></el-form-item>
         <el-form-item v-if="isApi" label="方法">
           <el-select v-model="form.method" style="width: 100%">
             <el-option v-for="m in httpMethods" :key="m" :label="m" :value="m" />
@@ -312,5 +310,6 @@ onMounted(() => { loadFolders(); loadList() })
 .tree-action.del { color: var(--pink); border-color: rgba(245, 108, 108, 0.3); background: rgba(245, 108, 108, 0.06); }
 .tree-action.del:hover { background: rgba(245, 108, 108, 0.15); }
 .clickable-table :deep(.el-table__row) { cursor: pointer; }
-@media (max-width: 768px) { .doc-panel { grid-template-columns: 1fr; } .sidebar { order: 2; } }
+/* 内容区不够宽时，把文件夹树放到列表下方，优先保证列表可读 */
+@media (max-width: 1180px) { .doc-panel { grid-template-columns: 1fr; } .sidebar { order: 2; } }
 </style>

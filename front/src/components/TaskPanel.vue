@@ -138,27 +138,26 @@ watch(() => props.projectId, () => { load(); loadSprints() })
     </div>
     <div class="table-frame">
       <el-table :data="filteredList" v-loading="loading" stripe :empty-text="keyword || filter !== 'all' ? '没有匹配的任务' : '还没有任务，点击上方新增任务'" @row-click="openDetail" class="clickable-table">
-      <el-table-column prop="title" label="任务" min-width="200" show-overflow-tooltip />
-      <el-table-column prop="sprintName" label="迭代" width="150">
+      <el-table-column prop="title" label="任务" min-width="150" show-overflow-tooltip />
+      <el-table-column prop="sprintName" label="迭代" width="90" show-overflow-tooltip>
         <template #default="{ row }">{{ row.sprintName || '—' }}</template>
       </el-table-column>
-      <el-table-column label="优先级" width="90">
+      <el-table-column label="优先级" width="80">
         <template #default="{ row }">
           <span class="badge" :class="badgeClass('priority', row.priority)">{{ reqPriority[row.priority] }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="状态" width="130">
+      <el-table-column label="状态" width="112">
         <template #default="{ row }">
-          <el-select :model-value="row.status" :disabled="statusSavingIds[row.id]" size="small" style="width: 110px" @change="(v) => changeStatus(row, v)">
+          <el-select :model-value="row.status" :disabled="statusSavingIds[row.id]" size="small" style="width: 100px" @change="(v) => changeStatus(row, v)">
             <el-option v-for="(l, k) in taskStatus" :key="k" :label="l" :value="k" />
           </el-select>
         </template>
       </el-table-column>
-      <el-table-column prop="assignee" label="负责人" width="100" />
-      <el-table-column prop="estimateHours" label="预估工时" width="90" />
-      <el-table-column label="操作" width="200" fixed="right">
+      <el-table-column prop="assignee" label="负责人" width="80" />
+      <el-table-column prop="estimateHours" label="工时" width="60" />
+      <el-table-column label="操作" width="104" align="right">
         <template #default="{ row }">
-          <el-button size="small" @click.stop="openDetail(row)">详情</el-button>
           <el-button size="small" @click.stop="openEdit(row)">编辑</el-button>
           <el-button size="small" type="danger" @click.stop="remove(row.id)">删除</el-button>
         </template>
@@ -168,7 +167,7 @@ watch(() => props.projectId, () => { load(); loadSprints() })
 
     <el-dialog v-model="dialog" :title="editing ? '编辑任务' : '新增任务'" width="600px" destroy-on-close :close-on-click-modal="!saving" :close-on-press-escape="!saving" :show-close="!saving">
       <el-form label-width="80px" size="default" :disabled="saving">
-        <el-form-item label="标题"><el-input v-model="form.title" /></el-form-item>
+        <el-form-item label="标题"><el-input v-model="form.title" maxlength="200" show-word-limit /></el-form-item>
         <el-form-item label="迭代">
           <el-select v-model="form.sprintId" clearable style="width: 100%" placeholder="不选则无迭代">
             <el-option v-for="s in sprints" :key="s.id" :label="s.name" :value="s.id" />
@@ -186,7 +185,7 @@ watch(() => props.projectId, () => { load(); loadSprints() })
         </el-form-item>
         <el-form-item label="负责人"><el-input v-model="form.assignee" /></el-form-item>
         <el-form-item label="创建人"><el-input v-model="form.creator" /></el-form-item>
-        <el-form-item label="预估工时"><el-input-number v-model="form.estimateHours" :min="0" :max="1000" /></el-form-item>
+        <el-form-item label="预估工时"><el-input-number v-model="form.estimateHours" :min="0" :max="10000" /></el-form-item>
         <el-form-item label="详情"><RichEditor v-model="form.content" /></el-form-item>
       </el-form>
       <template #footer>

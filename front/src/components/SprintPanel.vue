@@ -135,10 +135,10 @@ watch(() => props.projectId, load)
 
     <el-dialog v-model="dialog" :title="editing ? '编辑迭代' : '新建迭代'" width="520px" destroy-on-close :close-on-click-modal="!saving" :close-on-press-escape="!saving" :show-close="!saving">
       <el-form label-width="80px" size="default" :disabled="saving">
-        <el-form-item label="名称"><el-input v-model="form.name" placeholder="如 Sprint 2" /></el-form-item>
+        <el-form-item label="名称"><el-input v-model="form.name" placeholder="如 Sprint 2" maxlength="100" /></el-form-item>
         <el-form-item label="目标"><el-input v-model="form.goal" type="textarea" :rows="2" /></el-form-item>
         <el-form-item label="开始日期"><el-date-picker v-model="form.startDate" type="date" value-format="YYYY-MM-DD" style="width: 100%" /></el-form-item>
-        <el-form-item label="结束日期"><el-date-picker v-model="form.endDate" type="date" value-format="YYYY-MM-DD" style="width: 100%" /></el-form-item>
+        <el-form-item label="结束日期"><el-date-picker v-model="form.endDate" type="date" value-format="YYYY-MM-DD" style="width: 100%" :disabled-date="(d) => form.startDate && d < new Date(form.startDate + 'T00:00:00')" /></el-form-item>
         <el-form-item label="状态">
           <el-select v-model="form.status" style="width: 100%">
             <el-option v-for="(l, k) in sprintStatus" :key="k" :label="l" :value="k" />

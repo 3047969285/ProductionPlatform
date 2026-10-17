@@ -276,7 +276,7 @@ watch(() => props.projectId, () => { loadCases(); if (sub.value === 'plans') loa
           <div class="date-row">
             <el-date-picker v-model="planForm.startDate" type="date" value-format="YYYY-MM-DD" placeholder="开始" />
             <span>~</span>
-            <el-date-picker v-model="planForm.endDate" type="date" value-format="YYYY-MM-DD" placeholder="结束" />
+            <el-date-picker v-model="planForm.endDate" type="date" value-format="YYYY-MM-DD" placeholder="结束" :disabled-date="(d) => planForm.startDate && d < new Date(planForm.startDate + 'T00:00:00')" />
           </div>
         </el-form-item>
         <el-form-item label="状态">

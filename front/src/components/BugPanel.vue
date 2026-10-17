@@ -140,25 +140,23 @@ watch(() => props.projectId, () => { load(); loadSprints() })
     </div>
     <div class="table-frame">
       <el-table :data="filteredList" v-loading="loading" stripe :empty-text="keyword || filter !== 'all' ? '没有匹配的缺陷' : '还没有登记缺陷，点击上方登记'" @row-click="openDetail" class="clickable-table">
-      <el-table-column prop="title" label="缺陷" min-width="200" show-overflow-tooltip />
-      <el-table-column label="严重程度" width="100">
+      <el-table-column prop="title" label="缺陷" min-width="150" show-overflow-tooltip />
+      <el-table-column label="严重程度" width="90">
         <template #default="{ row }">
           <span class="badge" :class="badgeClass('severity', row.severity)">{{ bugSeverity[row.severity] }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="状态" width="130">
+      <el-table-column label="状态" width="112">
         <template #default="{ row }">
-          <el-select :model-value="row.status" :disabled="statusSavingIds[row.id]" size="small" style="width: 110px" @change="(v) => changeStatus(row, v)">
+          <el-select :model-value="row.status" :disabled="statusSavingIds[row.id]" size="small" style="width: 100px" @change="(v) => changeStatus(row, v)">
             <el-option v-for="(l, k) in bugStatus" :key="k" :label="l" :value="k" />
           </el-select>
         </template>
       </el-table-column>
-      <el-table-column prop="assignee" label="处理人" width="100" />
-      <el-table-column prop="reporter" label="报告人" width="100" />
-      <el-table-column prop="fixVersion" label="解决版本" width="100" />
-      <el-table-column label="操作" width="200" fixed="right">
+      <el-table-column prop="assignee" label="处理人" width="80" />
+      <el-table-column prop="fixVersion" label="解决版本" width="90" show-overflow-tooltip />
+      <el-table-column label="操作" width="104" align="right">
         <template #default="{ row }">
-          <el-button size="small" @click.stop="openDetail(row)">详情</el-button>
           <el-button size="small" @click.stop="openEdit(row)">编辑</el-button>
           <el-button size="small" type="danger" @click.stop="remove(row.id)">删除</el-button>
         </template>
@@ -168,7 +166,7 @@ watch(() => props.projectId, () => { load(); loadSprints() })
 
     <el-dialog v-model="dialog" :title="editing ? '编辑缺陷' : '登记缺陷'" width="640px" destroy-on-close :close-on-click-modal="!saving" :close-on-press-escape="!saving" :show-close="!saving">
       <el-form label-width="90px" size="default" :disabled="saving">
-        <el-form-item label="标题"><el-input v-model="form.title" /></el-form-item>
+        <el-form-item label="标题"><el-input v-model="form.title" maxlength="200" show-word-limit /></el-form-item>
         <el-form-item label="迭代">
           <el-select v-model="form.sprintId" clearable style="width: 100%" placeholder="不选则无迭代">
             <el-option v-for="s in sprints" :key="s.id" :label="s.name" :value="s.id" />
