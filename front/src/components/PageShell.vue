@@ -89,10 +89,10 @@ onUnmounted(() => context?.revert())
 .page {
   position: relative;
   width: 100%;
-  max-width: 1536px;
+  max-width: none;
   min-height: 100svh;
   margin: 0 auto;
-  padding: calc(var(--nav-h) + clamp(28px, 4vh, 42px)) clamp(22px, 4.2vw, 64px) 96px;
+  padding: calc(var(--nav-h) + clamp(10px, 2vh, 20px)) clamp(12px, 1.6vw, 28px) 32px;
   isolation: isolate;
 }
 .head {
@@ -100,12 +100,12 @@ onUnmounted(() => context?.revert())
   justify-content: space-between;
   align-items: flex-end;
   gap: 20px;
-  margin-bottom: clamp(20px, 4vh, 34px);
+  margin-bottom: clamp(10px, 2vh, 16px);
   flex-wrap: wrap;
 }
-.tag { display: flex; align-items: center; gap: 9px; color: var(--muted); font-size: 11px; font-weight: 500; letter-spacing: .2em; margin-bottom: 11px; }
+.tag { display: flex; align-items: center; gap: 9px; color: var(--muted); font-size: 11px; font-weight: 500; letter-spacing: .2em; margin-bottom: 6px; }
 .tag i { width: 24px; height: 1px; background: var(--muted); }
-h1 { font-family: var(--font-display); font-size: clamp(2.5rem, 6vw, 5.6rem); font-weight: 400; letter-spacing: -.07em; line-height: .95; }
+h1 { font-family: var(--font-display); font-size: clamp(1.9rem, 3.4vw, 3.2rem); font-weight: 400; letter-spacing: -.07em; line-height: .95; }
 .page-action { display: flex; align-items: center; }
 .panel {
   padding: 0;

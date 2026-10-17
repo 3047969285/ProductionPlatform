@@ -252,7 +252,7 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-.layout { --nav-h: 78px; min-height: 100vh; }
+.layout { --nav-h: 56px; min-height: 100vh; }
 .route-transition { position: fixed; z-index: 200; inset: 0; overflow: hidden; pointer-events: auto; }
 .route-transition__veil { position: absolute; top: 50%; left: 50%; width: 240vmax; height: 240vmax; border-radius: 50%; background: #020303; transform: translate3d(-50%, -50%, 0) scale(.001); will-change: transform; }
 .route-transition__rings { position: absolute; top: 50%; left: 50%; width: min(62vw, 60vh, 560px); aspect-ratio: 1; border: 1px solid rgba(239, 239, 235, .72); border-radius: 50%; transform: translate3d(-50%, -50%, 0); box-shadow: 0 0 0 13px rgba(239, 239, 235, .035), inset 0 0 72px rgba(239, 239, 235, .035); will-change: transform, opacity; }
@@ -265,9 +265,9 @@ onUnmounted(() => {
 .route-transition__label strong { color: var(--text); font-size: 11px; font-weight: 500; letter-spacing: .08em; }
 .nav {
   position: fixed; inset: 0 0 auto; z-index: 100;
-  height: 78px; display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  height: 56px; display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center; gap: 20px;
-  padding: 0 clamp(22px, 5.2vw, 84px);
+  padding: 0 clamp(12px, 1.6vw, 28px);
   pointer-events: none;
 }
 /* 滚动时页面标题会从固定导航下面穿过，给导航垫一层渐隐底色避免文字重叠 */

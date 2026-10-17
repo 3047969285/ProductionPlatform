@@ -82,13 +82,6 @@ onUnmounted(() => {
 
 <template>
   <section ref="root" class="stage-nav" aria-label="项目交付阶段">
-    <div class="stage-heading">
-      <div>
-        <h2>{{ activeStage?.label || '交付流程' }}</h2>
-        <p>{{ activeStage?.description }}</p>
-      </div>
-    </div>
-
     <div class="stage-rail" role="group" aria-label="交付阶段导航，选择阶段查看对应工作台">
       <div class="stage-progress" aria-hidden="true"><span class="stage-progress-fill" /></div>
       <button
@@ -112,7 +105,7 @@ onUnmounted(() => {
 
 <style scoped>
 .stage-nav {
-  padding: 22px 22px 20px;
+  padding: 12px 16px 10px;
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   background: rgba(23, 27, 25, .84);
@@ -126,10 +119,10 @@ h2 { font-family: var(--font-display); font-size: clamp(1.45rem, 2vw, 2rem); fon
 .stage-counter strong { color: var(--accent); font-family: var(--font-display); font-size: 2rem; line-height: 1; }
 .stage-counter span { font-size: 12px; }
 .stage-rail { position: relative; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
-.stage-progress { position: absolute; top: 16px; left: 7%; right: 7%; height: 1px; background: rgba(234, 238, 222, .15); z-index: 0; overflow: hidden; }
+.stage-progress { position: absolute; top: 13px; left: 7%; right: 7%; height: 1px; background: rgba(234, 238, 222, .15); z-index: 0; overflow: hidden; }
 .stage-progress-fill { display: block; width: 100%; height: 100%; background: var(--accent); transform: scaleX(0); transform-origin: left center; }
-.stage { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 8px; min-width: 0; border: 0; background: transparent; color: var(--muted); cursor: pointer; font: inherit; text-align: center; }
-.stage-dot { display: grid; place-items: center; width: 34px; height: 34px; border: 1px solid var(--border-strong); border-radius: 50%; background: var(--surface); color: var(--muted); font-size: 11px; font-weight: 700; transition: background .25s var(--ease), border-color .25s var(--ease), color .25s var(--ease), box-shadow .25s var(--ease), transform .25s var(--ease); }
+.stage { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 5px; min-width: 0; border: 0; background: transparent; color: var(--muted); cursor: pointer; font: inherit; text-align: center; }
+.stage-dot { display: grid; place-items: center; width: 28px; height: 28px; border: 1px solid var(--border-strong); border-radius: 50%; background: var(--surface); color: var(--muted); font-size: 11px; font-weight: 700; transition: background .25s var(--ease), border-color .25s var(--ease), color .25s var(--ease), box-shadow .25s var(--ease), transform .25s var(--ease); }
 .stage-text strong, .stage-text small { display: block; }
 .stage-text strong { font-size: 14px; color: var(--text); transition: color .25s var(--ease); }
 .stage-text small { margin-top: 2px; color: var(--muted); font-size: 11px; white-space: nowrap; }

@@ -197,33 +197,33 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.home { max-width: 1536px; min-height: 100svh; margin: 0 auto; padding: calc(var(--nav-h) + clamp(28px, 4vh, 42px)) clamp(22px, 4.2vw, 64px) 96px; }
+.home { max-width: none; min-height: 100svh; margin: 0; padding: calc(var(--nav-h) + clamp(10px, 2vh, 20px)) clamp(12px, 1.6vw, 28px) 32px; }
 .bg { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
 .orb { position: absolute; border-radius: 50%; filter: blur(110px); opacity: .035; will-change: transform; }
 .o1 { width: 360px; height: 360px; background: #fff; top: -8%; right: -5%; }
 .o2 { width: 280px; height: 280px; background: #bdbdb7; bottom: 5%; left: -8%; }
-.hero { position: relative; margin-bottom: clamp(30px, 6vh, 64px); padding-bottom: 0; border: 0; }
+.hero { position: relative; margin-bottom: clamp(12px, 2.4vh, 24px); padding-bottom: 0; border: 0; }
 .hero::after { display: none; }
 .tag { display: flex; align-items: center; gap: 9px; color: var(--muted); font-size: 11px; letter-spacing: .2em; margin-bottom: 19px; }
 .tag i { width: 25px; height: 1px; background: var(--muted); }
 h1 { font-family: var(--font-display); font-size: clamp(3rem, 6vw, 6rem); font-weight: 400; letter-spacing: -.09em; line-height: .92; margin-bottom: 18px; }
 .desc { color: var(--muted-light); font-size: 11px; letter-spacing: .14em; }
-.grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0; margin-bottom: clamp(48px, 10vh, 100px); border-top: 1px solid rgba(239,239,235,.24); border-bottom: 1px solid rgba(239,239,235,.15); background: transparent; }
-.card { position: relative; min-width: 0; min-height: 142px; padding: 22px 18px 36px 0; color: inherit; background: transparent; border-right: 1px solid rgba(239,239,235,.12); cursor: pointer; text-decoration: none; will-change: transform, opacity; transition: transform .45s var(--ease), background .35s var(--ease); }
+.grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0; margin-bottom: clamp(20px, 4vh, 36px); border-top: 1px solid rgba(239,239,235,.24); border-bottom: 1px solid rgba(239,239,235,.15); background: transparent; }
+.card { position: relative; min-width: 0; min-height: clamp(130px, 26vh, 260px); padding: 18px 18px 22px 0; color: inherit; background: transparent; border-right: 1px solid rgba(239,239,235,.12); cursor: pointer; text-decoration: none; will-change: transform, opacity; transition: transform .45s var(--ease), background .35s var(--ease); }
 .card:focus-visible { outline: 1px solid rgba(239,239,235,.72); outline-offset: -1px; }
 .card + .card { padding-left: 18px; }
 .card:last-child { border-right: 0; }
 .card::before { position: absolute; top: -1px; left: 0; width: 24px; height: 1px; background: rgba(239,239,235,.72); content: ""; }
 .card:hover { z-index: 1; background: rgba(255,255,255,.025); transform: translateY(-5px); }
 .num { display: block; font-family: var(--font-display); font-size: clamp(2rem, 4vw, 3.7rem); font-weight: 400; line-height: 1; letter-spacing: -.06em; transition: transform .5s var(--ease), letter-spacing .5s var(--ease); }
-.label { display: block; margin-top: 32px; color: var(--muted-light); font-size: 11px; letter-spacing: .11em; transition: color .35s var(--ease), letter-spacing .5s var(--ease); }
+.label { display: block; margin-top: 18px; color: var(--muted-light); font-size: 11px; letter-spacing: .11em; transition: color .35s var(--ease), letter-spacing .5s var(--ease); }
 .card-action { position: absolute; right: 18px; bottom: 16px; display: flex; align-items: center; gap: 7px; color: var(--muted); font-size: 11px; letter-spacing: .06em; transition: color .3s var(--ease); }
 .card-action i { color: var(--muted-light); font-size: 11px; font-style: normal; transition: transform .3s var(--ease); }
 .card:hover .num { transform: translateY(-3px); letter-spacing: -.04em; }
 .card:hover .label { color: var(--text); letter-spacing: .16em; }
 .card:hover .card-action { color: var(--text); }
 .card:hover .card-action i { transform: translate(2px, -2px); }
-.recent { max-width: 1000px; margin-bottom: 32px; }
+.recent { max-width: none; margin-bottom: 16px; }
 .recent-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; margin-bottom: 18px; }
 .recent-kicker { margin-bottom: 6px; color: var(--muted); font-size: 11px; letter-spacing: .16em; }
 .recent-head h2 { font-family: var(--font-display); font-size: clamp(1.5rem, 2.8vw, 2.2rem); font-weight: 400; letter-spacing: -.04em; }

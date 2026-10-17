@@ -508,14 +508,14 @@ onMounted(() => {
 
 <style scoped>
 .intro { font-size: 13px; color: var(--muted); margin-bottom: 6px; line-height: 1.6; }
-.meta { font-size: 11px; color: var(--muted-light); margin-bottom: 20px; letter-spacing: .04em; }
+.meta { font-size: 11px; color: var(--muted-light); margin-bottom: 8px; letter-spacing: .04em; }
 .detail-state { display: flex; min-height: 180px; align-items: center; gap: 18px; padding: 28px; border: 1px solid var(--border); border-radius: var(--radius-lg); background: rgba(255,255,255,.018); }
 .detail-state-mark { display: grid; width: 42px; height: 42px; flex: 0 0 auto; place-items: center; border: 1px solid var(--border); border-radius: 50%; color: var(--accent); font-family: var(--font-display); }
 .detail-state h2 { margin: 0 0 8px; font-size: 15px; font-weight: 500; }
 .detail-state p { max-width: 560px; margin: 0; color: var(--muted); font-size: 12px; line-height: 1.7; }
 .detail-state-actions { display: flex; gap: 8px; margin-left: auto; }
-.project-flow { display: flex; flex-direction: column; gap: 12px; }
-.project-body { display: grid; grid-template-columns: 184px minmax(0, 1fr); gap: 12px; align-items: start; }
+.project-flow { display: flex; flex-direction: column; gap: 8px; }
+.project-body { display: grid; grid-template-columns: 172px minmax(0, 1fr); gap: 10px; align-items: start; }
 .side-nav {
   position: sticky; top: calc(var(--nav-h) + 16px);
   background: var(--glass);
@@ -542,7 +542,7 @@ onMounted(() => {
 .nav-icon { width: 20px; text-align: center; }
 .nav-arrow { margin-left: auto; font-size: 16px; }
 .phase-hint { padding: 12px 8px 2px; color: var(--muted-light); font-size: 11px; letter-spacing: .08em; }
-.content { min-width: 0; background: var(--glass); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 18px; box-shadow: var(--shadow-sm); }
+.content { min-width: 0; background: var(--glass); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 12px; box-shadow: var(--shadow-sm); }
 .tab-toolbar { margin-bottom: 12px; }
 .test-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .test-toolbar p { color: var(--muted); font-size: 12px; }

@@ -649,7 +649,7 @@ html.lenis, html.lenis body { height: auto; }
 .layout .nav-rail { background: linear-gradient(90deg, transparent, var(--sage), transparent); height: 2px; }
 .layout .el-table .el-table__row { transition: background-color .3s var(--ease-smooth, ease); }
 .layout .el-table--enable-row-hover .el-table__body tr:hover > td.el-table__cell { background: rgba(203, 210, 118, .05); }
-.home .num { font-size: clamp(2.6rem, 5vw, 4.8rem); }
+.home .num { font-size: clamp(2.4rem, min(5vw, 9vh), 5rem); }
 .ambient-orb { opacity: .85; }
 
 /* 表格行内操作：紧凑文字按钮，删除只在悬停时显出警示色，避免整列大红按钮抢眼 */

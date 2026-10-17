@@ -353,12 +353,12 @@ onUnmounted(() => {
 .search-wrap input::placeholder { color: var(--muted-light); }
 .create-button { padding: 10px 14px; border: 1px solid rgba(239,239,235,.6); border-radius: 999px; color: #080808; background: var(--text); cursor: pointer; font-size: 11px; transition: color .25s ease, background .25s ease, transform .35s var(--ease); }
 .create-button:hover { color: var(--text); background: transparent; transform: translateY(-2px); }
-.gallery-layout { min-height: 57vh; }
+.gallery-layout { min-height: 70vh; }
 .gallery-layout.opening, .gallery-layout.deleting { pointer-events: none; }
 .summary-warning { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0 auto 8px; color: var(--muted-light); font-size: 11px; }
-.gallery-stage { position: relative; height: clamp(360px, 47vh, 520px); overflow: visible; outline: none; perspective: 1500px; transform-style: preserve-3d; }
+.gallery-stage { position: relative; height: clamp(420px, 64vh, 700px); overflow: visible; outline: none; perspective: 1500px; transform-style: preserve-3d; }
 .stage-note { position: absolute; top: -19px; left: 0; color: var(--muted-light); font-size: 11px; letter-spacing: .18em; }
-.project-card { position: absolute; top: 50%; left: 50%; display: flex; width: min(43vw, 650px); height: clamp(300px, 43.5vh, 500px); flex-direction: column; overflow: hidden; border: 1px solid rgba(239,239,235,.16); border-radius: 17px; background: #0d0d0d; box-shadow: 0 28px 80px rgba(0,0,0,.55); cursor: pointer; transform-origin: center center; transition: transform .85s cubic-bezier(.2,.75,.2,1), opacity .55s ease, border-color .5s ease, box-shadow .5s ease; will-change: transform, opacity; }
+.project-card { position: absolute; top: 50%; left: 50%; display: flex; width: min(50vw, 800px); height: clamp(340px, 58vh, 620px); flex-direction: column; overflow: hidden; border: 1px solid rgba(239,239,235,.16); border-radius: 17px; background: #0d0d0d; box-shadow: 0 28px 80px rgba(0,0,0,.55); cursor: pointer; transform-origin: center center; transition: transform .85s cubic-bezier(.2,.75,.2,1), opacity .55s ease, border-color .5s ease, box-shadow .5s ease; will-change: transform, opacity; }
 .project-card.selected { border-color: rgba(239,239,235,.54); box-shadow: 0 34px 100px rgba(0,0,0,.62); }
 .project-cover { position: relative; display: flex; flex: 1 1 58%; min-height: 54%; flex-direction: column; justify-content: space-between; overflow: hidden; padding: 18px 21px 17px; background: linear-gradient(135deg, #262726, #111212 72%); }
 .project-cover::before { position: absolute; inset: 0; content: ""; opacity: .5; background-image: linear-gradient(rgba(255,255,255,.055) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.055) 1px, transparent 1px); background-size: 35px 35px; mask-image: linear-gradient(135deg, #000, transparent 78%); }
