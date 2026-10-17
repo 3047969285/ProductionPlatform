@@ -53,9 +53,9 @@ watch(() => props.projectId, load)
 </script>
 
 <template>
-  <div v-loading="loading" v-reveal>
+  <div v-loading="loading" v-reveal class="board">
     <h3 class="lane-title">任务</h3>
-    <div class="kanban">
+    <div class="kanban" :style="{ '--cols': taskColumns.length }">
       <div v-for="col in taskColumns" :key="'t' + col.status" class="col"
            @dragover.prevent @drop="onDrop($event, 'task', col.status)">
         <div class="col-head">{{ col.label }} <span class="cnt">{{ col.items.length }}</span></div>
@@ -71,7 +71,7 @@ watch(() => props.projectId, load)
       </div>
     </div>
     <h3 class="lane-title">缺陷</h3>
-    <div class="kanban">
+    <div class="kanban" :style="{ '--cols': bugColumns.length }">
       <div v-for="col in bugColumns" :key="'b' + col.status" class="col"
            @dragover.prevent @drop="onDrop($event, 'bug', col.status)">
         <div class="col-head">{{ col.label }} <span class="cnt">{{ col.items.length }}</span></div>
@@ -90,20 +90,22 @@ watch(() => props.projectId, load)
 </template>
 
 <style scoped>
-.lane-title { font-size: 16px; font-weight: 700; margin: 16px 0 10px; color: var(--text); }
-.kanban { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 8px; }
+.board { display: grid; grid-template-rows: auto minmax(0, 1fr) auto minmax(0, 1fr); gap: 8px; min-height: calc(100svh - 320px); }
+.lane-title { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; margin: 4px 0 0; color: var(--text); }
+.lane-title::before { width: 3px; height: 14px; border-radius: 2px; background: var(--sage, #cbd276); content: ""; }
+.kanban { display: grid; grid-template-columns: repeat(var(--cols, 3), minmax(0, 1fr)); gap: 10px; min-height: 140px; }
 .col {
-  min-height: 120px; padding: 10px; border-radius: 12px;
+  min-width: 0; min-height: 100%; padding: 10px; border-radius: 12px;
   background: rgba(255, 255, 255, .025); border: 1px dashed var(--border-strong);
 }
-.col-head { font-size: 14px; font-weight: 600; margin-bottom: 8px; color: var(--muted); }
+.col-head { font-size: 13px; font-weight: 600; margin-bottom: 8px; color: var(--muted); white-space: nowrap; }
 .cnt { margin-left: 6px; font-size: 12px; color: var(--cyan); }
 .card {
   padding: 10px 12px; margin-bottom: 8px; cursor: grab;
   background: rgba(29, 34, 31, .94); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-sm);
 }
 .card:active { cursor: grabbing; }
-.card-title { font-size: 14px; line-height: 1.5; margin-bottom: 6px; }
+.card-title { font-size: 14px; line-height: 1.5; margin-bottom: 6px; display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
 .card-meta { display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--muted); }
 .empty { text-align: center; color: var(--muted-light); font-size: 13px; padding: 20px 0; }
 </style>

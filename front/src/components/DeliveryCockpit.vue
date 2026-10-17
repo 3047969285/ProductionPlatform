@@ -388,36 +388,37 @@ onUnmounted(() => {
         </div>
       </section>
 
-      <section class="cockpit-section status-section">
+      <div class="cockpit-side">
+        <section class="cockpit-section status-section">
+          <div class="section-heading">
+            <div>
+              <h3>节奏</h3>
+            </div>
+          </div>
+          <div class="pulse-list">
+            <div class="pulse-row"><span>当前迭代</span><strong>{{ activeSprint?.name || '尚未开始' }}</strong></div>
+            <div class="pulse-row"><span>测试计划</span><strong>{{ testPlans.length ? `${testPlans.length} 个 · ${testPlans.filter(item => item.status === 'running').length} 个执行中` : '尚未建立' }}</strong></div>
+            <div class="pulse-row"><span>最近发布</span><strong>{{ releaseSummary }}</strong></div>
+            <div class="pulse-row"><span>待分配任务</span><strong :class="{ dangerText: unassignedTasks.length }">{{ unassignedTasks.length }} 项</strong></div>
+          </div>
+        </section>
+      <section v-if="timeline.length" class="cockpit-section timeline-section">
         <div class="section-heading">
           <div>
-            <h3>节奏</h3>
+            <h3>节点</h3>
           </div>
+          <el-button text @click="go('release')">管理交付节点 →</el-button>
         </div>
-        <div class="pulse-list">
-          <div class="pulse-row"><span>当前迭代</span><strong>{{ activeSprint?.name || '尚未开始' }}</strong></div>
-          <div class="pulse-row"><span>测试计划</span><strong>{{ testPlans.length ? `${testPlans.length} 个 · ${testPlans.filter(item => item.status === 'running').length} 个执行中` : '尚未建立' }}</strong></div>
-          <div class="pulse-row"><span>最近发布</span><strong>{{ releaseSummary }}</strong></div>
-          <div class="pulse-row"><span>待分配任务</span><strong :class="{ dangerText: unassignedTasks.length }">{{ unassignedTasks.length }} 项</strong></div>
+        <div class="timeline">
+          <button v-for="item in timeline" :key="item.key" class="timeline-item" type="button" :aria-label="`编辑${item.type}：${item.title}`" @click="editTimelineItem(item)">
+            <span class="timeline-dot" :class="item.tone" />
+            <div><small>{{ item.type }} · {{ formatDate(item.date) }}</small><strong>{{ item.title }}</strong></div>
+            <span class="badge" :class="item.tone === 'danger' ? 'pink' : item.tone === 'good' ? 'lime' : 'cyan'">{{ item.status }}</span>
+          </button>
         </div>
       </section>
+      </div>
     </div>
-
-    <section v-if="timeline.length" class="cockpit-section timeline-section">
-      <div class="section-heading">
-        <div>
-          <h3>节点</h3>
-        </div>
-        <el-button text @click="go('release')">管理交付节点 →</el-button>
-      </div>
-      <div class="timeline">
-        <button v-for="item in timeline" :key="item.key" class="timeline-item" type="button" :aria-label="`编辑${item.type}：${item.title}`" @click="editTimelineItem(item)">
-          <span class="timeline-dot" :class="item.tone" />
-          <div><small>{{ item.type }} · {{ formatDate(item.date) }}</small><strong>{{ item.title }}</strong></div>
-          <span class="badge" :class="item.tone === 'danger' ? 'pink' : item.tone === 'good' ? 'lime' : 'cyan'">{{ item.status }}</span>
-        </button>
-      </div>
-    </section>
 
     <el-alert v-if="errors.length" class="load-alert" type="warning" :closable="false" show-icon>
       <span>未读取：{{ failedCollections.join('、') }}。已保留这些数据上次成功读取的内容。</span>
@@ -427,7 +428,7 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-.cockpit { display: flex; flex-direction: column; gap: 16px; }
+.cockpit { display: flex; flex-direction: column; gap: 12px; }
 .cockpit-hero {
   display: flex; justify-content: space-between; align-items: flex-start; gap: 20px;
   padding: 6px 2px 10px;
@@ -476,7 +477,10 @@ onUnmounted(() => {
 .next-stage { width: fit-content; margin-bottom: 3px; color: var(--accent) !important; font-size: 12px !important; letter-spacing: .1em; }
 .action-arrow { color: var(--muted-light); font-size: 18px; transition: transform .2s var(--ease); }
 .next-item:hover .action-arrow { transform: translateX(3px); color: var(--accent); }
-.cockpit-columns { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(300px, .85fr); gap: 16px; }
+.cockpit-columns { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(320px, .9fr); gap: 12px; align-items: stretch; }
+.cockpit-side { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.cockpit-side .timeline { grid-template-columns: 1fr; }
+.cockpit-side .timeline-item { min-height: 0; flex-direction: row; align-items: center; justify-content: space-between; }
 .next-list { display: flex; flex-direction: column; gap: 8px; }
 .next-item { display: grid; grid-template-columns: 10px 1fr 18px; gap: 10px; align-items: center; padding: 12px; border-radius: 12px; }
 .next-marker { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 4px rgba(239, 239, 235, .1); }
